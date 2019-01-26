@@ -15,6 +15,8 @@ def joinRoom(s):
             Loading = loadingComplete(line)
 
     sendMessage(s, "Successfully joined the chat!")
+    global nowplaying
+    nowplaying = False
 
 
 def loadingComplete(line):
