@@ -27,6 +27,12 @@ def getMessage(line):
 def send_pong(msg):
     s.send(bytes('PONG %s\r\n' % msg, 'UTF-8'))
 
+def copyqueuecache():
+    with open('queuecache.csv', 'r') as f2:
+        with open('queue.csv', 'w') as f3:
+            for line in f2:
+                f3.write(line)
+
 p = vlc.MediaPlayer()
 
 
@@ -55,54 +61,58 @@ def main():
                         global user
                         user = getUser(line)
                         message = str(getMessage(line))
+                        command = (message.split(' ', 1)[0]).lower()
+                        cmdarguments = message.replace(command or "/r" or "/n", "")
 
                         print(">> " + user + ": " + message)
 
-                        if "!sr" in message.lower():
+                        if ("!sr" in command):
                             global nowplaying, paused
-                            song_name = message.replace("!sr", '')
-                            sr_getsong(song_name, user)
+                            sr_getsong(cmdarguments, user)
                             paused = False
 
 
 
-                        if "!pause" in message.lower():
-                            p.pause()
+                        if ("!pause" in command):
+                            p.set_pause(True)
                             nowplaying = False
                             paused = True
-                        if "!play" in message.lower():
-                            p.pause()
+                        if ("!play" in command):
+                            p.set_pause(False)
                             nowplaying = True
                             paused = False
-                        if "!clearqueue" in message.lower():
+                        if ("!clearqueue" in command):
                             sendMessage(s, "Cleared the song request queue.")
                             f = open('queue.csv', 'w')
                             f.truncate()
                             f.close()
 
-                        if "!time" in message.lower():
+                        if ("!time" in command):
                             time = p.get_time()
                             sendMessage(s, str(time))
 
 
-                        if "!veto" in message.lower():
+                        if ("!veto" in command):
                             p.stop()
                             paused = False
                             nowplaying = False
 
-                        #if "!wrongsong" in message.lower():
-                        #    sendMessage(s, "Removed the last song from the queue.")
-                        #    import csv
-                        #    f = open("queue.csv", "r+")
-                        #    lines=f.readlines()
-                        #    lines=lines[:-1]
-#
-                        #    cWriter = csv.writer(f, delimiter=',')
-                        #    for line in lines:!
-                        #        cWriter.writerow(line)
+                        if ("!wrongsong" in command):
+                            print("Worked")
+                            if cmdarguments != '':
+                                print("Penis")
+
+                            import csv
+                            with open('queue.csv', 'rb') as inp, open('queuecache.csv', 'wb') as out:
+                                writer = csv.writer(out)
+                                for index, row in enumerate(csv.reader(inp)):
+                                    pass
 
 
-                        if "!volume" in message.lower():
+
+
+
+                        if ("!volume" in command):
                             vol = message.replace("!volume", '')
                             try:
                                 vol = int(vol.replace("/r", ''))
@@ -113,11 +123,11 @@ def main():
 
                             p.audio_set_volume(vol)
                             sendMessage(s, "Music volume set to: " + str(vol))
-                        if "!volumeup" in message.lower():
+                        if ("!volumeup" in command):
                             amt = int(message.replace("!volumeup", ''), message.replace("/r", ''))
                             print(str(amt))
                             p.audio_set_volume((p.audio_get_volume + 10))
-                        if "!volumedown" in message.lower():
+                        if ("!volumedown" in command):
                             pass
 
 
@@ -146,7 +156,7 @@ def tick():
             nplength = int(p.get_length())
 
             if (nptime + 1500) > nplength:
-                time.sleep(1.5)
+                time.sleep(1)
                 sendMessage(s, "Song is over!")
                 global nowplaying
                 nowplaying = False
@@ -164,11 +174,9 @@ def tick():
                         songtitle_csv = next(reader)[1]
                         for line in f:
                             f1.write(line)
-                #and now copy the content from queuecache into queue
-                with open('queuecache.csv', 'r') as f2:
-                    with open('queue.csv', 'w') as f3:
-                        for line in f2:
-                            f3.write(line)
+
+                copyqueuecache()
+
                 #Is it inefficient as fuck? yes. Does it work? Probably
 
                 global p
