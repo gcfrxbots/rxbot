@@ -95,10 +95,7 @@ def main():
                             nowplaying = True
                             paused = False
                         if ("!clearqueue" == command):
-                            sendMessage(s, "Cleared the song request queue.")
-                            f = open('queue.csv', 'w')
-                            f.truncate()
-                            f.close()
+                            dosqlite('''DELETE FROM songs''')
 
                         if ("!time" == command):
                             time = p.get_time()
@@ -211,30 +208,35 @@ def tick():
 
 
         elif paused == False: # When a song is over, start a new song
-            #(Parse the csv, grab the song off the top, play it, remove song from csv, resave it)
+
             try:
-                with open('queue.csv', 'r') as f:
-                    reader = csv.reader(f)
-                    #remove the top line by rewriting it into a new csv cache
-                    with open('queuecache.csv', 'w') as f1:
-                        songtitle_csv = next(reader)[1]
-                        for line in f:
-                            f1.write(line)
+                import sqlite3
+                from sqlite3 import Error
+                db = sqlite3.connect('songqueue.db')
+                cursor = db.cursor()
+                cursor.execute('''SELECT id, name, song FROM songs ORDER BY id ASC''')
+                row = cursor.fetchone()
+                songtitle = row[2]
 
-                copyqueuecache()
+                #Delete the top result
+                cursor.execute('SELECT id FROM songs ORDER BY id ASC LIMIT 1')
+                row = cursor.fetchone()
+                cursor.execute(('''DELETE FROM songs WHERE id={0}''').format(int(row[0])))
+                db.commit()
+            except Error as e:
+                raise e
+            except:
+                print("List is Empty")
+            finally:
+                db.close
 
-                #Is it inefficient as fuck? yes. Does it work? Probably
-
-                global p
-                p = vlc.MediaPlayer(sr_geturl(songtitle_csv))
-                p.play()
-                nowplaying = True
-
-            except StopIteration:
-                print "List is empty!"
-                paused = True
-        else:
-            pass
+                try:
+                    global p
+                    p = vlc.MediaPlayer(sr_geturl(songtitle))
+                    p.play()
+                    nowplaying = True
+                except:
+                    pass
 
 
 
