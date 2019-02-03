@@ -1,5 +1,5 @@
 ## RXBot
 
-This is the robot for the RXBots Twitch livestream, made for doing music stuff.
+This is the chat bot for the RXBots Twitch livestream, made for doing music stuff.
 
-**WORK IN PROCESS!**
+**WORK IN PROGRESS!**
