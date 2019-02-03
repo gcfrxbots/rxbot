@@ -1,5 +1,5 @@
 from Socket import *
-from Initialize import joinRoom
+from Initialize import joinRoom, initsqlite
 from SongRequest import *
 import string
 import vlc
@@ -32,6 +32,16 @@ def copyqueuecache():
         with open('queue.csv', 'w') as f3:
             for line in f2:
                 f3.write(line)
+def getint(cmdarguments):
+    import re
+    try:
+        out = int(re.search(r'\d+', cmdarguments).group())
+        print(str(out))
+        return out
+    except:
+        return None
+
+
 
 p = vlc.MediaPlayer()
 
@@ -42,6 +52,7 @@ def main():
     s = openSocket()
     joinRoom(s)
     readbuffer = ""
+    initsqlite()
 
     while True:
             try:
@@ -61,12 +72,14 @@ def main():
                         global user
                         user = getUser(line)
                         message = str(getMessage(line))
-                        command = (message.split(' ', 1)[0]).lower()
-                        cmdarguments = message.replace(command or "/r" or "/n", "")
+                        command = ((message.split(' ', 1)[0]).lower()).replace("\r", "")
+                        print(command)
+                        cmdarguments = message.replace(command or "\r" or "\n", "")
+                        getint(cmdarguments)
 
                         print(">> " + user + ": " + message)
 
-                        if ("!sr" in command):
+                        if ("!sr" == command):
                             global nowplaying, paused
                             sr_getsong(cmdarguments, user)
                             paused = False
@@ -77,17 +90,17 @@ def main():
                             p.set_pause(True)
                             nowplaying = False
                             paused = True
-                        if ("!play" in command):
+                        if ("!play" == command):
                             p.set_pause(False)
                             nowplaying = True
                             paused = False
-                        if ("!clearqueue" in command):
+                        if ("!clearqueue" == command):
                             sendMessage(s, "Cleared the song request queue.")
                             f = open('queue.csv', 'w')
                             f.truncate()
                             f.close()
 
-                        if ("!time" in command):
+                        if ("!time" == command):
                             time = p.get_time()
                             sendMessage(s, str(time))
 
@@ -97,38 +110,68 @@ def main():
                             paused = False
                             nowplaying = False
 
-                        if ("!wrongsong" in command):
-                            print("Worked")
-                            if cmdarguments != '':
-                                print("Penis")
+                        if ("!wrongsong" == command):
+                            queue = getint(cmdarguments)
 
                             import csv
+                            index = 0
                             with open('queue.csv', 'rb') as inp, open('queuecache.csv', 'wb') as out:
                                 writer = csv.writer(out)
-                                for index, row in enumerate(csv.reader(inp)):
-                                    pass
+
+
+
+                                if queue == None: #set the queue value to the last song in the queue
+                                    queue = len(inp.readlines())
+                                    print(queue)
+
+
+
+
+                                for row in reversed(list(csv.reader(inp))):
+                                    index += 1
+                                    if index == queue:
+                                        writer.writerow(row)
 
 
 
 
 
-                        if ("!volume" in command):
-                            vol = message.replace("!volume", '')
-                            try:
-                                vol = int(vol.replace("/r", ''))
-                            finally:
-                                if vol > 100 or vol < 0:
-                                    sendMessage(s, "Invalid volume level. Must be between 0-100.")
-                                    break
+
+                        if ("!volume" == command):
+                            vol = getint(cmdarguments)
+                            if vol == None:
+                                sendMessage(s, "Current volume: " + str(p.audio_get_volume()))
+                                break
+
+                            if vol > 100 or vol < 0:
+                                sendMessage(s, "Invalid volume level. Must be between 0-100.")
+                                break
 
                             p.audio_set_volume(vol)
                             sendMessage(s, "Music volume set to: " + str(vol))
-                        if ("!volumeup" in command):
-                            amt = int(message.replace("!volumeup", ''), message.replace("/r", ''))
-                            print(str(amt))
-                            p.audio_set_volume((p.audio_get_volume + 10))
-                        if ("!volumedown" in command):
-                            pass
+
+                        if ("!volumeup" == command):
+
+                            vol = getint(cmdarguments)
+                            if vol == None:
+                                vol = 10
+                            if (p.audio_get_volume() + vol) > 100:
+                                sendMessage(s, "Raised the volume to: 100")
+                                p.audio_set_volume(100)
+                                break
+                            sendMessage(s,  "Raised the volume to: " + str(p.audio_get_volume() + vol))
+                            p.audio_set_volume((p.audio_get_volume() + vol))
+
+                        if ("!volumedown" == command):
+                            vol = getint(cmdarguments)
+                            if vol == None:
+                                vol = 10
+                            if (p.audio_get_volume() - vol) < 0:
+                                sendMessage(s, "Lowered the volume to: 0")
+                                p.audio_set_volume(0)
+                                break
+                            sendMessage(s,  "Lowered the volume to: " + str(p.audio_get_volume() - vol))
+                            p.audio_set_volume((p.audio_get_volume() - vol))
 
 
 
@@ -142,6 +185,9 @@ def main():
 
             except socket.timeout:
                 print("Socket timeout")
+
+
+
 
 def tick():
     import time
@@ -185,7 +231,7 @@ def tick():
                 nowplaying = True
 
             except StopIteration:
-                print "List is empty"
+                print "List is empty!"
                 paused = True
         else:
             pass

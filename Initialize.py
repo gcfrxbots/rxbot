@@ -24,3 +24,42 @@ def loadingComplete(line):
         return False
     else:
         return True
+
+def initsqlite():
+    import sqlite3
+    from sqlite3 import Error
+    #initalize the database
+    try:
+        db = sqlite3.connect("songqueue.db")
+    except Error as e:
+        print(e)
+
+    #initalize the tables
+
+    try:
+        cursor = db.cursor()
+        cursor.execute ('''
+		CREATE TABLE songs(id INTEGER PRIMARY KEY, name TEXT, song TEXT)
+	''')
+        db.commit()
+    except Error as e:
+        db.rollback()
+        print(e)
+    finally:
+        db.close()
+
+def dosqlite(command):
+    import sqlite3
+    from sqlite3 import Error
+    db = sqlite3.connect('songqueue.db')
+    try:
+        cursor = db.cursor()
+        cursor.execute(command)
+        db.commit()
+    except Error as e:
+        db.rollback()
+        print e
+    finally:
+        db.close
+
+

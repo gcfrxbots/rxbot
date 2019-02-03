@@ -3,6 +3,7 @@ from gmusicapi import Mobileclient
 from Settings import GMEmail, GMPass
 import csv
 import vlc
+from Initialize import dosqlite
 
 
 s = openSocket()
@@ -25,7 +26,7 @@ def sr_getsong(song_name, user):
         top_song_result = results['song_hits'][0]['track']
 
 
-        csvdata = [[user, song_name]]
+
 
 
 
@@ -34,9 +35,20 @@ def sr_getsong(song_name, user):
         sendMessage(s, "No results found for that song. Please try a different one.")
     else:
         sendMessage(s, (user + " >> Added: " + str(top_song_result['artist'] + " - " + top_song_result['title'] + " to the queue.")))
-        with open('queue.csv', mode='a') as csvfile:
-            csvwriter = csv.writer(csvfile, dialect='myDialect')
-            csvwriter.writerows(csvdata)
+
+        sqlcommand = '''
+                    INSERT INTO songs(name, song)
+                    VALUES("{user}", "{song_name}");'''.format(user=user, song_name=song_name)
+
+        dosqlite(sqlcommand)
+
+
+
+
+
+
+
+
 
 
 def sr_geturl(songtitle_csv):
@@ -47,15 +59,3 @@ def sr_geturl(songtitle_csv):
         return(stream_url)
     except:
         sendMessage(s, "There was an issue playing the song.")
-
-def cmd_pause():
-    print(stream_url)
-    p = vlc.MediaPlayer(stream_url)
-    p.play()
-    sendMessage(s, "Tried to pause")
-    p.pause()
-    #subprocess.call(['mpv', stream_url])
-    #except:
-        #sendMessage(s, "Error. Either no results found or shit broke.")
-
-
