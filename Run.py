@@ -76,7 +76,6 @@ def main():
                         user = getUser(line)
                         message = str(getMessage(line))
                         command = ((message.split(' ', 1)[0]).lower()).replace("\r", "")
-                        print(command)
                         cmdarguments = message.replace(command or "\r" or "\n", "")
                         getint(cmdarguments)
 
@@ -98,12 +97,8 @@ def main():
                             nowplaying = True
                             paused = False
                         if ("!clearqueue" == command):
+                            sendMessage(s, "Cleared the song request queue.")
                             dosqlite('''DELETE FROM songs''')
-
-                        if ("!time" == command):
-                            time = p.get_time()
-                            sendMessage(s, str(time))
-
 
                         if ("!veto" in command):
                             p.stop()
@@ -111,91 +106,11 @@ def main():
                             nowplaying = False
 
                         if ("!wrongsong" == command):
-                            songid = getint(cmdarguments)
-                            import sqlite3
-                            from sqlite3 import Error
-                            db = sqlite3.connect('songqueue.db')
-                            cursor = db.cursor()
-                            if songid == None:
-                                try:
-                                    cursor.execute('SELECT id, song FROM songs WHERE name="{0}"  ORDER BY id DESC LIMIT 1'.format(user))
-                                    result = cursor.fetchone()
-                                    toremove = str(result[0])
-                                    strresult = (str(result[1]))[1:-1]
-                                    cursor.execute('DELETE FROM songs WHERE id={0}'.format(toremove))
-                                    db.commit()
-                                    sendMessage(s, (user + ' >> Removed your request: "' + strresult + '" from the queue.'))
-                                except Error as e:
-                                    raise e
-                                    db.rollback()
-                                except:
-                                    sendMessage(s, "Couldn't find your most recent request.")
-                                finally:
-                                    db.close
-                            else:
-                                try:
-                                    cursor.execute('SELECT song, name FROM songs WHERE id={0}'.format(songid))
-                                    result = cursor.fetchone()
-                                    strresult = (str(result[0]))[1:-1]
-                                    if  user in result[1]:
-                                        cursor.execute('DELETE FROM songs WHERE id={0}'.format(songid))
-                                        db.commit()
-
-                                        sendMessage(s, (user + ' >> Removed your request: "' + strresult + '" from the queue.'))
-                                    else:
-                                        sendMessage(s, (user + " >> You didn't request that song, you can't delete it!"))
-
-
-
-                                except Error as e:
-                                    raise e
-                                    db.rollback()
-                                #except:
-                                #    sendMessage(s, "Couldn't find your that request.")
-                                finally:
-                                    db.close()
-
+                            wrongsong(getint(cmdarguments), user)
 
 
                         if ("!clearsong" == command):
-                            songid = getint(cmdarguments)
-                            import sqlite3
-                            from sqlite3 import Error
-                            db = sqlite3.connect('songqueue.db')
-                            cursor = db.cursor()
-                            if songid == None:
-                                try:
-                                    cursor.execute('SELECT id, song, name FROM songs ORDER BY id DESC LIMIT 1')
-                                    result = cursor.fetchone()
-                                    toremove = str(result[0])
-                                    strresult = (str(result[1]))[1:-1]
-                                    cursor.execute('DELETE FROM songs WHERE id={0}'.format(toremove))
-                                    db.commit()
-                                    sendMessage(s, (user + ' >> Removed the request: "' + strresult + '" requested by ' + str(result[2]) + " from the queue."))
-                                except Error as e:
-                                    raise e
-                                    db.rollback()
-                                except:
-                                    sendMessage(s, "Something messed up. Is the queue empty?")
-                                finally:
-                                    db.close
-                            else:
-                                try:
-                                    cursor.execute('SELECT song, name FROM songs WHERE id={0}'.format(songid))
-                                    result = cursor.fetchone()
-                                    strresult = (str(result[0]))[1:-1]
-
-                                    cursor.execute('DELETE FROM songs WHERE id={0}'.format(songid))
-                                    db.commit()
-
-                                    sendMessage(s, (user + ' >> Removed the request: "' + strresult + '" requested by ' + str(result[1]) +" from the queue."))
-                                except Error as e:
-                                    raise e
-                                    db.rollback()
-                                #except:
-                                #    sendMessage(s, "Couldn't find your that request.")
-                                finally:
-                                    db.close()
+                            clearsong(getint(cmdarguments), user)
 
 
 
@@ -205,16 +120,13 @@ def main():
                             if vol == None:
                                 sendMessage(s, "Current volume: " + str(p.audio_get_volume()))
                                 break
-
                             if vol > 100 or vol < 0:
                                 sendMessage(s, "Invalid volume level. Must be between 0-100.")
                                 break
-
                             p.audio_set_volume(vol)
                             sendMessage(s, "Music volume set to: " + str(vol))
 
                         if ("!volumeup" == command):
-
                             vol = getint(cmdarguments)
                             if vol == None:
                                 vol = 10
@@ -265,8 +177,8 @@ def tick():
             nplength = int(p.get_length())
 
             if (nptime + 1500) > nplength:
-                time.sleep(1)
-                sendMessage(s, "Song is over!")
+                time.sleep(0.7)
+                print("Song is over!")
                 global nowplaying
                 nowplaying = False
 
@@ -276,18 +188,18 @@ def tick():
         elif paused == False: # When a song is over, start a new song
 
             try:
-                import sqlite3
+                import sqlite3 #Open the db, get the song out
                 from sqlite3 import Error
                 db = sqlite3.connect('songqueue.db')
                 cursor = db.cursor()
-                cursor.execute('''SELECT id, name, song FROM songs ORDER BY id ASC''')
+                cursor.execute('''SELECT id, name, song FROM songs ORDER BY id ASC''') #Pick the top song
                 row = cursor.fetchone()
                 songtitle = row[2]
 
                 #Delete the top result
                 cursor.execute('SELECT id FROM songs ORDER BY id ASC LIMIT 1')
                 row = cursor.fetchone()
-                cursor.execute(('''DELETE FROM songs WHERE id={0}''').format(int(row[0])))
+                cursor.execute(('''DELETE FROM songs WHERE id={0}''').format(int(row[0]))) #Delete the top song
                 db.commit()
             except Error as e:
                 raise e
@@ -296,13 +208,24 @@ def tick():
             finally:
                 db.close
 
+
                 try:
+                    if validators.url(songtitle) == True: #TEST IF THE REQUEST IS A LINK
+                        if "youtu" in songtitle: #IS IT A YOUTUBE LINK?
+                            playurl = YouTube(songtitle).streams.filter(only_audio=True).order_by('abr').first().url #If it is, get the link with the best sound quality thats only audio
+                        else:
+                            playurl = songtitle
+                    else:
+                        playurl = sr_geturl(songtitle)
+
+
                     global p
-                    p = vlc.MediaPlayer(sr_geturl(songtitle))
+                    p = vlc.MediaPlayer(playurl)
                     p.play()
                     nowplaying = True
                 except:
-                    pass
+                    pass #LIST IS EMPTY
+
 
 
 
