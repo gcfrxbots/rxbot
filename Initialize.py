@@ -1,6 +1,9 @@
 import string
-from Socket import sendMessage
 
+from Socket import sendMessage
+import sys
+reload(sys)
+sys.setdefaultencoding('UTF8')
 def joinRoom(s):
     readbuffer = ""
     Loading = True

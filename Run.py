@@ -4,7 +4,10 @@ from SongRequest import *
 import string
 import vlc
 from threading import Thread
-import csv
+import sys
+reload(sys)
+sys.setdefaultencoding('UTF8')
+
 
 global nowplaying, paused
 nowplaying = False
@@ -108,28 +111,91 @@ def main():
                             nowplaying = False
 
                         if ("!wrongsong" == command):
-                            queue = getint(cmdarguments)
+                            songid = getint(cmdarguments)
+                            import sqlite3
+                            from sqlite3 import Error
+                            db = sqlite3.connect('songqueue.db')
+                            cursor = db.cursor()
+                            if songid == None:
+                                try:
+                                    cursor.execute('SELECT id, song FROM songs WHERE name="{0}"  ORDER BY id DESC LIMIT 1'.format(user))
+                                    result = cursor.fetchone()
+                                    toremove = str(result[0])
+                                    strresult = (str(result[1]))[1:-1]
+                                    cursor.execute('DELETE FROM songs WHERE id={0}'.format(toremove))
+                                    db.commit()
+                                    sendMessage(s, (user + ' >> Removed your request: "' + strresult + '" from the queue.'))
+                                except Error as e:
+                                    raise e
+                                    db.rollback()
+                                except:
+                                    sendMessage(s, "Couldn't find your most recent request.")
+                                finally:
+                                    db.close
+                            else:
+                                try:
+                                    cursor.execute('SELECT song, name FROM songs WHERE id={0}'.format(songid))
+                                    result = cursor.fetchone()
+                                    strresult = (str(result[0]))[1:-1]
+                                    if  user in result[1]:
+                                        cursor.execute('DELETE FROM songs WHERE id={0}'.format(songid))
+                                        db.commit()
 
-                            import csv
-                            index = 0
-                            with open('queue.csv', 'rb') as inp, open('queuecache.csv', 'wb') as out:
-                                writer = csv.writer(out)
+                                        sendMessage(s, (user + ' >> Removed your request: "' + strresult + '" from the queue.'))
+                                    else:
+                                        sendMessage(s, (user + " >> You didn't request that song, you can't delete it!"))
 
 
 
-                                if queue == None: #set the queue value to the last song in the queue
-                                    queue = len(inp.readlines())
-                                    print(queue)
+                                except Error as e:
+                                    raise e
+                                    db.rollback()
+                                #except:
+                                #    sendMessage(s, "Couldn't find your that request.")
+                                finally:
+                                    db.close()
 
 
 
+                        if ("!clearsong" == command):
+                            songid = getint(cmdarguments)
+                            import sqlite3
+                            from sqlite3 import Error
+                            db = sqlite3.connect('songqueue.db')
+                            cursor = db.cursor()
+                            if songid == None:
+                                try:
+                                    cursor.execute('SELECT id, song, name FROM songs ORDER BY id DESC LIMIT 1')
+                                    result = cursor.fetchone()
+                                    toremove = str(result[0])
+                                    strresult = (str(result[1]))[1:-1]
+                                    cursor.execute('DELETE FROM songs WHERE id={0}'.format(toremove))
+                                    db.commit()
+                                    sendMessage(s, (user + ' >> Removed the request: "' + strresult + '" requested by ' + str(result[2]) + " from the queue."))
+                                except Error as e:
+                                    raise e
+                                    db.rollback()
+                                except:
+                                    sendMessage(s, "Something messed up. Is the queue empty?")
+                                finally:
+                                    db.close
+                            else:
+                                try:
+                                    cursor.execute('SELECT song, name FROM songs WHERE id={0}'.format(songid))
+                                    result = cursor.fetchone()
+                                    strresult = (str(result[0]))[1:-1]
 
-                                for row in reversed(list(csv.reader(inp))):
-                                    index += 1
-                                    if index == queue:
-                                        writer.writerow(row)
+                                    cursor.execute('DELETE FROM songs WHERE id={0}'.format(songid))
+                                    db.commit()
 
-
+                                    sendMessage(s, (user + ' >> Removed the request: "' + strresult + '" requested by ' + str(result[1]) +" from the queue."))
+                                except Error as e:
+                                    raise e
+                                    db.rollback()
+                                #except:
+                                #    sendMessage(s, "Couldn't find your that request.")
+                                finally:
+                                    db.close()
 
 
 
@@ -226,7 +292,7 @@ def tick():
             except Error as e:
                 raise e
             except:
-                print("List is Empty")
+                pass
             finally:
                 db.close
 

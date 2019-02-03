@@ -2,9 +2,10 @@ from Socket import *
 from gmusicapi import Mobileclient
 from Settings import GMEmail, GMPass
 import csv
-import vlc
 from Initialize import dosqlite
-
+import sys
+reload(sys)
+sys.setdefaultencoding('UTF8')
 
 s = openSocket()
 api = Mobileclient()
@@ -33,9 +34,8 @@ def sr_getsong(song_name, user):
     #If theres an error (its unable to find the song) then do fuck all, otherwise write the song data to the csv
     except IndexError:
         sendMessage(s, "No results found for that song. Please try a different one.")
-    else:
+    finally:
         sendMessage(s, (user + " >> Added: " + str(top_song_result['artist'] + " - " + top_song_result['title'] + " to the queue.")))
-
         sqlcommand = '''
                     INSERT INTO songs(name, song)
                     VALUES("{user}", "{song_name}");'''.format(user=user, song_name=song_name)
@@ -59,3 +59,5 @@ def sr_geturl(songtitle_csv):
         return(stream_url)
     except:
         sendMessage(s, "There was an issue playing the song.")
+
+
