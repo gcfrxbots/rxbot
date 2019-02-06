@@ -3,7 +3,7 @@ import string
 from Socket import sendMessage
 import sys
 reload(sys)
-sys.setdefaultencoding('UTF8')
+sys.setdefaultencoding('utf-8')
 def joinRoom(s):
     readbuffer = ""
     Loading = True
@@ -42,7 +42,7 @@ def initsqlite():
     try:
         cursor = db.cursor()
         cursor.execute ('''
-		CREATE TABLE songs(id INTEGER PRIMARY KEY, name TEXT, song TEXT)
+		CREATE TABLE songs(id INTEGER PRIMARY KEY, name TEXT, song TEXT, key TEXT)
 	''')
         db.commit()
     except Error as e:

@@ -6,7 +6,7 @@ import vlc
 from threading import Thread
 import sys
 reload(sys)
-sys.setdefaultencoding('UTF8')
+sys.setdefaultencoding('utf-8')
 
 
 global nowplaying, paused
@@ -28,7 +28,7 @@ def getMessage(line):
     return message
 
 def send_pong(msg):
-    s.send(bytes('PONG %s\r\n' % msg, 'UTF-8'))
+    s.send(bytes('PONG %s\r\n' % msg, 'utf-8'))
 
 def copyqueuecache():
     with open('queuecache.csv', 'r') as f2:
@@ -44,7 +44,12 @@ def getint(cmdarguments):
     except:
         return None
 
-
+def PONG():
+    import threading
+    s.send(bytes('PONG :tmi.twitch.tv\r\n'))
+    print("PONG SENT!")
+    threading.Timer(240, PONG).start()
+PONG()
 
 p = vlc.MediaPlayer()
 
@@ -69,8 +74,10 @@ def main():
                 for line in temp:
 
                     if "PING" in line:
+                        #s.send(bytes('PONG %s\r\n' % line[1], 'utf-8'))
                         s.send("PONG %s\r\n" % line[1])
-                        print("Send a PONG to Twitch's servers")
+                        print("Got a PING from twitch's servers.")
+
                     else:
                         global user
                         user = getUser(line)
@@ -101,6 +108,7 @@ def main():
                             dosqlite('''DELETE FROM songs''')
 
                         if ("!veto" in command):
+                            sendMessage(s, "Song Vetoed.")
                             p.stop()
                             paused = False
                             nowplaying = False
@@ -112,7 +120,9 @@ def main():
                         if ("!clearsong" == command):
                             clearsong(getint(cmdarguments), user)
 
-
+                        if ("!time" == command):
+                            time = p.get_time()
+                            sendMessage(s, str(time))
 
 
                         if ("!volume" == command):
@@ -157,6 +167,7 @@ def main():
 
             except socket.error:
                 print("Socket died")
+
 
             except socket.timeout:
                 print("Socket timeout")

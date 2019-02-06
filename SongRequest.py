@@ -8,16 +8,23 @@ import sys
 from pytube import YouTube
 import vlc
 reload(sys)
-sys.setdefaultencoding('UTF8')
+sys.setdefaultencoding('utf-8')
 
 s = openSocket()
 api = Mobileclient()
-api.login(GMEmail, GMPass, Mobileclient.FROM_MAC_ADDRESS)
+#Now using the newer oauth login!
+
+api.oauth_login(device_id=Mobileclient.FROM_MAC_ADDRESS, oauth_credentials="oauth.txt")
+
+
+#api.login(GMEmail, GMPass, Mobileclient.FROM_MAC_ADDRESS)
 
 if Mobileclient.is_authenticated(api) == True:
     print("Logged into GPM successfully")
 else:
-    print("Can't log into Google Play Music.")
+    sendMessage(s, "Can't log into Google Play Music! Please check the console and follow the instructions!")
+    api.perform_oauth(storage_filepath="oauth.txt")
+    api.oauth_login(device_id=Mobileclient.FROM_MAC_ADDRESS, oauth_credentials="oauth.txt")
 stream_url = ""
 
 def sr_getsong(song_name, user):
@@ -35,20 +42,16 @@ def sr_getsong(song_name, user):
                             VALUES("{user}", "{song_name}");'''.format(user=user, song_name=song_name)
 
             dosqlite(sqlcommand)
-            sendMessage(s, (user + " >> Added: " + title + " to the queue. (YT)"))
+
+
+            sendMessage(s, (user + " >> Added: " + title + " to the queue (YT). ID: " + getnewentry()))
         else:
             sqlcommand = '''
                             INSERT INTO songs(name, song)
                             VALUES("{user}", "{song_name}");'''.format(user=user, song_name=song_name)
 
             dosqlite(sqlcommand)
-            sendMessage(s, (user + " >> Added that link to the queue."))
-
-
-
-
-
-
+            sendMessage(s, (user + " >> Added that link to the queue. ID: " + getnewentry()))
 
 
 
@@ -56,6 +59,7 @@ def sr_getsong(song_name, user):
         try:
             results = Mobileclient.search(api, song_name)
             top_song_result = results['song_hits'][0]['track']
+            key = top_song_result['storeId']
 
 
 
@@ -66,19 +70,25 @@ def sr_getsong(song_name, user):
         except IndexError:
             sendMessage(s, "No results found for that song. Please try a different one.")
         else:
-            sendMessage(s, (user + " >> Added: " + str(top_song_result['artist'] + " - " + top_song_result['title'] + " to the queue.")))
+
             sqlcommand = '''
-                        INSERT INTO songs(name, song)
-                        VALUES("{user}", "{song_name}");'''.format(user=user, song_name=song_name)
+                        INSERT INTO songs(name, song, key)
+                        VALUES("{user}", "{song_name}", "{key}");'''.format(user=user, song_name=song_name, key=key)
 
             dosqlite(sqlcommand)
+            sendMessage(s, (user + " >> Added: " + str(top_song_result['artist'] + " - " + top_song_result['title'] + " to the queue. ID: " + getnewentry())))
 
 
 
 
 
-
-
+def getnewentry():
+    import sqlite3
+    db = sqlite3.connect('songqueue.db')
+    cursor = db.cursor()
+    cursor.execute('SELECT id FROM songs ORDER BY id DESC LIMIT 1')
+    result = cursor.fetchone()
+    return(str(result[0]))
 
 
 
@@ -117,7 +127,7 @@ def wrongsong(songid, user):
         try:
             cursor.execute('SELECT song, name FROM songs WHERE id={0}'.format(songid))
             result = cursor.fetchone()
-            strresult = (str(result[0]))[1:-1]
+            strresult = (str(result[0]))
             if  user in result[1]:
                 cursor.execute('DELETE FROM songs WHERE id={0}'.format(songid))
                 db.commit()
@@ -164,7 +174,7 @@ def clearsong(songid, user):
         try:
             cursor.execute('SELECT song, name FROM songs WHERE id={0}'.format(songid))
             result = cursor.fetchone()
-            strresult = (str(result[0]))[1:-1]
+            strresult = (str(result[0]))
 
             cursor.execute('DELETE FROM songs WHERE id={0}'.format(songid))
             db.commit()
