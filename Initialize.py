@@ -59,6 +59,7 @@ def dosqlite(command):
         cursor = db.cursor()
         cursor.execute(command)
         db.commit()
+        return cursor.fetchone()
     except Error as e:
         db.rollback()
         print e

@@ -1,12 +1,10 @@
 from Socket import *
 from gmusicapi import Mobileclient
-from Settings import GMEmail, GMPass
-import csv
 from Initialize import dosqlite
 import validators
 import sys
 from pytube import YouTube
-import vlc
+from Settings import MAX_DUPLICATE_SONGS, MAX_REQUESTS_USER
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
@@ -27,7 +25,31 @@ else:
     api.oauth_login(device_id=Mobileclient.FROM_MAC_ADDRESS, oauth_credentials="oauth.txt")
 stream_url = ""
 
+
+def getytkey(url):
+    print(url)
+    if "youtube" in url.lower():
+        return(url.split("=")[1][:11])
+    elif "youtu.be" in url.lower():
+        return(url.split("e/")[1][:11])
+    else:
+        return None
+
+
+
+
+
+
+
+
+
 def sr_getsong(song_name, user):
+
+    sqlcommand = '''SELECT count(*) FROM songs WHERE name="{0}"'''.format(user)
+    if dosqlite(sqlcommand)[0] > (MAX_REQUESTS_USER - 1):
+        sendMessage(s, (user + " >> You already have " + str(MAX_REQUESTS_USER) + " songs in the queue."))
+        return
+
 
     song_name = song_name.replace("\r", "")[1:]
 
@@ -35,20 +57,40 @@ def sr_getsong(song_name, user):
     if validators.url(song_name) == True: #TEST IF THE REQUEST IS A LINK
 
         if "youtu" in song_name: #TEST IF THE SONG IS A YOUTUBE LINK
-            title = YouTube(song_name).title
-            print(title)
+            try:
+                title = YouTube(song_name).title
+            except:
+                sendMessage(s, "Unable to use that video for some reason.")
+                return
+
+
+            key = getytkey(song_name)
+            if key == None:
+                sendMessage(s, "Something is wrong with your Youtube link.")
+                return
+
+
+            #TEST IF ITS ALREADY IN THE QUEUE
+            sqlcommand = '''SELECT count(*) FROM songs WHERE key="{0}"'''.format(key)
+            if dosqlite(sqlcommand)[0] > (MAX_DUPLICATE_SONGS - 1):
+                sendMessage(s, (user + " >> That song is already in the queue."))
+                return
+
+
             sqlcommand = '''
-                            INSERT INTO songs(name, song)
-                            VALUES("{user}", "{song_name}");'''.format(user=user, song_name=song_name)
+                            INSERT INTO songs(name, song, key)
+                            VALUES("{user}", "{song_name}", "{key}");'''.format(user=user, song_name=song_name, key=key)
 
             dosqlite(sqlcommand)
 
 
             sendMessage(s, (user + " >> Added: " + title + " to the queue (YT). ID: " + getnewentry()))
-        else:
+
+
+        else:                       #OTHER MP3 REQUESTS <<<<<<<
             sqlcommand = '''
-                            INSERT INTO songs(name, song)
-                            VALUES("{user}", "{song_name}");'''.format(user=user, song_name=song_name)
+                            INSERT INTO songs(name, song, key)
+                            VALUES("{user}", "{song_name}", "{song_name}");'''.format(user=user, song_name=song_name)
 
             dosqlite(sqlcommand)
             sendMessage(s, (user + " >> Added that link to the queue. ID: " + getnewentry()))
@@ -69,15 +111,22 @@ def sr_getsong(song_name, user):
         #If theres an error (its unable to find the song) then do fuck all, otherwise write the song data to the csv
         except IndexError:
             sendMessage(s, "No results found for that song. Please try a different one.")
+            return
         else:
+                #TEST IF ITS ALREADY IN THE QUEUE
+            sqlcommand = '''SELECT count(*) FROM songs WHERE key="{0}"'''.format(key)
+            if dosqlite(sqlcommand)[0] > (MAX_DUPLICATE_SONGS - 1):
+                sendMessage(s, (user + " >> That song is already in the queue."))
+                return
 
+                #IF NOT, ADD IT
             sqlcommand = '''
                         INSERT INTO songs(name, song, key)
                         VALUES("{user}", "{song_name}", "{key}");'''.format(user=user, song_name=song_name, key=key)
 
             dosqlite(sqlcommand)
             sendMessage(s, (user + " >> Added: " + str(top_song_result['artist'] + " - " + top_song_result['title'] + " to the queue. ID: " + getnewentry())))
-
+            return
 
 
 

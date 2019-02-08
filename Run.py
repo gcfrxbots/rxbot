@@ -27,9 +27,6 @@ def getMessage(line):
     message = seperate[2]
     return message
 
-def send_pong(msg):
-    s.send(bytes('PONG %s\r\n' % msg, 'utf-8'))
-
 def copyqueuecache():
     with open('queuecache.csv', 'r') as f2:
         with open('queue.csv', 'w') as f3:
@@ -56,7 +53,6 @@ p = vlc.MediaPlayer()
 
 
 def main():
-    import time
     s = openSocket()
     joinRoom(s)
     readbuffer = ""
@@ -73,13 +69,12 @@ def main():
 
                 for line in temp:
 
-                    if "PING" in line:
-                        #s.send(bytes('PONG %s\r\n' % line[1], 'utf-8'))
+                    if "PING" in line: #PING detection from twitch. Immediately sends a PONG back with the same content as the line. The PONG() Function is backup.
                         s.send("PONG %s\r\n" % line[1])
                         print("Got a PING from twitch's servers.")
 
                     else:
-                        global user
+                        global user #All these things break apart the given chat message to make things easier to work with.
                         user = getUser(line)
                         message = str(getMessage(line))
                         command = ((message.split(' ', 1)[0]).lower()).replace("\r", "")
@@ -91,7 +86,6 @@ def main():
                         if ("!sr" == command):
                             global nowplaying, paused
                             sr_getsong(cmdarguments, user)
-                            paused = False
 
 
 
@@ -99,10 +93,12 @@ def main():
                             p.set_pause(True)
                             nowplaying = False
                             paused = True
+
                         if ("!play" == command):
                             p.set_pause(False)
                             nowplaying = True
                             paused = False
+
                         if ("!clearqueue" == command):
                             sendMessage(s, "Cleared the song request queue.")
                             dosqlite('''DELETE FROM songs''')
@@ -177,7 +173,6 @@ def main():
 
 def tick():
     import time
-    print("ping")
     while True:
         time.sleep(0.3) #Slow down the stupidly fast loop for the sake of CPU
         global nowplaying
@@ -205,6 +200,10 @@ def tick():
                 cursor = db.cursor()
                 cursor.execute('''SELECT id, name, song FROM songs ORDER BY id ASC''') #Pick the top song
                 row = cursor.fetchone()
+                if row == None: #>>>>>> DO THIS STUFF IF THE LIST IS EMPTY!
+                    sendMessage(s, "Queue is empty! Request some more music with !sr")
+                    paused = True
+
                 songtitle = row[2]
 
                 #Delete the top result
