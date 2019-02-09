@@ -1,16 +1,41 @@
 ## RXBot
 
-**WORK IN PROGRESS!**
+RXBot is a songrequest bot for Twitch using Google Play Music, originally created for the Twitch channel [RXBots](https://www.twitch.tv/rxbots).
 
+⚠️ This project is still in early development and may not function as expected ⚠️
 
+-----
 
-CURRENT PIP INSTALLS (These must all be "pip install ____"ed to work):
+### Dependencies
 
-gmusicapi (The whole Google Play Music API, using MobileClient)
+Install dependencies using `pip install -r requirements.txt`
 
-validators (Used as an easy way to determine if certain strings are URLs)
+-----
 
-pytube (Used to get stream URLs and titles from youtube)
+### Commands
 
-python-vlc (Used to actually play audio)
+- `!sr` Makes a song request
 
+- `!pause` Pauses the music
+
+- `!play` Plays the music
+
+- `!clearqueue` Clears the current queue
+
+- `!veto` Stops the music
+
+- `!wrongsong` Allows user to undo last request
+
+- `!clearsong` *(needs documentation)*
+
+- `!time` *(needs documentation)*
+
+- `!volume`, `!volumeup` & `!volumedown` Control the volume
+
+- `!nowplaying` Shows the current playing song
+
+-----
+
+### Get in touch
+
+Join us in the #therxbot-dev channel in the [RXBots Discord chat](https://discord.gg/3gagd4Y).
