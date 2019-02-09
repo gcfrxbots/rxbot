@@ -4,13 +4,13 @@ HOST = "irc.twitch.tv"
 PORT = 80
 #Use whatever port is open on your network. If this doesn't work, try 20, 21, 79, 161, 443
 
-PASS = ""
-#TO GET THIS PASS, GO TO https://twitchapps.com/tmi/ AND LOG IN WITH YOUR BOT'S ACCOUNT!
+BOT_OAUTH = ""
+#To get this Oauth, head to https://twitchapps.com/tmi/ and log in with YOUR BOT'S ACCOUNT!
 
-NAME = "the_rxbot"
+BOT_NAME = ""
 #The name of your bot (Lowercase)
 
-CHANNEL = "rxbots"
+CHANNEL = ""
 #The name of the channel you are connecting to (Lowercase)
 
 MAX_DUPLICATE_SONGS = 1

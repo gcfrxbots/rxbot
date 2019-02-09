@@ -5,8 +5,8 @@ def openSocket():
 
     s = socket.socket()
     s.connect((HOST, PORT))
-    s.send("PASS " + PASS + "\r\n")
-    s.send("NICK " + NAME + "\r\n")
+    s.send("PASS " + BOT_OAUTH + "\r\n")
+    s.send("NICK " + BOT_NAME + "\r\n")
     s.send("JOIN #" + CHANNEL + "\r\n")
     return s
 

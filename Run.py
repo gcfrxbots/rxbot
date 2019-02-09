@@ -27,11 +27,10 @@ def getMessage(line):
     message = seperate[2]
     return message
 
-def copyqueuecache():
-    with open('queuecache.csv', 'r') as f2:
-        with open('queue.csv', 'w') as f3:
-            for line in f2:
-                f3.write(line)
+
+
+
+
 def getint(cmdarguments):
     import re
     try:
@@ -49,140 +48,154 @@ def PONG():
 PONG()
 
 p = vlc.MediaPlayer()
-
+initsqlite()
 
 
 def main():
     s = openSocket()
     joinRoom(s)
     readbuffer = ""
-    initsqlite()
+
 
     while True:
-            try:
-                readbuffer = readbuffer + s.recv(1024)
-                temp = string.split(readbuffer, "\n")
-                readbuffer = temp.pop()
+        try:
+            readbuffer = readbuffer + s.recv(1024)
+            temp = string.split(readbuffer, "\n")
+            readbuffer = temp.pop()
 
 
 
 
-                for line in temp:
+            for line in temp:
 
-                    if "PING" in line: #PING detection from twitch. Immediately sends a PONG back with the same content as the line. The PONG() Function is backup.
-                        s.send("PONG %s\r\n" % line[1])
-                        print("Got a PING from twitch's servers.")
+                if "PING" in line: #PING detection from twitch. Immediately sends a PONG back with the same content as the line. The PONG() Function is backup.
+                    s.send("PONG %s\r\n" % line[1])
+                    print("Got a PING from twitch's servers.")
 
-                    else:
-                        global user #All these things break apart the given chat message to make things easier to work with.
-                        user = getUser(line)
-                        message = str(getMessage(line))
-                        command = ((message.split(' ', 1)[0]).lower()).replace("\r", "")
-                        cmdarguments = message.replace(command or "\r" or "\n", "")
-                        getint(cmdarguments)
+                else:
+                    global user #All these things break apart the given chat message to make things easier to work with.
+                    user = getUser(line)
+                    message = str(getMessage(line))
+                    command = ((message.split(' ', 1)[0]).lower()).replace("\r", "")
+                    cmdarguments = message.replace(command or "\r" or "\n", "")
+                    getint(cmdarguments)
 
-                        print(">> " + user + ": " + message)
+                    print(">> " + user + ": " + message)
 
-                        if ("!sr" == command):
-                            global nowplaying, paused
-                            sr_getsong(cmdarguments, user)
-
-
-
-                        if ("!pause" in command):
-                            p.set_pause(True)
-                            nowplaying = False
-                            paused = True
-
-                        if ("!play" == command):
-                            p.set_pause(False)
-                            nowplaying = True
-                            paused = False
-
-                        if ("!clearqueue" == command):
-                            sendMessage(s, "Cleared the song request queue.")
-                            dosqlite('''DELETE FROM songs''')
-
-                        if ("!veto" in command):
-                            sendMessage(s, "Song Vetoed.")
-                            p.stop()
-                            paused = False
-                            nowplaying = False
-
-                        if ("!wrongsong" == command):
-                            wrongsong(getint(cmdarguments), user)
-
-
-                        if ("!clearsong" == command):
-                            clearsong(getint(cmdarguments), user)
-
-                        if ("!time" == command):
-                            time = p.get_time()
-                            sendMessage(s, str(time))
-
-
-                        if ("!volume" == command):
-                            vol = getint(cmdarguments)
-                            if vol == None:
-                                sendMessage(s, "Current volume: " + str(p.audio_get_volume()))
-                                break
-                            if vol > 100 or vol < 0:
-                                sendMessage(s, "Invalid volume level. Must be between 0-100.")
-                                break
-                            p.audio_set_volume(vol)
-                            sendMessage(s, "Music volume set to: " + str(vol))
-
-                        if ("!volumeup" == command):
-                            vol = getint(cmdarguments)
-                            if vol == None:
-                                vol = 10
-                            if (p.audio_get_volume() + vol) > 100:
-                                sendMessage(s, "Raised the volume to: 100")
-                                p.audio_set_volume(100)
-                                break
-                            sendMessage(s,  "Raised the volume to: " + str(p.audio_get_volume() + vol))
-                            p.audio_set_volume((p.audio_get_volume() + vol))
-
-                        if ("!volumedown" == command):
-                            vol = getint(cmdarguments)
-                            if vol == None:
-                                vol = 10
-                            if (p.audio_get_volume() - vol) < 0:
-                                sendMessage(s, "Lowered the volume to: 0")
-                                p.audio_set_volume(0)
-                                break
-                            sendMessage(s,  "Lowered the volume to: " + str(p.audio_get_volume() - vol))
-                            p.audio_set_volume((p.audio_get_volume() - vol))
+                    if ("!sr" == command):
+                        global nowplaying, paused
+                        sr_getsong(cmdarguments, user)
 
 
 
+                    if ("!pause" in command):
+                        p.set_pause(True)
+                        nowplaying = False
+                        paused = True
+
+                    if ("!play" == command):
+                        p.set_pause(False)
+                        nowplaying = True
+                        paused = False
+
+                    if ("!clearqueue" == command):
+                        sendMessage(s, "Cleared the song request queue.")
+                        dosqlite('''DELETE FROM songs''')
+
+                    if ("!veto" in command):
+                        sendMessage(s, "Song Vetoed.")
+                        p.stop()
+                        paused = False
+                        nowplaying = False
+
+                    if ("!wrongsong" == command):
+                        wrongsong(getint(cmdarguments), user)
+
+
+                    if ("!clearsong" == command):
+                        clearsong(getint(cmdarguments), user)
+
+                    if ("!time" == command):
+                        time = p.get_time()
+                        sendMessage(s, str(time))
+
+
+                    if ("!volume" == command):
+                        vol = getint(cmdarguments)
+                        if vol == None:
+                            sendMessage(s, "Current volume: " + str(p.audio_get_volume()))
+                            break
+                        if vol > 100 or vol < 0:
+                            sendMessage(s, "Invalid volume level. Must be between 0-100.")
+                            break
+                        p.audio_set_volume(vol)
+                        sendMessage(s, "Music volume set to: " + str(vol))
+
+                    if ("!volumeup" == command):
+                        vol = getint(cmdarguments)
+                        if vol == None:
+                            vol = 10
+                        if (p.audio_get_volume() + vol) > 100:
+                            sendMessage(s, "Raised the volume to: 100")
+                            p.audio_set_volume(100)
+                            break
+                        sendMessage(s,  "Raised the volume to: " + str(p.audio_get_volume() + vol))
+                        p.audio_set_volume((p.audio_get_volume() + vol))
+
+                    if ("!volumedown" == command):
+                        vol = getint(cmdarguments)
+                        if vol == None:
+                            vol = 10
+                        if (p.audio_get_volume() - vol) < 0:
+                            sendMessage(s, "Lowered the volume to: 0")
+                            p.audio_set_volume(0)
+                            break
+                        sendMessage(s,  "Lowered the volume to: " + str(p.audio_get_volume() - vol))
+                        p.audio_set_volume((p.audio_get_volume() - vol))
+                    if ("!nowplaying" == command):
+                        with open("nowplaying.txt", "r") as f:
+                            returnnp = f.readlines()
+                            if not returnnp:
+                                sendMessage(s, (user + " >> The music is currently paused."))
+                            else:
+                                sendMessage(s, (user + " >> " + returnnp[0]))
 
 
 
 
 
-            except socket.error:
-                print("Socket died")
 
 
-            except socket.timeout:
-                print("Socket timeout")
+
+
+        except socket.error:
+            print("Socket died")
+
+
+        except socket.timeout:
+            print("Socket timeout")
 
 
 
 
 def tick():
     import time
+    song_name = ""
     while True:
         time.sleep(0.3) #Slow down the stupidly fast loop for the sake of CPU
         global nowplaying
         global paused
-        if (nowplaying == True and paused == False):  #Detect when a song is over
-            time.sleep(1)
+
+        if (paused == True or nowplaying == False):
+            writenowplaying(False, "")
+
+        if (nowplaying == True and paused == False):#Detect when a song is over
+            writenowplaying(True, song_name)
+            time.sleep(0.8)
             nptime = int(p.get_time())
             nplength = int(p.get_length())
 
-            if (nptime + 1500) > nplength:
+            if (nptime + 1500) > nplength: #Do this stuff when a song is over
                 time.sleep(0.7)
                 print("Song is over!")
                 global nowplaying
@@ -223,16 +236,22 @@ def tick():
                     if validators.url(songtitle) == True: #TEST IF THE REQUEST IS A LINK
                         if "youtu" in songtitle: #IS IT A YOUTUBE LINK?
                             playurl = YouTube(songtitle).streams.filter(only_audio=True).order_by('abr').first().url #If it is, get the link with the best sound quality thats only audio
+                            song_name = YouTube(songtitle).title
+                            writenowplaying(True, song_name)
                         else:
                             playurl = songtitle
+                            song_name = "Online Music File"
+                            writenowplaying(True, song_name)
                     else:
                         playurl = sr_geturl(songtitle)
-
+                        song_name = sr_gettitle(songtitle)
+                        writenowplaying(True, song_name)
 
                     global p
                     p = vlc.MediaPlayer(playurl)
                     p.play()
                     nowplaying = True
+
                 except:
                     pass #LIST IS EMPTY
 

@@ -1,9 +1,9 @@
 from Socket import *
 from gmusicapi import Mobileclient
 from Initialize import dosqlite
-import validators
 import sys
 from pytube import YouTube
+import validators
 from Settings import MAX_DUPLICATE_SONGS, MAX_REQUESTS_USER
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -25,6 +25,14 @@ else:
     api.oauth_login(device_id=Mobileclient.FROM_MAC_ADDRESS, oauth_credentials="oauth.txt")
 stream_url = ""
 
+def writenowplaying(isPlaying, song_name):
+    with open("nowplaying.txt", "w") as f:
+        if isPlaying == True:
+            f.write(song_name)
+        else:
+            f.truncate()
+
+
 
 def getytkey(url):
     print(url)
@@ -39,8 +47,10 @@ def getytkey(url):
 
 
 
-
-
+def sr_gettitle(song_name):
+    results = Mobileclient.search(api, song_name)
+    top_song_result = results['song_hits'][0]['track']
+    return(top_song_result['artist'] + " - " + top_song_result['title'])
 
 
 def sr_getsong(song_name, user):
