@@ -12,5 +12,5 @@ validators (Used as an easy way to determine if certain strings are URLs)
 
 pytube (Used to get stream URLs and titles from youtube)
 
-vlc (Used to actually play audio)
+python-vlc (Used to actually play audio)
 
