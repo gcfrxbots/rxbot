@@ -30,8 +30,6 @@ Install dependencies by running `Install_Requirements.bat` or by using  `pip ins
 
 - `!clearsong` *(needs documentation)*
 
-- `!time` *(needs documentation)*
-
 - `!volume`, `!volumeup` & `!volumedown` Control the volume
 
 - `!nowplaying` Shows the current playing song
