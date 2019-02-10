@@ -8,7 +8,7 @@ RXBot is a songrequest bot for Twitch using Google Play Music, originally create
 
 ### Dependencies
 
-Install dependencies using `pip install -r requirements.txt`
+Install dependencies by running `Install_Requirements.bat` or by using  `pip install -r requirements.txt` in the bot's directory.
 
 -----
 
