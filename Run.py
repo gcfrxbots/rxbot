@@ -134,7 +134,7 @@ def main():
                     if ("!volumeup" == command):
                         vol = getint(cmdarguments)
                         if vol == None:
-                            vol = 10
+                            vol = 5
                         if (p.audio_get_volume() + vol) > 100:
                             sendMessage(s, "Raised the volume to: 100")
                             p.audio_set_volume(100)
@@ -145,7 +145,7 @@ def main():
                     if ("!volumedown" == command):
                         vol = getint(cmdarguments)
                         if vol == None:
-                            vol = 10
+                            vol = 5
                         if (p.audio_get_volume() - vol) < 0:
                             sendMessage(s, "Lowered the volume to: 0")
                             p.audio_set_volume(0)
@@ -191,13 +191,14 @@ def tick():
 
         if (nowplaying == True and paused == False):#Detect when a song is over
             writenowplaying(True, song_name)
-            time.sleep(0.8)
+            time.sleep(1.1)
             nptime = int(p.get_time())
             nplength = int(p.get_length())
 
             if (nptime + 1500) > nplength: #Do this stuff when a song is over
-                time.sleep(0.7)
+                time.sleep(0.8)
                 print("Song is over!")
+                p.stop()
                 global nowplaying
                 nowplaying = False
 
@@ -211,13 +212,15 @@ def tick():
                 from sqlite3 import Error
                 db = sqlite3.connect('songqueue.db')
                 cursor = db.cursor()
-                cursor.execute('''SELECT id, name, song FROM songs ORDER BY id ASC''') #Pick the top song
+                cursor.execute('''SELECT id, name, song, key FROM songs ORDER BY id ASC''') #Pick the top song
                 row = cursor.fetchone()
                 if row == None: #>>>>>> DO THIS STUFF IF THE LIST IS EMPTY!
                     sendMessage(s, "Queue is empty! Request some more music with !sr")
                     paused = True
 
                 songtitle = row[2]
+                songkey = row[3]
+
 
                 #Delete the top result
                 cursor.execute('SELECT id FROM songs ORDER BY id ASC LIMIT 1')
@@ -226,6 +229,7 @@ def tick():
                 db.commit()
             except Error as e:
                 raise e
+                print e
             except:
                 pass
             finally:
@@ -243,8 +247,9 @@ def tick():
                             song_name = "Online Music File"
                             writenowplaying(True, song_name)
                     else:
-                        playurl = sr_geturl(songtitle)
-                        song_name = sr_gettitle(songtitle)
+                        playurl = sr_geturl(songkey)
+                        songdb = songtitlefilter(songtitle)
+                        song_name = songdb['artist'] + " - " + songdb['title']
                         writenowplaying(True, song_name)
 
                     global p
@@ -252,8 +257,8 @@ def tick():
                     p.play()
                     nowplaying = True
 
-                except:
-                    pass #LIST IS EMPTY
+                except Exception as e:
+                    print e
 
 
 

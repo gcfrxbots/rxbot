@@ -4,7 +4,7 @@ from Initialize import dosqlite
 import sys
 from pytube import YouTube
 import validators
-from Settings import MAX_DUPLICATE_SONGS, MAX_REQUESTS_USER
+from Settings import MAX_DUPLICATE_SONGS, MAX_REQUESTS_USER, BLACKLISTED_SONG_TITLE_CONTENTS
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
@@ -35,13 +35,35 @@ def writenowplaying(isPlaying, song_name):
 
 
 def getytkey(url):
-    print(url)
     if "youtube" in url.lower():
         return(url.split("=")[1][:11])
     elif "youtu.be" in url.lower():
         return(url.split("e/")[1][:11])
     else:
         return None
+
+
+def songtitlefilter(song_name):
+    results = Mobileclient.search(api, song_name)
+    songs = [(results['song_hits'][0]['track']), (results['song_hits'][1]['track']), (results['song_hits'][2]['track'])]
+
+    #Remove things from the blacklist if theyre explicitly requested
+    for term in BLACKLISTED_SONG_TITLE_CONTENTS:
+        if term.lower() in song_name.lower():
+            BLACKLISTED_SONG_TITLE_CONTENTS.remove(term)
+
+    #Iterate through the blacklisted contents, then the songs. Last song standing wins.
+    for term in BLACKLISTED_SONG_TITLE_CONTENTS:
+        if len(songs) == 1:
+            break
+        for song in songs:
+
+            if term.lower() in song['title'].lower():
+                songs.remove(song)
+
+    return songs[0]
+
+
 
 
 
@@ -109,11 +131,10 @@ def sr_getsong(song_name, user):
 
     else:
         try:
-            results = Mobileclient.search(api, song_name)
-            top_song_result = results['song_hits'][0]['track']
+            top_song_result = songtitlefilter(song_name)
             key = top_song_result['storeId']
 
-
+            songtitlefilter(song_name)
 
 
 
@@ -123,7 +144,7 @@ def sr_getsong(song_name, user):
             sendMessage(s, "No results found for that song. Please try a different one.")
             return
         else:
-                #TEST IF ITS ALREADY IN THE QUEUE
+            #TEST IF ITS ALREADY IN THE QUEUE
             sqlcommand = '''SELECT count(*) FROM songs WHERE key="{0}"'''.format(key)
             if dosqlite(sqlcommand)[0] > (MAX_DUPLICATE_SONGS - 1):
                 sendMessage(s, (user + " >> That song is already in the queue."))
@@ -151,11 +172,9 @@ def getnewentry():
 
 
 
-def sr_geturl(songtitle_csv):
+def sr_geturl(songkey):
     try:
-        results = Mobileclient.search(api, songtitle_csv)
-        top_song_result = results['song_hits'][0]['track']
-        stream_url = Mobileclient.get_stream_url(api, top_song_result['storeId'], "3e9ff840362801d4")
+        stream_url = Mobileclient.get_stream_url(api, songkey, "3e9ff840362801d4")
         return(stream_url)
     except:
         sendMessage(s, "There was an issue playing the song.")
