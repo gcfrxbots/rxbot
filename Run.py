@@ -52,6 +52,7 @@ initsqlite()
 
 
 def main():
+    global nowplaying, paused
     s = openSocket()
     joinRoom(s)
     readbuffer = ""
@@ -83,7 +84,6 @@ def main():
                     print(">> " + user + ": " + message)
 
                     if ("!sr" == command):
-                        global nowplaying, paused
                         sr_getsong(cmdarguments, user)
 
 
@@ -172,25 +172,20 @@ def main():
             print("Socket died")
 
 
-        except socket.timeout:
-            print("Socket timeout")
-
-
-
 
 def tick():
     import time
-    song_name = ""
+    global nowplaying, paused
+    songtitle = ""
     while True:
         time.sleep(0.3) #Slow down the stupidly fast loop for the sake of CPU
-        global nowplaying
-        global paused
+
 
         if (paused == True or nowplaying == False):
             writenowplaying(False, "")
 
         if (nowplaying == True and paused == False):#Detect when a song is over
-            writenowplaying(True, song_name)
+            writenowplaying(True, songtitle)
             time.sleep(1.1)
             nptime = int(p.get_time())
             nplength = int(p.get_length())
@@ -217,6 +212,7 @@ def tick():
                 if row == None: #>>>>>> DO THIS STUFF IF THE LIST IS EMPTY!
                     sendMessage(s, "Queue is empty! Request some more music with !sr")
                     paused = True
+                    queueempty = True
 
                 songtitle = row[2]
                 songkey = row[3]
@@ -240,22 +236,21 @@ def tick():
                     if validators.url(songtitle) == True: #TEST IF THE REQUEST IS A LINK
                         if "youtu" in songtitle: #IS IT A YOUTUBE LINK?
                             playurl = YouTube(songtitle).streams.filter(only_audio=True).order_by('abr').first().url #If it is, get the link with the best sound quality thats only audio
-                            song_name = YouTube(songtitle).title
-                            writenowplaying(True, song_name)
+                            songtitle = YouTube(songtitle).title
+                            writenowplaying(True, songtitle)
                         else:
                             playurl = songtitle
-                            song_name = "Online Music File"
-                            writenowplaying(True, song_name)
+                            songtitle = "Online Music File"
+                            writenowplaying(True, songtitle)
                     else:
                         playurl = sr_geturl(songkey)
-                        songdb = songtitlefilter(songtitle)
-                        song_name = songdb['artist'] + " - " + songdb['title']
-                        writenowplaying(True, song_name)
+                        writenowplaying(True, songtitle)
 
                     global p
                     p = vlc.MediaPlayer(playurl)
                     p.play()
                     nowplaying = True
+                    queueempty = False
 
                 except Exception as e:
                     print e

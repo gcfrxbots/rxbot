@@ -44,8 +44,12 @@ def getytkey(url):
 
 
 def songtitlefilter(song_name):
-    results = Mobileclient.search(api, song_name)
-    songs = [(results['song_hits'][0]['track']), (results['song_hits'][1]['track']), (results['song_hits'][2]['track'])]
+    results = (Mobileclient.search(api, song_name)['song_hits'])[:5]
+    songs = []
+
+    for index, item in enumerate(results):
+        songs.append(results[index]['track'])
+
 
     #Remove things from the blacklist if theyre explicitly requested
     for term in BLACKLISTED_SONG_TITLE_CONTENTS:
@@ -56,11 +60,16 @@ def songtitlefilter(song_name):
     for term in BLACKLISTED_SONG_TITLE_CONTENTS:
         if len(songs) == 1:
             break
-        for song in songs:
+        for song in reversed(songs):
 
             if term.lower() in song['title'].lower():
+                print "Removed: " + song['title']
                 songs.remove(song)
 
+
+    for item in songs:
+        print "Allowed: " + item['title']
+    print ">>>>>>Playing: " + songs[0]['title']
     return songs[0]
 
 
@@ -129,13 +138,13 @@ def sr_getsong(song_name, user):
 
 
 
+
+        #GOOGLE PLAY MUSIC STUFF
     else:
         try:
             top_song_result = songtitlefilter(song_name)
             key = top_song_result['storeId']
-
-            songtitlefilter(song_name)
-
+            songtitle = str(top_song_result['artist'] + " - " + top_song_result['title'])
 
 
 
@@ -153,10 +162,10 @@ def sr_getsong(song_name, user):
                 #IF NOT, ADD IT
             sqlcommand = '''
                         INSERT INTO songs(name, song, key)
-                        VALUES("{user}", "{song_name}", "{key}");'''.format(user=user, song_name=song_name, key=key)
+                        VALUES("{user}", "{song_name}", "{key}");'''.format(user=user, song_name=songtitle, key=key)
 
             dosqlite(sqlcommand)
-            sendMessage(s, (user + " >> Added: " + str(top_song_result['artist'] + " - " + top_song_result['title'] + " to the queue. ID: " + getnewentry())))
+            sendMessage(s, (user + " >> Added: " + songtitle + " to the queue. ID: " + getnewentry()))
             return
 
 
