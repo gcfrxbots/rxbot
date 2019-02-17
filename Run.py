@@ -1,5 +1,5 @@
-from Socket import *
-from Initialize import joinRoom, initsqlite
+
+from Initialize import joinRoom, initsqlite, socket
 from SongRequest import *
 import string
 import vlc
@@ -12,6 +12,13 @@ sys.setdefaultencoding('utf-8')
 global nowplaying, paused
 nowplaying = False
 paused = False
+
+#>>>>COMMANDS
+def test():
+    print "WEIIIIIIINER"
+
+
+
 
 
 
@@ -35,7 +42,6 @@ def getint(cmdarguments):
     import re
     try:
         out = int(re.search(r'\d+', cmdarguments).group())
-        print(str(out))
         return out
     except:
         return None
@@ -43,7 +49,6 @@ def getint(cmdarguments):
 def PONG():
     import threading
     s.send(bytes('PONG :tmi.twitch.tv\r\n'))
-    print("PONG SENT!")
     threading.Timer(240, PONG).start()
 PONG()
 
@@ -71,7 +76,6 @@ def main():
 
                 if "PING" in line: #PING detection from twitch. Immediately sends a PONG back with the same content as the line. The PONG() Function is backup.
                     s.send("PONG %s\r\n" % line[1])
-                    print("Got a PING from twitch's servers.")
 
                 else:
                     global user #All these things break apart the given chat message to make things easier to work with.
@@ -86,6 +90,8 @@ def main():
                     if ("!sr" == command):
                         sr_getsong(cmdarguments, user)
 
+                    if ("!addsong" == command):
+                        sr_addsongtoplaylist(cmdarguments)
 
 
                     if ("!pause" in command):
@@ -115,43 +121,23 @@ def main():
                     if ("!clearsong" == command):
                         clearsong(getint(cmdarguments), user)
 
-                    if ("!time" == command):
-                        time = p.get_time()
-                        sendMessage(s, str(time))
+                    if ("!test" == command):
+                        nptime = int(p.get_time())
+                        nplength = int(p.get_length())
+                        sendMessage(s, (str(nplength) + " - " + str(nptime)))
 
 
                     if ("!volume" == command):
-                        vol = getint(cmdarguments)
-                        if vol == None:
-                            sendMessage(s, "Current volume: " + str(p.audio_get_volume()))
-                            break
-                        if vol > 100 or vol < 0:
-                            sendMessage(s, "Invalid volume level. Must be between 0-100.")
-                            break
-                        p.audio_set_volume(vol)
-                        sendMessage(s, "Music volume set to: " + str(vol))
+                        volume(p, getint(cmdarguments))
+
 
                     if ("!volumeup" == command):
-                        vol = getint(cmdarguments)
-                        if vol == None:
-                            vol = 5
-                        if (p.audio_get_volume() + vol) > 100:
-                            sendMessage(s, "Raised the volume to: 100")
-                            p.audio_set_volume(100)
-                            break
-                        sendMessage(s,  "Raised the volume to: " + str(p.audio_get_volume() + vol))
-                        p.audio_set_volume((p.audio_get_volume() + vol))
+                        volumeup(p, getint(cmdarguments))
+
 
                     if ("!volumedown" == command):
-                        vol = getint(cmdarguments)
-                        if vol == None:
-                            vol = 5
-                        if (p.audio_get_volume() - vol) < 0:
-                            sendMessage(s, "Lowered the volume to: 0")
-                            p.audio_set_volume(0)
-                            break
-                        sendMessage(s,  "Lowered the volume to: " + str(p.audio_get_volume() - vol))
-                        p.audio_set_volume((p.audio_get_volume() - vol))
+                        volumedown(p, getint(cmdarguments))
+
                     if ("!nowplaying" == command):
                         with open("nowplaying.txt", "r") as f:
                             returnnp = f.readlines()
@@ -159,7 +145,6 @@ def main():
                                 sendMessage(s, (user + " >> The music is currently paused."))
                             else:
                                 sendMessage(s, (user + " >> " + returnnp[0]))
-
 
 
 
@@ -181,17 +166,33 @@ def tick():
         time.sleep(0.3) #Slow down the stupidly fast loop for the sake of CPU
 
 
+
+
+        import sqlite3 #Open the db, get the song out
+        from sqlite3 import Error
+        db = sqlite3.connect('songqueue.db')
+        cursor = db.cursor()
+        cursor.execute('''SELECT id, name, song, key FROM songs ORDER BY id ASC''') #Pick the top song
+        row = cursor.fetchone()
+        db.close()
+        if row == None: #>>>>>> DO THIS STUFF IF THE LIST IS EMPTY!
+            playfromplaylist()
+
+
+
+
+
         if (paused == True or nowplaying == False):
             writenowplaying(False, "")
 
         if (nowplaying == True and paused == False):#Detect when a song is over
             writenowplaying(True, songtitle)
-            time.sleep(1.1)
+            time.sleep(0.3)
             nptime = int(p.get_time())
             nplength = int(p.get_length())
 
-            if (nptime + 1500) > nplength: #Do this stuff when a song is over
-                time.sleep(0.8)
+            if (nptime + 2300) > nplength: #Do this stuff when a song is over
+                time.sleep(1.6)
                 print("Song is over!")
                 p.stop()
                 global nowplaying
@@ -202,59 +203,44 @@ def tick():
 
         elif paused == False: # When a song is over, start a new song
 
+            db = sqlite3.connect('songqueue.db')
+            cursor = db.cursor()
+            cursor.execute('''SELECT id, name, song, key FROM songs ORDER BY id ASC''') #Pick the top song
+            row = cursor.fetchone()
+
+            songtitle = row[2]
+            songkey = row[3]
+
+            cursor.execute('SELECT id FROM songs ORDER BY id ASC LIMIT 1')
+            row = cursor.fetchone()
+            cursor.execute(('''DELETE FROM songs WHERE id={0}''').format(int(row[0]))) #Delete the top song
+            db.commit()
+            db.close()
+
+
+
             try:
-                import sqlite3 #Open the db, get the song out
-                from sqlite3 import Error
-                db = sqlite3.connect('songqueue.db')
-                cursor = db.cursor()
-                cursor.execute('''SELECT id, name, song, key FROM songs ORDER BY id ASC''') #Pick the top song
-                row = cursor.fetchone()
-                if row == None: #>>>>>> DO THIS STUFF IF THE LIST IS EMPTY!
-                    sendMessage(s, "Queue is empty! Request some more music with !sr")
-                    paused = True
-                    queueempty = True
-
-                songtitle = row[2]
-                songkey = row[3]
-
-
-                #Delete the top result
-                cursor.execute('SELECT id FROM songs ORDER BY id ASC LIMIT 1')
-                row = cursor.fetchone()
-                cursor.execute(('''DELETE FROM songs WHERE id={0}''').format(int(row[0]))) #Delete the top song
-                db.commit()
-            except Error as e:
-                raise e
-                print e
-            except:
-                pass
-            finally:
-                db.close
-
-
-                try:
-                    if validators.url(songtitle) == True: #TEST IF THE REQUEST IS A LINK
-                        if "youtu" in songtitle: #IS IT A YOUTUBE LINK?
-                            playurl = YouTube(songtitle).streams.filter(only_audio=True).order_by('abr').first().url #If it is, get the link with the best sound quality thats only audio
-                            songtitle = YouTube(songtitle).title
-                            writenowplaying(True, songtitle)
-                        else:
-                            playurl = songtitle
-                            songtitle = "Online Music File"
-                            writenowplaying(True, songtitle)
-                    else:
-                        playurl = sr_geturl(songkey)
+                if validators.url(songtitle) == True: #TEST IF THE REQUEST IS A LINK
+                    if "youtu" in songtitle: #IS IT A YOUTUBE LINK?
+                        playurl = YouTube(songtitle).streams.filter(only_audio=True).order_by('abr').first().url #If it is, get the link with the best sound quality thats only audio
+                        songtitle = YouTube(songtitle).title
                         writenowplaying(True, songtitle)
+                    else:
+                        playurl = songtitle
+                        songtitle = "Online Music File"
+                        writenowplaying(True, songtitle)
+                else:
+                    playurl = sr_geturl(songkey)
+                    writenowplaying(True, songtitle)
 
-                    global p
-                    p = vlc.MediaPlayer(playurl)
-                    p.play()
-                    nowplaying = True
-                    queueempty = False
+                global p
+                p = vlc.MediaPlayer(playurl)
+                p.play()
+                nowplaying = True
 
-                except Exception as e:
-                    print e
 
+            except Exception as e:
+                print e
 
 
 

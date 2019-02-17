@@ -1,9 +1,28 @@
 import string
-
-from Socket import sendMessage
+import socket
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
+
+
+from Settings import *
+
+def openSocket():
+
+    s = socket.socket()
+    s.connect((HOST, PORT))
+    s.send("PASS " + BOT_OAUTH + "\r\n")
+    s.send("NICK " + BOT_NAME + "\r\n")
+    s.send("JOIN #" + CHANNEL + "\r\n")
+    return s
+
+
+def sendMessage(s, message):
+    messageTemp = "PRIVMSG #" + CHANNEL + " :"  + message
+    s.send(messageTemp + "\r\n")
+    print("Sent: " + messageTemp)
+
+
 def joinRoom(s):
     readbuffer = ""
     Loading = True
@@ -36,20 +55,6 @@ def initsqlite():
         db = sqlite3.connect("songqueue.db")
     except Error as e:
         print(e)
-
-    #initalize the tables
-
-    try:
-        cursor = db.cursor()
-        cursor.execute ('''
-		CREATE TABLE songs(id INTEGER PRIMARY KEY, name TEXT, song TEXT, key TEXT)
-	''')
-        db.commit()
-    except Error as e:
-        db.rollback()
-        print(e)
-    finally:
-        db.close()
 
 def dosqlite(command):
     import sqlite3
