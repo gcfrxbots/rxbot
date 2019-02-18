@@ -208,8 +208,12 @@ def tick():
             cursor.execute('''SELECT id, name, song, key FROM songs ORDER BY id ASC''') #Pick the top song
             row = cursor.fetchone()
 
-            songtitle = row[2]
-            songkey = row[3]
+            try:
+                songtitle = row[2]
+                songkey = row[3]
+            except:
+                print(">>>>>>BACKUP PLAYLIST IS EMPTY! ADD SOME SONGS TO IT WITH FillPlaylist.py or !addsong !!!! <<<<<<<<<<<<<<<<")
+                return
 
             cursor.execute('SELECT id FROM songs ORDER BY id ASC LIMIT 1')
             row = cursor.fetchone()

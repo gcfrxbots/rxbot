@@ -410,9 +410,12 @@ def playfromplaylist():
     row = cursor.fetchone()
     if row == None: #>>>>>> DO THIS STUFF IF THE LIST IS EMPTY!
         print "Backup Playlist is empty!"
-
-    songtitle = row[1]
-    songkey = row[2]
+    try:
+        songtitle = row[1]
+        songkey = row[2]
+    except:
+        print(">>>>>>BACKUP PLAYLIST IS EMPTY! ADD SOME SONGS TO IT WITH FillPlaylist.py or !addsong !!!! <<<<<<<<<<<<<<<<")
+        return
 
 
     #Delete the top result
