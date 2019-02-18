@@ -1,5 +1,6 @@
 
 from Initialize import joinRoom, initsqlite, socket
+from Settings import SHUFFLE_ON_START
 from SongRequest import *
 import string
 import vlc
@@ -12,6 +13,33 @@ sys.setdefaultencoding('utf-8')
 global nowplaying, paused
 nowplaying = False
 paused = False
+
+
+
+if SHUFFLE_ON_START == True:
+    from random import shuffle
+    import sqlite3
+
+    db = sqlite3.connect('songqueue.db')
+    cursor = db.cursor()
+    cursor.execute('''SELECT * FROM playlist ORDER BY RANDOM()''')
+    listSongs = cursor.fetchall()
+    shuffle(listSongs)
+    sqlcommand = '''DELETE FROM playlist'''
+    cursor.execute(sqlcommand)
+    for item in listSongs:
+        sqlcommand = '''
+                        INSERT INTO playlist(song, key)
+                        VALUES("{song_name}", "{key}");'''.format(song_name=item[1], key=item[2])
+        cursor.execute(sqlcommand)
+    db.commit()
+    db.close()
+    print(">> Backup Playlist has been shuffled.")
+
+
+
+
+
 
 #>>>>COMMANDS
 def test():
