@@ -16,24 +16,25 @@ Install dependencies by running `Install_Requirements.bat` or by using  `pip ins
 
 ### Commands
 
-- `!sr` Makes a song request
+- `!sr (or !songrequest)` Makes a song request. May be a search query for a song, a youtube link, or a link to an audio file online.
 
 - `!pause` Pauses the music
 
 - `!play` Plays the music
 
-- `!clearqueue` Clears the current queue
+- `!veto` Skips to the next song
 
-- `!veto` Stops the music
+- `!wrongsong (#)` Removes the last request from the queue, or the specified ID. May only modify your own requests.
 
-- `!wrongsong` Allows user to undo last request
+- `!volume `, `!volumeup` & `!volumedown` Control the volume. May specify a value for more specific adjustments.
 
-- `!clearsong` *(needs documentation)*
+- `!nowplaying` Shows the current playing song. This will read exactly what is in nowplaying.txt
 
-- `!volume`, `!volumeup` & `!volumedown` Control the volume
+- `!clearqueue` [MOD] Clears the song queue
 
-- `!nowplaying` Shows the current playing song
+- `!clearsong` [MOD] - Functionally identical to wrongsong, but may target any user's requests.
 
+- `!addsong` [MOD] Functionally identical to sr, but adds songs to the backup playlist rather than the queue.
 -----
 
 ### Get in touch
