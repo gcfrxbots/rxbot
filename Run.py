@@ -223,6 +223,7 @@ def tick():
                 time.sleep(1.6)
                 print("Song is over!")
                 p.stop()
+
                 global nowplaying
                 nowplaying = False
 

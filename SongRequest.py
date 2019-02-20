@@ -11,7 +11,6 @@ sys.setdefaultencoding('utf-8')
 s = openSocket()
 api = Mobileclient()
 #Now using the newer oauth login!
-
 api.oauth_login(device_id=Mobileclient.FROM_MAC_ADDRESS, oauth_credentials="oauth.txt")
 
 
@@ -42,24 +41,26 @@ def getytkey(url):
 
 
 def songtitlefilter(song_name):
+    blacklist = BLACKLISTED_SONG_TITLE_CONTENTS[:]
+
     results = (Mobileclient.search(api, song_name)['song_hits'])[:SONGBLSIZE]
     songs = []
 
-    for index, item in enumerate(results):
-        songs.append(results[index]['track'])
-
+    for item in results:
+        songs.append(item['track'])
 
     #Remove things from the blacklist if theyre explicitly requested
-    for term in BLACKLISTED_SONG_TITLE_CONTENTS:
+    for term in blacklist:
         if term.lower() in song_name.lower():
-            BLACKLISTED_SONG_TITLE_CONTENTS.remove(term)
+            blacklist.remove(term)
 
     #Iterate through the blacklisted contents, then the songs. Last song standing wins.
-    for term in BLACKLISTED_SONG_TITLE_CONTENTS:
+    for term in blacklist:
         if len(songs) == 1:
             break
         for song in reversed(songs):
-
+            if len(songs) == 1:
+                break
             if term.lower() in song['title'].lower():
                 print ">Removed: " + song['title']
                 songs.remove(song)
