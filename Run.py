@@ -116,6 +116,7 @@ def main():
                     print(">> " + user + ": " + message)
 
                     if ("!sr" == command):
+                        reqcache = command
                         sr_getsong(cmdarguments, user)
 
                     if ("!addsong" == command):
@@ -145,10 +146,17 @@ def main():
                     if ("!wrongsong" == command):
                         wrongsong(getint(cmdarguments), user)
 
+                    #if ("!srredo" == command):
+                    #    try:
+                    #        srredo(reqcache, user)
+                    #    except:
+                    #        sendMessage(s, "You haven't requested anything recently.")
 
                     if ("!clearsong" == command):
                         clearsong(getint(cmdarguments), user)
 
+                    if ("!wrongplaylistsong" == command):
+                        wrongplsong(user)
                     if ("!test" == command):
                         nptime = int(p.get_time())
                         nplength = int(p.get_length())
@@ -187,6 +195,7 @@ def main():
 
 
 def tick():
+    timecache = 0
     import time
     global nowplaying, paused
     songtitle = ""
@@ -217,15 +226,18 @@ def tick():
             writenowplaying(True, songtitle)
             time.sleep(0.3)
             nptime = int(p.get_time())
-            nplength = int(p.get_length())
+            #nplength = int(p.get_length())
 
-            if (nptime + 2300) > nplength: #Do this stuff when a song is over
-                time.sleep(1.6)
+            if timecache == nptime:
                 print("Song is over!")
+                time.sleep(DELAY_BETWEEN_SONGS)
                 p.stop()
-
                 global nowplaying
                 nowplaying = False
+
+            timecache = nptime
+
+
 
 
 

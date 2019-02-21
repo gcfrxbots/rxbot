@@ -40,7 +40,7 @@ def getytkey(url):
         return None
 
 
-def songtitlefilter(song_name):
+def songtitlefilter(song_name, redo):
     blacklist = BLACKLISTED_SONG_TITLE_CONTENTS[:]
 
     results = (Mobileclient.search(api, song_name)['song_hits'])[:SONGBLSIZE]
@@ -69,7 +69,12 @@ def songtitlefilter(song_name):
     for item in songs:
         print ">>>Allowed: " + item['title']
     print ">>>>>>Playing: " + songs[0]['title']
-    return songs[0]
+    return songs[redo]
+
+
+
+#def srredo(song, user):
+#    wrongsong(None, user)
 
 
 
@@ -90,14 +95,6 @@ def removetopqueue():
     else:
         db.close()
         return False
-
-
-
-
-#def sr_gettitle(song_name):
-#    results = Mobileclient.search(api, song_name)
-#    top_song_result = results['song_hits'][0]['track']
-#    return(top_song_result['artist'] + " - " + top_song_result['title'])
 
 
 
@@ -129,6 +126,7 @@ def sr_addsongtoplaylist(song_name):
                 return
 
 
+
             #TEST IF ITS ALREADY IN THE QUEUE
             sqlcommand = '''SELECT count(*) FROM playlist WHERE key="{0}"'''.format(key)
             if dosqlite(sqlcommand)[0] > (MAX_DUPLICATE_SONGS - 1):
@@ -156,7 +154,7 @@ def sr_addsongtoplaylist(song_name):
 
 
     try:
-        top_song_result = songtitlefilter(song_name)
+        top_song_result = songtitlefilter(song_name, 0)
         key = top_song_result['storeId']
         songtitle = str(top_song_result['artist'] + " - " + top_song_result['title'])
 
@@ -265,7 +263,7 @@ def sr_getsong(song_name, user):
         #GOOGLE PLAY MUSIC STUFF
     else:
         try:
-            top_song_result = songtitlefilter(song_name)
+            top_song_result = songtitlefilter(song_name, 0)
             key = top_song_result['storeId']
             songtitle = str(top_song_result['artist'] + " - " + top_song_result['title'])
 
@@ -311,6 +309,24 @@ def sr_geturl(songkey):
         return(stream_url)
     except:
         sendMessage(s, "There was an issue playing the song.")
+
+def wrongplsong(user):
+    import sqlite3
+    db = sqlite3.connect('songqueue.db')
+    cursor = db.cursor()
+    try:
+        cursor.execute('SELECT id, song FROM playlist ORDER BY id DESC LIMIT 1')
+        result = cursor.fetchone()
+        toremove = str(result[0])
+        strresult = (str(result[1]))
+        cursor.execute('DELETE FROM playlist WHERE id={0}'.format(toremove))
+        db.commit()
+        sendMessage(s, (user + ' >> Removed your request: "' + strresult + '" from the queue.'))
+    except Exception as e:
+        print e
+        sendMessage(s, "Couldn't find your most recent request.")
+
+    db.close
 
 
 def wrongsong(songid, user):
