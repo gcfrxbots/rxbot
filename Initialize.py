@@ -3,9 +3,12 @@ import socket
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
-
-
 from Settings import *
+
+
+
+
+
 
 def openSocket():
 
@@ -72,3 +75,18 @@ def dosqlite(command):
         db.close
 
 
+
+
+
+def getmoderators():
+    import urllib, json
+    json_url = urllib.urlopen('http://tmi.twitch.tv/group/user/' + CHANNEL + '/chatters')
+
+    data = json.loads(json_url.read())
+    mods = data['chatters']['moderators']
+
+    for item in mods:
+        if mods not in MODERATORS:
+            MODERATORS.append(item)
+
+    return MODERATORS

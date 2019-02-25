@@ -1,6 +1,5 @@
 
-from Initialize import joinRoom, initsqlite, socket
-from Settings import SHUFFLE_ON_START
+from Initialize import joinRoom, initsqlite, socket, getmoderators
 from SongRequest import *
 import string
 import vlc
@@ -42,10 +41,6 @@ if SHUFFLE_ON_START == True:
 
 
 #>>>>COMMANDS
-def test():
-    print "WEIIIIIIINER"
-
-
 
 
 
@@ -116,32 +111,46 @@ def main():
                     print(">> " + user + ": " + message)
 
                     if ("!sr" == command):
-                        reqcache = command
                         sr_getsong(cmdarguments, user)
 
                     if ("!addsong" == command):
-                        sr_addsongtoplaylist(cmdarguments)
+                        if (user in getmoderators()):
+                            sr_addsongtoplaylist(cmdarguments)
+                        else:
+                            sendMessage(s, "You don't have permission to do this.")
 
 
                     if ("!pause" in command):
-                        p.set_pause(True)
-                        nowplaying = False
-                        paused = True
+                        if (user in getmoderators()):
+                            p.set_pause(True)
+                            nowplaying = False
+                            paused = True
+                        else:
+                            sendMessage(s, "You don't have permission to do this.")
 
                     if ("!play" == command):
-                        p.set_pause(False)
-                        nowplaying = True
-                        paused = False
+                        if (user in getmoderators()):
+                            p.set_pause(False)
+                            nowplaying = True
+                            paused = False
+                        else:
+                            sendMessage(s, "You don't have permission to do this.")
 
                     if ("!clearqueue" == command):
-                        sendMessage(s, "Cleared the song request queue.")
-                        dosqlite('''DELETE FROM songs''')
+                        if (user in getmoderators()):
+                            sendMessage(s, "Cleared the song request queue.")
+                            dosqlite('''DELETE FROM songs''')
+                        else:
+                            sendMessage(s, "You don't have permission to do this.")
 
                     if ("!veto" in command):
-                        sendMessage(s, "Song Vetoed.")
-                        p.stop()
-                        paused = False
-                        nowplaying = False
+                        if (user in getmoderators()):
+                            sendMessage(s, "Song Vetoed.")
+                            p.stop()
+                            paused = False
+                            nowplaying = False
+                        else:
+                            sendMessage(s, "You don't have permission to do this.")
 
                     if ("!wrongsong" == command):
                         wrongsong(getint(cmdarguments), user)
@@ -153,10 +162,17 @@ def main():
                     #        sendMessage(s, "You haven't requested anything recently.")
 
                     if ("!clearsong" == command):
-                        clearsong(getint(cmdarguments), user)
+                        if (user in getmoderators()):
+                            clearsong(getint(cmdarguments), user)
+                        else:
+                            sendMessage(s, "You don't have permission to do this.")
 
                     if ("!wrongplaylistsong" == command):
-                        wrongplsong(user)
+                        if (user in getmoderators()):
+                            wrongplsong(user)
+                        else:
+                            sendMessage(s, "You don't have permission to do this.")
+
                     if ("!test" == command):
                         nptime = int(p.get_time())
                         nplength = int(p.get_length())
@@ -164,15 +180,22 @@ def main():
 
 
                     if ("!volume" == command):
-                        volume(p, getint(cmdarguments))
-
+                        if (user in getmoderators()):
+                            volume(p, getint(cmdarguments))
+                        else:
+                            sendMessage(s, "You don't have permission to do this.")
 
                     if ("!volumeup" == command):
-                        volumeup(p, getint(cmdarguments))
-
+                        if (user in getmoderators()):
+                            volumeup(p, getint(cmdarguments))
+                        else:
+                            sendMessage(s, "You don't have permission to do this.")
 
                     if ("!volumedown" == command):
-                        volumedown(p, getint(cmdarguments))
+                        if (user in getmoderators()):
+                            volumedown(p, getint(cmdarguments))
+                        else:
+                            sendMessage(s, "You don't have permission to do this.")
 
                     if ("!nowplaying" == command):
                         with open("nowplaying.txt", "r") as f:
