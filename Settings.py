@@ -11,13 +11,13 @@ HOST = "irc.twitch.tv"
 PORT = 80
 #Use whatever port is open on your network. If this doesn't work, try 443
 
-BOT_OAUTH = "oauth:5jz0y31vg95pq81eym5osr2gqcaswl"
+BOT_OAUTH = ""
 #To get this Oauth, head to https://twitchapps.com/tmi/ and log in with YOUR BOT'S ACCOUNT!
 
-BOT_NAME = "the_rxbot"
+BOT_NAME = ""
 #The name of your bot (Lowercase)
 
-CHANNEL = "rxbots"
+CHANNEL = ""
 #The name of the channel you are connecting to (Lowercase)
 
 '''-------------------->>SONGREQUEST<<--------------------'''
@@ -25,12 +25,12 @@ CHANNEL = "rxbots"
 MAX_DUPLICATE_SONGS = 1
 #This is the maximum amount of duplicate songs that can be in the queue. Leave 1 to only have one of each song in the queue at once.
 
-MAX_REQUESTS_USER = 50
+MAX_REQUESTS_USER = 10
 #This is the maximum amount of songs that a user may request. Ranks coming soon.
 
 SONGBLSIZE = 8
 #This is how many songs are loaded into the sorter and checked to see if they get affected by the blacklist.
-#If you often get "Can't find this song," increase this by one or two. If you want GPM song requests to load faster, drop this to 3.
+#If you often get "Can't find this song," increase this by one or two. If you want GPM song requests to load faster, drop this to 3 or 5.
 # 1 disables the blacklist entirely.
 
 SHUFFLE_ON_START = True
@@ -58,7 +58,7 @@ BLACKLISTED_SONG_TITLE_CONTENTS = [
 '''-------------------->>GENERAL<<--------------------'''
 
 MODERATORS = [
-    "rxbots",
+    CHANNEL,
 
 ]
 #These are people listed as moderators within the bot. It will automatically pull in moderators from chat as mods as well, but you can define mods here that have mod perms in the bot and not in chat.
