@@ -329,7 +329,8 @@ def tick():
                 p.play()
                 nowplaying = True
 
-                hotkeys()
+                if ENABLE_HOTKEYS:
+                    hotkeys()
             except Exception as e:
                 print e
 
