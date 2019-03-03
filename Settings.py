@@ -62,6 +62,7 @@ MODERATORS = [
 
 
 '''-------------------->>HOTKEYS<<--------------------'''
+ENABLE_HOTKEYS = True #If this is set to true, you'll need to have something in all the hotkey options below.
 HK_VOLUP = "ctrl+q"    #Volume Up
 HK_VOLDN = "ctrl+a"    #Volume Down
 HK_PAUSE = "ctrl+p"    #Toggle play/pause the music
