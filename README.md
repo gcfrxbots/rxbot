@@ -12,6 +12,8 @@ Python 2.7 and PIP are needed. Python 2.7.9 includes both, download here: https:
 
 Install dependencies by running `Install_Requirements.bat` or by using  `pip install -r requirements.txt` in the bot's directory.
 
+VLC Media Player must also be installed, but does not have to be running. Download here: https://www.videolan.org/vlc/index.html
+
 -----
 
 ### Commands
@@ -26,9 +28,9 @@ Install dependencies by running `Install_Requirements.bat` or by using  `pip ins
 
 - `!wrongsong (#)` Removes the last request from the queue, or the specified ID. May only modify your own requests.
 
-- `!volume `, `!volumeup` & `!volumedown` Control the volume. May specify a value for more specific adjustments.
-
 - `!nowplaying` Shows the current playing song. This will read exactly what is in nowplaying.txt
+
+- `!volume `, `!volumeup` & `!volumedown` [MOD] Control the volume. May specify a value for more specific adjustments.
 
 - `!clearqueue` [MOD] Clears the song queue
 
