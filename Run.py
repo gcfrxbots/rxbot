@@ -4,18 +4,37 @@ from SongRequest import *
 import string
 import vlc
 from threading import Thread
+import keyboard
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
 
+'''INITALIZE EVERYTHING
+All this stuff up here runs when the script first runs and is the init code.'''
+
 global nowplaying, paused
 nowplaying = False
 paused = False
+initsqlite()
+
+def test():
+    print "WORKED!"
 
 
+def hotkeys():
+    keyboard.add_hotkey(HK_VOLUP, volumeup, args=(p, None))
+    keyboard.unhook_all_hotkeys() #Currently the best way to allow the hotkeys access to the p. class is to redefine them every time a new song is played.
 
-if SHUFFLE_ON_START == True:
+    keyboard.add_hotkey(HK_VOLUP, volumeup, args=(p, None))
+    keyboard.add_hotkey(HK_VOLDN, volumedown, args=(p, None))
+
+    keyboard.add_hotkey(HK_PAUSE, togglepause)
+    keyboard.add_hotkey(HK_VETO, veto)
+
+    keyboard.add_hotkey(HK_CLRSONG, clearsong, args=(None, "STREAMER"))
+
+if SHUFFLE_ON_START == True: #Playlist Shuffler
     from random import shuffle
     import sqlite3
 
@@ -36,29 +55,16 @@ if SHUFFLE_ON_START == True:
     print(">> Backup Playlist has been shuffled.")
 
 
-
-
-
-
-#>>>>COMMANDS
-
-
-
+'''END INIT'''
 
 def getUser(line):
     seperate = line.split(":", 2)
     user = seperate[1].split("!", 1)[0]
     return user
-
-
-
 def getMessage(line):
     seperate = line.split(":", 2)
     message = seperate[2]
     return message
-
-
-
 
 
 def getint(cmdarguments):
@@ -75,8 +81,33 @@ def PONG():
     threading.Timer(240, PONG).start()
 PONG()
 
-p = vlc.MediaPlayer()
-initsqlite()
+
+def togglepause():
+    if paused == True:
+        play()
+    elif paused == False:
+        pause()
+
+def play():
+    print "Resumed the music"
+    global nowplaying, paused, p
+    p.set_pause(False)
+    nowplaying = True
+    paused = False
+
+def pause():
+    print "Paused the music"
+    global nowplaying, paused, p
+    p.set_pause(True)
+    nowplaying = False
+    paused = True
+
+def veto():
+    print "Veto'ed the playing track"
+    global nowplaying, paused, p
+    p.stop()
+    paused = False
+    nowplaying = False
 
 
 def main():
@@ -122,17 +153,13 @@ def main():
 
                     if ("!pause" in command):
                         if (user in getmoderators()):
-                            p.set_pause(True)
-                            nowplaying = False
-                            paused = True
+                            pause()
                         else:
                             sendMessage(s, "You don't have permission to do this.")
 
                     if ("!play" == command):
                         if (user in getmoderators()):
-                            p.set_pause(False)
-                            nowplaying = True
-                            paused = False
+                            play()
                         else:
                             sendMessage(s, "You don't have permission to do this.")
 
@@ -146,9 +173,7 @@ def main():
                     if ("!veto" in command):
                         if (user in getmoderators()):
                             sendMessage(s, "Song Vetoed.")
-                            p.stop()
-                            paused = False
-                            nowplaying = False
+                            veto()
                         else:
                             sendMessage(s, "You don't have permission to do this.")
 
@@ -163,7 +188,7 @@ def main():
 
                     if ("!clearsong" == command):
                         if (user in getmoderators()):
-                            clearsong(getint(cmdarguments), user)
+                            sendMessage(s, clearsong(getint(cmdarguments), user))
                         else:
                             sendMessage(s, "You don't have permission to do this.")
 
@@ -187,13 +212,13 @@ def main():
 
                     if ("!volumeup" == command):
                         if (user in getmoderators()):
-                            volumeup(p, getint(cmdarguments))
+                            sendMessage(s, volumeup(p, getint(cmdarguments)))
                         else:
                             sendMessage(s, "You don't have permission to do this.")
 
                     if ("!volumedown" == command):
                         if (user in getmoderators()):
-                            volumedown(p, getint(cmdarguments))
+                            sendMessage(s, volumedown(p, getint(cmdarguments)))
                         else:
                             sendMessage(s, "You don't have permission to do this.")
 
@@ -229,7 +254,6 @@ def tick():
 
 
         import sqlite3 #Open the db, get the song out
-        from sqlite3 import Error
         db = sqlite3.connect('songqueue.db')
         cursor = db.cursor()
         cursor.execute('''SELECT id, name, song, key FROM songs ORDER BY id ASC''') #Pick the top song
@@ -249,7 +273,6 @@ def tick():
             writenowplaying(True, songtitle)
             time.sleep(0.3)
             nptime = int(p.get_time())
-            #nplength = int(p.get_length())
 
             if timecache == nptime:
                 print("Song is over!")
@@ -306,7 +329,7 @@ def tick():
                 p.play()
                 nowplaying = True
 
-
+                hotkeys()
             except Exception as e:
                 print e
 

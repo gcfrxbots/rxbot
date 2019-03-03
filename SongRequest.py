@@ -484,19 +484,24 @@ def volumeup(p, vol):
     if vol == None:
         vol = 5
     if (p.audio_get_volume() + vol) > 100:
-        sendMessage(s, "Raised the volume to: 100")
         p.audio_set_volume(100)
-        return
-    sendMessage(s,  "Raised the volume to: " + str(p.audio_get_volume() + vol))
+        print "Raised the volume to: 100"
+        return "Raised the volume to: 100"
     p.audio_set_volume((p.audio_get_volume() + vol))
+    print ("Raised the volume to: " + str(p.audio_get_volume() + vol))
+    return  ("Raised the volume to: " + str(p.audio_get_volume() + vol))
+
 
 def volumedown(p, vol):
     if vol == None:
         vol = 5
     if (p.audio_get_volume() - vol) < 0:
-        sendMessage(s, "Lowered the volume to: 0")
+
         p.audio_set_volume(0)
-        return
-    sendMessage(s,  "Lowered the volume to: " + str(p.audio_get_volume() - vol))
+        print "Lowered the volume to: 0"
+        return "Lowered the volume to: 0"
     p.audio_set_volume((p.audio_get_volume() - vol))
+    print "Lowered the volume to: " + str(p.audio_get_volume() - vol)
+    return "Lowered the volume to: " + str(p.audio_get_volume() - vol)
+
 
