@@ -1,5 +1,5 @@
 
-from Initialize import joinRoom, initsqlite, socket, getmoderators
+from Initialize import joinRoom, initsqlite, socket, getmoderators, createqueuecsv
 from SongRequest import *
 import string
 import vlc
@@ -328,6 +328,7 @@ def tick():
                 p = vlc.MediaPlayer(playurl)
                 p.play()
                 nowplaying = True
+                createqueuecsv()
 
                 if ENABLE_HOTKEYS:
                     hotkeys()

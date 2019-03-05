@@ -13,7 +13,7 @@ from Settings import *
 def openSocket():
 
     s = socket.socket()
-    s.connect((HOST, PORT))
+    s.connect(("irc.twitch.tv", PORT))
     s.send("PASS " + BOT_OAUTH + "\r\n")
     s.send("NICK " + BOT_NAME + "\r\n")
     s.send("JOIN #" + CHANNEL + "\r\n")
@@ -67,7 +67,10 @@ def dosqlite(command):
         cursor = db.cursor()
         cursor.execute(command)
         db.commit()
-        return cursor.fetchone()
+        data = cursor.fetchone()
+        db.close()
+        createqueuecsv()
+        return data
     except Error as e:
         db.rollback()
         print e
@@ -75,6 +78,24 @@ def dosqlite(command):
         db.close
 
 
+
+def createqueuecsv():
+    import sqlite3, csv
+    from SongRequest import removetopqueue
+    try: removetopqueue()
+    except: pass
+
+    db = sqlite3.connect('songqueue.db')
+    cursor = db.cursor()
+    data = cursor.execute("SELECT id, name, song FROM songs")
+
+
+    with open('SongQueue.csv', 'wb') as f:
+        writer = csv.writer(f)
+        writer.writerow(['ID', 'Requested By', 'Song Title / Youtube URL'])
+        writer.writerows(data)
+
+    db.close()
 
 
 

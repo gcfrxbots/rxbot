@@ -92,9 +92,10 @@ def removetopqueue():
         cursor.execute(('''DELETE FROM songs WHERE id={0}''').format(int(row[0]))) #Delete the top song
         db.commit()
         db.close()
-    else:
-        db.close()
-        return False
+        return
+
+    db.close()
+    return False
 
 
 
@@ -448,16 +449,6 @@ def playfromplaylist():
 
 
 
-    #p = vlc.MediaPlayer(playurl)
-    #p.play()
-
-    #except Exception as e:
-    #    print e
-
-
-
-
-
 
 
 
@@ -482,7 +473,7 @@ def volume(p, vol):
 
 def volumeup(p, vol):
     if vol == None:
-        vol = 5
+        vol = VOL_INCREMENT
     if (p.audio_get_volume() + vol) > 100:
         p.audio_set_volume(100)
         print "Raised the volume to: 100"
@@ -494,7 +485,7 @@ def volumeup(p, vol):
 
 def volumedown(p, vol):
     if vol == None:
-        vol = 5
+        vol = VOL_INCREMENT
     if (p.audio_get_volume() - vol) < 0:
 
         p.audio_set_volume(0)
