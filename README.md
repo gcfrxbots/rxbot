@@ -125,13 +125,13 @@ Note that every song in the queue has an ID, which can be used in other commands
 **A:** At the moment, yes. We do plan to add normal commands later on though, so stay tuned!
 
 ## Credits and Stuff
-[**Rxbots**](https://www.twitch.tv/rxbots) - Sole creator of the bot. 
+[**Rxbots**](https://www.twitch.tv/rxbots) - Sole creator of the bot.
+
+[**iCeCoCaCoLa64**](https://www.twitch.tv/icecocacola64) - Ideas, motivation, testing, and documentation (hi there 👋🏻).
 
 [**Grrenix**](https://www.twitch.tv/Grrenix) - Coding help and motivation.
 
 [**kc0zhq**](https://www.twitch.tv/kc0zhq) - Coding help and motivation.
-
-[**iCeCoCaCoLa64**](https://www.twitch.tv/icecocacola64) - Ideas, motivation, and documentation (hi there 👋🏻).
 
 **StreamLabs Chatbot** - For becoming such ungodly amounts of terrible that you inspired a random college student to become a coding God.
 
