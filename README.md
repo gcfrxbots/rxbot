@@ -99,6 +99,8 @@ Note that every song in the queue has an ID, which can be used in other commands
 
 `!wrongsong` || If a user requests a song, but the search does not yield the correct song, the user can type this command to remove the last song they requested from the queue. They can also add a song ID after the command, if they wish to remove one of their requests that isn't the most recent one. For example, `!wrongsong 7` will remove song 7 from the queue, assuming the same user requested it.
 
+`!wrongplaylistsong` **(Mod Only)** || Like `!wrongsong`, but removes the most recent song added via `!addsong`.
+
 `!clearsong` **(Mod Only)** || Removes the last song added to the queue, regardless of who requested it. Can also add a song ID after the command, if they wish to remove a song besides the most recent one. For example: `!clearsong 7` will remove song 7 from the queue.
 
 `!volume` **(Mod Only)** || Doing the command by itself will display the current music volume in chat. Adding a number after the command will set the volume to that number. For example: `!volume 75` will set the volume to 75 (out of 100).
