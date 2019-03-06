@@ -34,7 +34,7 @@ The **Settings.py** file is where you can adjust your personal settings for the 
 
 ##### BOT
 
-`PORT = 80` || The bot connects to Twitch through this port. 80 will already be open on most networks, so that is the default setting. If 80 doesn't work, try 443.
+#`PORT = 80` || The bot connects to Twitch through this port. 80 will already be open on most networks, so that is the default setting. If 80 doesn't work, try 443.
 
 `BOT_OAUTH = ""` || This is your bot's Twitch OAuth token. To put it simply, it's a password that only *this bot* can use to sign into your bot's Twitch account. [Click here to generate your oauth token](https://twitchapps.com/tmi/) (make sure you sign in with ***your bot's account,*** not your own). Once it's generated, copy it and paste it between the quotes.
 
@@ -90,7 +90,7 @@ This is a list of commands for the bot, which users will type into Twitch chat:
 `!sr` or `!songrequest` || This is the command users will type to request songs. They type the command, then the song they want to request.  
 **Google Play Music:** Following the command with a search term will add the song from Google Play Music. For example:`!sr Ginuwine Pony` will search "Ginuwine Pony" on Google Play Music, and add the best result. Users can also add their own blacklisted terms to their search by putting a hyphen before the word they wish to exclude. For example: `!sr Ginuwine Pony -remix` will look up "Ginuwine Pony" on Google Play Music, but will exclude all search results containing the word "Remix" in the title.   
 **Youtube:** Instead of looking up a song, users can instead paste a Youtube link. For example: `!sr https://www.youtube.com/watch?v=lbnoG2dsUk0`  
-**Uploaded Music File:** If you upload a music file (.mp3, .wav, etc.) to the internet and can get a direct streaming link to it, you can request that as well. For example: You can upload your song file to a website like [Instaudio](https://instaud.io/), then request the song with the direct streaming link, like so: `!sr https://instaud.io/_/3nOe.mp3`
+**Uploaded Music File:** If you upload a music file (.mp3, .wav, etc.) to the internet and can get a direct streaming link to it, you can request that as well. For example: You can upload your song file to a website like [Instaudio](https://instaud.io/), then request the song with the direct streaming link, like so: `!sr https://instaud.io/_/3nOe.mp3`  
 Note that every song in the queue has an ID, which can be used in other commands. This ID is *not* based on the song's current position in the queue, and does not change.
 
 `!addsong` **(Mod Only)** || Like `!sr`, but adds the song to the backup playlist rather than the song request queue.
