@@ -34,7 +34,7 @@ The **Settings.py** file is where you can adjust your personal settings for the 
 
 ##### BOT
 
-#`PORT = 80` || The bot connects to Twitch through this port. 80 will already be open on most networks, so that is the default setting. If 80 doesn't work, try 443.
+`PORT = 80` || The bot connects to Twitch through this port. 80 will already be open on most networks, so that is the default setting. If 80 doesn't work, try 443.
 
 `BOT_OAUTH = ""` || This is your bot's Twitch OAuth token. To put it simply, it's a password that only *this bot* can use to sign into your bot's Twitch account. [Click here to generate your oauth token](https://twitchapps.com/tmi/) (make sure you sign in with ***your bot's account,*** not your own). Once it's generated, copy it and paste it between the quotes.
 
