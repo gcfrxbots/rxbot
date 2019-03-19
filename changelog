@@ -1,0 +1,19 @@
+VERSION 2.0
+
+Primary Change Focus: REWRITE
+
+Changes:
+
+SONGREQUEST:
+Rewrote pretty much all song request functions into a class to make managing variables and function calls much easier
+Moved the actual playing of audio from Run.py into SongRequest.py so that all song management functions can be done in one class
+The SongRequest class is for all songrequest related commands. The SRControl class is for actual audio management, like playing/pausing.
+Changed any command for the backup playlist to include !pl, such as !plsr to add songs and !plclearsong to delete it.
+Fixed !sr with no arguments just requesting some random song. Added a customizeable message in Settings to send users info when they do this.
+
+COMMANDS:
+Rewrote how commands are executed: Rather than a giant if/else ladder each command is stored in a dict and that dict is scanned when a cmd is run.
+This also allows for custom commands to be added extremely easily in the future.
+Commands that are moderator-only have "MOD" as the first entry in their dict.
+Readjusted how nowplaying.txt works. Rather than rewriting the file every second, it only rewrites it when theres a change. Which makes sense.
+
