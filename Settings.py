@@ -34,8 +34,12 @@ DELAY_BETWEEN_SONGS = 0.5
 VOL_INCREMENT = 5
 #This is how much the volume will be changed by when you type !volumeup, !volumedown, or use a hotkey to adjust volume.
 
+DEFAULT_SR_MSG = "You need to type a song's name, YouTube link, or music file to play. You can type !wrongsong if the wrong one is selected."
+#This is the message that will show up if someone types "!sr" or "!songrequest" without any request. Useful to newcomers to the stream.
+
 
 '''-------------------->>TITLE BLACKLIST FILTER<<--------------------'''
+
 SONGBLSIZE = 8
 #This is how many songs are loaded into the sorter and checked to see if they get affected by the blacklist.
 #If you often get "Can't find this song," increase this by one or two. If you want GPM song requests to load faster, drop this to 3.

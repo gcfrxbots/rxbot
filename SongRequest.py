@@ -1,16 +1,19 @@
-
 from gmusicapi import Mobileclient
-from Initialize import dosqlite, openSocket, sendMessage
+from Initialize import sqliteread, sqlitewrite, openSocket, sendMessage,  createqueuecsv
 import sys
 from pytube import YouTube
+import keyboard
 import validators
+import vlc
 from Settings import *
+import time
+import sqlite3
+from sqlite3 import Error
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
 s = openSocket()
 api = Mobileclient()
-#Now using the newer oauth login!
 api.oauth_login(device_id=Mobileclient.FROM_MAC_ADDRESS, oauth_credentials="oauth.txt")
 
 
@@ -22,14 +25,14 @@ else:
     api.oauth_login(device_id=Mobileclient.FROM_MAC_ADDRESS, oauth_credentials="oauth.txt")
 stream_url = ""
 
+
+
 def writenowplaying(isPlaying, song_name):
     with open("nowplaying.txt", "w") as f:
         if isPlaying == True:
             f.write(song_name)
         else:
             f.truncate()
-
-
 
 def getytkey(url):
     if "youtube" in url.lower():
@@ -38,7 +41,6 @@ def getytkey(url):
         return(url.split("e/")[1][:11])
     else:
         return None
-
 
 def songtitlefilter(song_name, redo):
     blacklist = BLACKLISTED_SONG_TITLE_CONTENTS[:]
@@ -71,355 +73,26 @@ def songtitlefilter(song_name, redo):
     print ">>>>>>Playing: " + songs[0]['title']
     return songs[redo]
 
-
-
-#def srredo(song, user):
-#    wrongsong(None, user)
-
-
-
 def removetopqueue():
-    import sqlite3 #Open the db, get the song out
-    db = sqlite3.connect('songqueue.db')
-    cursor = db.cursor()
-
-    cursor.execute('''SELECT id, name, song, key FROM songs ORDER BY id ASC''') #Pick the top song
-    row = cursor.fetchone()
-
+    row = sqliteread('''SELECT id, name, song, key FROM songs ORDER BY id ASC''') #Pick the top song
     if row[1] == "BotPlaylist": #>>>>>> DO THIS STUFF IF THE LIST IS EMPTY!
-        cursor.execute('SELECT id FROM songs ORDER BY id ASC LIMIT 1')
-        row = cursor.fetchone()
-        cursor.execute(('''DELETE FROM songs WHERE id={0}''').format(int(row[0]))) #Delete the top song
-        db.commit()
-        db.close()
+        sqlitewrite(('''DELETE FROM songs WHERE id={0}''').format(int(row[0]))) #Delete the top song
         return
-
-    db.close()
     return False
 
-
-
-
-
-
-def sr_addsongtoplaylist(song_name):
-
-
-    song_name = song_name.replace("\r", "")[1:]
-
-
-
-
-    if validators.url(song_name) == True: #TEST IF THE REQUEST IS A LINK
-
-        if "youtu" in song_name: #TEST IF THE SONG IS A YOUTUBE LINK
-            try:
-                title = YouTube(song_name).title
-            except Exception as e:
-                sendMessage(s, "Unable to use that video for some reason.")
-                print e
-                return
-
-
-            key = getytkey(song_name)
-            if key == None:
-                sendMessage(s, "Something is wrong with your Youtube link.")
-                return
-
-
-
-            #TEST IF ITS ALREADY IN THE QUEUE
-            sqlcommand = '''SELECT count(*) FROM playlist WHERE key="{0}"'''.format(key)
-            if dosqlite(sqlcommand)[0] > (MAX_DUPLICATE_SONGS - 1):
-                sendMessage(s, ("That song is already in the playlist."))
-                return
-
-
-            sqlcommand = '''
-                        INSERT INTO playlist(song, key)
-                        VALUES("{song_name}", "{key}");'''.format(song_name=song_name, key=key)
-
-            dosqlite(sqlcommand)
-            sendMessage(s, ("Added: " + title + " to the playlist (YT)"))
-            return
-
-
-        else:                       #OTHER MP3 REQUESTS <<<<<<<
-            sqlcommand = '''
-                    INSERT INTO playlist(song, key)
-                    VALUES("{song_name}", "{key}");'''.format(song_name=song_name, key=song_name)
-
-            dosqlite(sqlcommand)
-            sendMessage(s, ("Added that link to the playlist."))
-            return
-
-
-    try:
-        top_song_result = songtitlefilter(song_name, 0)
-        key = top_song_result['storeId']
-        songtitle = str(top_song_result['artist'] + " - " + top_song_result['title'])
-
-
-
-    #If theres an error (its unable to find the song) then do fuck all, otherwise write the song data to the csv
-    except IndexError:
-        sendMessage(s, "No results found for that song. Please try a different one.")
-        return
-    else:
-        #TEST IF ITS ALREADY IN THE QUEUE
-        sqlcommand = '''SELECT count(*) FROM playlist WHERE key="{0}"'''.format(key)
-        if dosqlite(sqlcommand)[0] > (MAX_DUPLICATE_SONGS - 1):
-            sendMessage(s, ("That song is already in the playlist."))
-            return
-
-            #IF NOT, ADD IT
-        sqlcommand = '''
-                    INSERT INTO playlist(song, key)
-                    VALUES("{song_name}", "{key}");'''.format(song_name=songtitle, key=key)
-
-        dosqlite(sqlcommand)
-        sendMessage(s, ("Added: " + songtitle + " to the backup playlist"))
-        return
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-def sr_getsong(song_name, user):
-
-    sqlcommand = '''SELECT count(*) FROM songs WHERE name="{0}"'''.format(user)
-    if dosqlite(sqlcommand)[0] > (MAX_REQUESTS_USER - 1):
-        sendMessage(s, (user + " >> You already have " + str(MAX_REQUESTS_USER) + " songs in the queue."))
-        return
-
-
-    song_name = song_name.replace("\r", "")[1:]
-
-
-    if validators.url(song_name) == True: #TEST IF THE REQUEST IS A LINK
-
-        if "youtu" in song_name: #TEST IF THE SONG IS A YOUTUBE LINK
-            try:
-                title = YouTube(song_name).title
-            except Exception as e:
-                sendMessage(s, "Unable to use that video for some reason.")
-                print e
-                return
-
-
-            key = getytkey(song_name)
-            if key == None:
-                sendMessage(s, "Something is wrong with your Youtube link.")
-                return
-
-
-            #TEST IF ITS ALREADY IN THE QUEUE
-            sqlcommand = '''SELECT count(*) FROM songs WHERE key="{0}"'''.format(key)
-            if dosqlite(sqlcommand)[0] > (MAX_DUPLICATE_SONGS - 1):
-                sendMessage(s, (user + " >> That song is already in the queue."))
-                return
-
-
-            sqlcommand = '''
-                            INSERT INTO songs(name, song, key)
-                            VALUES("{user}", "{song_name}", "{key}");'''.format(user=user, song_name=song_name, key=key)
-
-            dosqlite(sqlcommand)
-
-            removetopqueue()
-            sendMessage(s, (user + " >> Added: " + title + " to the queue (YT). ID: " + getnewentry()))
-
-
-        else:                       #OTHER MP3 REQUESTS <<<<<<<
-            sqlcommand = '''
-                            INSERT INTO songs(name, song, key)
-                            VALUES("{user}", "{song_name}", "{song_name}");'''.format(user=user, song_name=song_name)
-
-            dosqlite(sqlcommand)
-            removetopqueue()
-            sendMessage(s, (user + " >> Added that link to the queue. ID: " + getnewentry()))
-
-
-
-
-        #GOOGLE PLAY MUSIC STUFF
-    else:
-        try:
-            top_song_result = songtitlefilter(song_name, 0)
-            key = top_song_result['storeId']
-            songtitle = str(top_song_result['artist'] + " - " + top_song_result['title'])
-
-
-
-        #If theres an error (its unable to find the song) then do fuck all, otherwise write the song data to the csv
-        except IndexError:
-            sendMessage(s, "No results found for that song. Please try a different one.")
-            return
-        else:
-            #TEST IF ITS ALREADY IN THE QUEUE
-            sqlcommand = '''SELECT count(*) FROM songs WHERE key="{0}"'''.format(key)
-            if dosqlite(sqlcommand)[0] > (MAX_DUPLICATE_SONGS - 1):
-                sendMessage(s, (user + " >> That song is already in the queue."))
-                return
-
-                #IF NOT, ADD IT
-            sqlcommand = '''
-                        INSERT INTO songs(name, song, key)
-                        VALUES("{user}", "{song_name}", "{key}");'''.format(user=user, song_name=songtitle, key=key)
-
-            dosqlite(sqlcommand)
-            removetopqueue()
-            sendMessage(s, (user + " >> Added: " + songtitle + " to the queue. ID: " + getnewentry()))
-            return
-
-
-
-
 def getnewentry():
-    import sqlite3
-    db = sqlite3.connect('songqueue.db')
-    cursor = db.cursor()
-    cursor.execute('SELECT id FROM songs ORDER BY id DESC LIMIT 1')
-    result = cursor.fetchone()
+    result = sqliteread('SELECT id FROM songs ORDER BY id DESC LIMIT 1')
     return(str(result[0]))
-
-
 
 def sr_geturl(songkey):
     try:
         stream_url = Mobileclient.get_stream_url(api, songkey, "3e9ff840362801d4")
         return(stream_url)
-    except:
-        sendMessage(s, "There was an issue playing the song.")
-
-def wrongplsong(user):
-    import sqlite3
-    db = sqlite3.connect('songqueue.db')
-    cursor = db.cursor()
-    try:
-        cursor.execute('SELECT id, song FROM playlist ORDER BY id DESC LIMIT 1')
-        result = cursor.fetchone()
-        toremove = str(result[0])
-        strresult = (str(result[1]))
-        cursor.execute('DELETE FROM playlist WHERE id={0}'.format(toremove))
-        db.commit()
-        sendMessage(s, (user + ' >> Removed your request: "' + strresult + '" from the queue.'))
     except Exception as e:
         print e
-        sendMessage(s, "Couldn't find your most recent request.")
-
-    db.close
-
-
-def wrongsong(songid, user):
-    import sqlite3
-    from sqlite3 import Error
-    db = sqlite3.connect('songqueue.db')
-    cursor = db.cursor()
-    if songid == None:
-        try:
-            cursor.execute('SELECT id, song FROM songs WHERE name="{0}"  ORDER BY id DESC LIMIT 1'.format(user))
-            result = cursor.fetchone()
-            toremove = str(result[0])
-            strresult = (str(result[1]))
-            cursor.execute('DELETE FROM songs WHERE id={0}'.format(toremove))
-            db.commit()
-            sendMessage(s, (user + ' >> Removed your request: "' + strresult + '" from the queue.'))
-        except Error as e:
-            raise e
-            db.rollback()
-        except:
-            sendMessage(s, "Couldn't find your most recent request.")
-        finally:
-            db.close
-    else:
-        try:
-            cursor.execute('SELECT song, name FROM songs WHERE id={0}'.format(songid))
-            result = cursor.fetchone()
-            strresult = (str(result[0]))
-            if  user in result[1]:
-                cursor.execute('DELETE FROM songs WHERE id={0}'.format(songid))
-                db.commit()
-
-                sendMessage(s, (user + ' >> Removed your request: "' + strresult + '" from the queue.'))
-            else:
-                sendMessage(s, (user + " >> You didn't request that song, you can't delete it!"))
-
-
-
-        except Error as e:
-            raise e
-            db.rollback()
-        except:
-            sendMessage(s, "Couldn't find that request.")
-        finally:
-            db.close()
-
-
-
-
-def clearsong(songid, user):
-    import sqlite3
-    from sqlite3 import Error
-    db = sqlite3.connect('songqueue.db')
-    cursor = db.cursor()
-    if songid == None:
-        try:
-            cursor.execute('SELECT id, song, name FROM songs ORDER BY id DESC LIMIT 1')
-            result = cursor.fetchone()
-            toremove = str(result[0])
-            strresult = (str(result[1]))
-            cursor.execute('DELETE FROM songs WHERE id={0}'.format(toremove))
-            db.commit()
-            sendMessage(s, (user + ' >> Removed the request: "' + strresult + '" requested by ' + str(result[2]) + " from the queue."))
-        except Error as e:
-            raise e
-            db.rollback()
-        except:
-            sendMessage(s, "Something messed up. Is the queue empty?")
-        finally:
-            db.close
-    else:
-        try:
-            cursor.execute('SELECT song, name FROM songs WHERE id={0}'.format(songid))
-            result = cursor.fetchone()
-            strresult = (str(result[0]))
-
-            cursor.execute('DELETE FROM songs WHERE id={0}'.format(songid))
-            db.commit()
-
-            sendMessage(s, (user + ' >> Removed the request: "' + strresult + '" requested by ' + str(result[1]) +" from the queue."))
-        except Error as e:
-            raise e
-            db.rollback()
-        except:
-            sendMessage(s, "Couldn't find that request.")
-        finally:
-            db.close()
-
-
+        sendMessage(s, "There was an issue playing the song.")
 
 def playfromplaylist():
-
     import sqlite3 #Open the db, get the song out
     from sqlite3 import Error
     db = sqlite3.connect('songqueue.db')
@@ -435,7 +108,6 @@ def playfromplaylist():
         print(">>>>>>BACKUP PLAYLIST IS EMPTY! ADD SOME SONGS TO IT WITH FillPlaylist.py or !addsong !!!! <<<<<<<<<<<<<<<<")
         return
 
-
     #Delete the top result
     cursor.execute('SELECT id FROM playlist ORDER BY id ASC LIMIT 1')
     row = cursor.fetchone()
@@ -450,49 +122,280 @@ def playfromplaylist():
 
 
 
+class SRcontrol:
+    def __init__(self):
+        self.msg = None
+        self.songtitle = ""
+
+    def playsong(self):
+        #from Run import hotkeys
+        row = sqliteread('''SELECT id, name, song, key FROM songs ORDER BY id ASC''') # Pick the top song
+        try:
+            self.songtitle = row[2]
+            songkey = row[3]
+        except Exception as e:
+            print e
+            print(">>>>>>BACKUP PLAYLIST IS EMPTY! ADD SOME SONGS TO IT WITH PlaylistEditor.py or !plsr<<<<<<")
+            return
+        sqlitewrite(('''DELETE FROM songs WHERE id={0}''').format(row[0]))  # Delete the top song
+
+        try:
+            if validators.url(self.songtitle) == True: # TEST IF THE REQUEST IS A LINK
+                if "youtu" in self.songtitle:  # IS IT A YOUTUBE LINK?
+                    playurl = YouTube(self.songtitle).streams.filter(only_audio=True).order_by('abr').first().url
+                    self.songtitle = YouTube(self.songtitle).title
+                    writenowplaying(True, self.songtitle)
+                else:  # If not YT link, play normal music file.
+                    playurl = self.songtitle
+                    self.songtitle = "Online Music File"
+                    writenowplaying(True, self.songtitle)
+            else:  # Otherwise it's GPM
+                playurl = sr_geturl(songkey)
+                writenowplaying(True, self.songtitle)
+
+            self.p = vlc.MediaPlayer(playurl)  # Play the music
+            self.p.play()
+            writenowplaying(True, self.songtitle)
+            createqueuecsv()
+            if ENABLE_HOTKEYS:
+                pass
+                #hotkeys()
+            return True
+        except Exception as e:
+            print "PLAYSONG ERROR:"
+            print e
+
+    def songover(self):
+        print("Song is over!")
+        time.sleep(DELAY_BETWEEN_SONGS)
+        self.p.stop()
+        return False
+
+    def gettime(self):
+        return int(self.p.get_time())
 
 
 
 
 
+    #-------------------------SONG REQUEST COMMANDS----------------------------------
 
 
 
-#-------------------------SONG REQUEST COMMANDS----------------------------------
+
+    def volume(self, vol, user):
+        if not vol:
+            return "Current volume: " + str(self.p.audio_get_volume())
+        if vol > 100 or vol < 0:
+            return "Invalid volume level. Must be between 0-100."
+        self.p.audio_set_volume(vol)
+        return "Music volume set to: " + str(vol)
+
+    def volumeup(self, vol, user):
+        if not vol:
+            vol = VOL_INCREMENT
+        currentvolume = self.p.audio_get_volume()
+        if (currentvolume + vol) > 100:
+            self.p.audio_set_volume(100)
+            print "Raised the volume to: 100"
+            return "Raised the volume to: 100"
+        self.p.audio_set_volume(currentvolume + vol)
+        self.msg = "Raised the volume to: " + str(currentvolume + vol)
+        print self.msg
+        return self.msg
+
+    def volumedown(self, vol, user):
+        if not vol:
+            vol = VOL_INCREMENT
+        currentvolume = self.p.audio_get_volume()
+        if (currentvolume - vol) < 0:
+            self.p.audio_set_volume(0)
+            print "Lowered the volume to: 0"
+            return "Lowered the volume to: 0"
+        self.p.audio_set_volume(currentvolume - vol)
+        self.msg = "Lowered the volume to: " + str(currentvolume - vol)
+        print self.msg
+        return self.msg
 
 
-def volume(p, vol):
-    if vol == None:
-        sendMessage(s, "Current volume: " + str(p.audio_get_volume()))
-        return
-    if vol > 100 or vol < 0:
-        sendMessage(s, "Invalid volume level. Must be between 0-100.")
-        return
-    p.audio_set_volume(vol)
-    sendMessage(s, "Music volume set to: " + str(vol))
-
-def volumeup(p, vol):
-    if vol == None:
-        vol = VOL_INCREMENT
-    if (p.audio_get_volume() + vol) > 100:
-        p.audio_set_volume(100)
-        print "Raised the volume to: 100"
-        return "Raised the volume to: 100"
-    p.audio_set_volume((p.audio_get_volume() + vol))
-    print ("Raised the volume to: " + str(p.audio_get_volume() + vol))
-    return  ("Raised the volume to: " + str(p.audio_get_volume() + vol))
+    def play(self):
+        print "Resumed the music"
+        writenowplaying(True, self.songtitle)
+        self.p.set_pause(False)
 
 
-def volumedown(p, vol):
-    if vol == None:
-        vol = VOL_INCREMENT
-    if (p.audio_get_volume() - vol) < 0:
-
-        p.audio_set_volume(0)
-        print "Lowered the volume to: 0"
-        return "Lowered the volume to: 0"
-    p.audio_set_volume((p.audio_get_volume() - vol))
-    print "Lowered the volume to: " + str(p.audio_get_volume() - vol)
-    return "Lowered the volume to: " + str(p.audio_get_volume() - vol)
+    def pause(self):
+        print "Paused the music"
+        writenowplaying(False, "")
+        self.p.set_pause(True)
 
 
+
+
+class SRcommands:
+    def __init__(self):
+        self.db = None
+
+    '''--------------------QUEUE CONTROL--------------------'''
+
+    def songrequest(self, request, user):
+        if request == "\r":  # Send a message if they request nothing
+            return user + " >> " + DEFAULT_SR_MSG
+        # Check for songs already in the queue
+        if sqliteread('''SELECT count(*) FROM songs WHERE name="{0}"'''.format(user))[0] > (MAX_REQUESTS_USER - 1):
+            return user + " >> You already have " + str(MAX_REQUESTS_USER) + " songs in the queue."
+
+        request = request.replace("\r", "")[1:]
+        # LINKS
+        # DETERMINE LINK TYPE
+        if validators.url(request):
+            if "youtu" in request:
+                try:
+                    title = YouTube(request).title
+                except Exception: return "Unable to use that video for some reason."
+                key = getytkey(request)
+                if not key: return "Something is wrong with your Youtube link."
+
+                # Check the queue to see if the song is already in there.
+                self.db = sqliteread('''SELECT id, count(*) FROM songs WHERE key="{0}"'''.format(key))
+                if self.db[1] > (MAX_DUPLICATE_SONGS - 1):
+                    return user + " >> That song is already in the queue. ID: " + str(self.db[0])
+                sqlitewrite('''INSERT INTO songs(name, song, key) VALUES("{user}", "{request}", "{key}");'''.format(user=user, request=request, key=key))
+                removetopqueue()
+                return user + " >> Added: " + title + " to the queue (YT). ID: " + getnewentry()
+            else:  # OTHER MP3 REQUESTS <<<<<<<
+                sqlitewrite('''INSERT INTO songs(name, song, key) VALUES("{user}", "{request}", "{request}");'''.format(user=user, request=request))
+                removetopqueue()
+                return user + " >> Added that link to the queue. ID: " + getnewentry()
+
+        else:  # GOOGLE PLAY MUSIC STUFF
+            try:
+                top_song_result = songtitlefilter(request, 0)
+                key = top_song_result['storeId']
+                songtitle = str(top_song_result['artist'] + " - " + top_song_result['title'])
+            # If theres an error (its unable to find the song) then announce it, otherwise write the song data to the db
+            except IndexError:
+                return "No results found for that song. Please try a different one."
+            else:
+                # Test if the song is already in the queue
+                self.db = sqliteread('''SELECT id, count(*) FROM songs WHERE key="{0}"'''.format(key))
+                if self.db[1] > (MAX_DUPLICATE_SONGS - 1):
+                    return user + " >> That song is already in the queue. ID: " + str(self.db[0])
+                # Add song to the queue
+                sqlitewrite('''INSERT INTO songs(name, song, key) VALUES("{user}", "{request}", "{key}");'''.format(user=user, request=songtitle, key=key))
+                removetopqueue()
+                return user + " >> Added: " + songtitle + " to the queue. ID: " + getnewentry()
+
+
+    def wrongsong(self, songid, user):
+        if not songid:
+            try:
+                result = sqliteread('SELECT id, song FROM songs WHERE name="{0}"  ORDER BY id DESC LIMIT 1'.format(user))
+                sqlitewrite('DELETE FROM songs WHERE id={0}'.format(str(result[0])))
+                return user + ' >> Removed your request: "' + str(result[1]) + '" from the queue.'
+            except Error as e:
+                raise e
+            except:
+                return user + " >> Couldn't find your most recent request."
+        else:
+            try:
+                result = sqliteread('SELECT song, name FROM songs WHERE id={0}'.format(songid))
+                if user in result[1]:
+                    sqlitewrite('DELETE FROM songs WHERE id={0}'.format(songid))
+                    return user + ' >> Removed your request: "' + str(result[0]) + '" from the queue.'
+                else:
+                    return user + " >> You didn't request that song, you can't delete it!"
+            except Error as e:
+                raise e
+            except:
+                return user + " >> Couldn't find that request."
+
+
+    def getnowplaying(self, x, user):
+        with open("nowplaying.txt", "r") as f:
+            returnnp = f.readlines()
+        if not returnnp:
+            sendMessage(s, (user + " >> The music is currently paused."))
+        else:
+            sendMessage(s, (user + " >> " + returnnp[0]))
+
+
+    def clearsong(self, songid, user):
+        if not songid:
+            try:
+                result = sqliteread('SELECT id, song, name FROM songs ORDER BY id DESC LIMIT 1')
+                sqlitewrite('DELETE FROM songs WHERE id={0}'.format(str(result[0])))
+                return user + ' >> Removed the request: "' + str(result[1]) + '" requested by ' + str(result[2]) + " from the queue."
+            except Error as e:
+                raise e
+            except:
+                return "Something messed up. Is the queue empty?"
+        else:
+            try:
+                result = sqliteread('SELECT song, name FROM songs WHERE id={0}'.format(songid))
+                sqlitewrite('DELETE FROM songs WHERE id={0}'.format(songid))
+                return user + ' >> Removed the request: "' + str(result[0]) + '" requested by ' + str(result[1]) +" from the queue."
+            except Error as e:
+                raise e
+            except:
+                return user + " >> Couldn't find that request."
+
+    '''--------------------BACKUP PL CONTROL--------------------'''
+
+    def plsongrequest(self, request, user):
+        request = request.replace("\r", "")[1:]
+        # LINKS
+        # DETERMINE LINK TYPE
+        if validators.url(request):
+            if "youtu" in request:
+                try:
+                    title = YouTube(request).title
+                except Exception: return user + " >> Unable to use that video for some reason."
+                key = getytkey(request)
+                if not key: return user + " >> Something is wrong with your Youtube link."
+
+                # Check the queue to see if the song is already in there.
+                self.db = sqliteread('''SELECT id, count(*) FROM playlist WHERE key="{0}"'''.format(key))
+                if self.db[1] > (MAX_DUPLICATE_SONGS - 1):
+                    return user + " >> That song is already in the playlist. ID: " + str(self.db[0])
+                sqlitewrite('''INSERT INTO playlist(song, key) VALUES("{request}", "{key}");'''.format(request=request, key=key))
+                return user + " >> Added: " + title + " to the playlist (YT). ID: " + str(sqliteread('SELECT id FROM playlist ORDER BY id DESC LIMIT 1')[0])
+            else:  # OTHER MP3 REQUESTS <<<<<<<
+                sqlitewrite('''INSERT INTO playlist(song, key) VALUES("{request}", "{request}");'''.format(request=request))
+                return user + " >> Added that link to the playlist. ID: " + str(sqliteread('SELECT id FROM playlist ORDER BY id DESC LIMIT 1')[0])
+        else:  # GOOGLE PLAY MUSIC STUFF
+            try:
+                top_song_result = songtitlefilter(request, 0)
+                key = top_song_result['storeId']
+                songtitle = str(top_song_result['artist'] + " - " + top_song_result['title'])
+            # If theres an error (its unable to find the song) then announce it, otherwise write the song data to the db
+            except IndexError:
+                return user + " >> No results found for that song. Please try a different one."
+            else:
+                # Test if the song is already in the playlist
+                self.db = sqliteread('''SELECT id, count(*) FROM playlist WHERE key="{0}"'''.format(key))
+                if self.db[1] > (MAX_DUPLICATE_SONGS - 1):
+                    return user + " >> That song is already in the playlist. ID: " + str(self.db[0])
+                # Add song to the playlist
+                sqlitewrite('''INSERT INTO playlist(song, key) VALUES("{request}", "{key}");'''.format(request=songtitle, key=key))
+                return user + " >> Added: " + songtitle + " to the playlist. ID: " + str(sqliteread('SELECT id FROM playlist ORDER BY id DESC LIMIT 1')[0])
+
+
+    def plclearsong(self, songid, user):
+        if not songid:
+            try:
+                result = sqliteread('SELECT id, song FROM playlist ORDER BY id DESC LIMIT 1')
+                sqlitewrite('DELETE FROM playlist WHERE id={0}'.format(str(result[0])))
+                return user + ' >> Removed your request: "' + str(result[1]) + '" from the backup playlist.'
+            except Exception as e:
+                print e
+                return user + " >> Couldn't find the most recent request."
+        else:
+            try:
+                result = sqliteread('SELECT song FROM playlist WHERE id={0}'.format(songid))
+                sqlitewrite('DELETE FROM playlist WHERE id={0}'.format(songid))
+                return user + ' >> Removed the song: "' + str(result[0]) + " from the queue."
+            except Error as e:
+                raise e
+            except:
+                return user + " >> Couldn't find that request."

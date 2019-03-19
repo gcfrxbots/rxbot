@@ -1,6 +1,9 @@
 import string
 import socket
 import sys
+import keyboard
+import csv
+
 reload(sys)
 sys.setdefaultencoding('utf-8')
 from Settings import *
@@ -21,7 +24,7 @@ def openSocket():
 
 
 def sendMessage(s, message):
-    messageTemp = "PRIVMSG #" + CHANNEL + " :"  + message
+    messageTemp = "PRIVMSG #" + CHANNEL + " : " + message
     s.send(messageTemp + "\r\n")
     print("Sent: " + messageTemp)
 
@@ -59,43 +62,56 @@ def initsqlite():
     except Error as e:
         print(e)
 
-def dosqlite(command):
+def sqliteread(command):
     import sqlite3
     from sqlite3 import Error
     db = sqlite3.connect('songqueue.db')
     try:
         cursor = db.cursor()
         cursor.execute(command)
-        db.commit()
         data = cursor.fetchone()
         db.close()
         createqueuecsv()
         return data
     except Error as e:
         db.rollback()
+        print "SQLITE READ ERROR:"
         print e
-    finally:
-        db.close
+
+def sqlitewrite(command):
+    import sqlite3
+    from sqlite3 import Error
+    db = sqlite3.connect('songqueue.db')
+    try:
+        cursor = db.cursor()
+        cursor.execute(command)
+        data = cursor.fetchone()
+        db.commit()
+        db.close()
+        createqueuecsv()
+        return data
+    except Error as e:
+        db.rollback()
+        print "SQLITE WRITE ERROR:"
+        print e
 
 
 
 def createqueuecsv():
-    import sqlite3, csv
-    from SongRequest import removetopqueue
-    try: removetopqueue()
-    except: pass
-
+    import sqlite3
+    from sqlite3 import Error
     db = sqlite3.connect('songqueue.db')
-    cursor = db.cursor()
-    data = cursor.execute("SELECT id, name, song FROM songs")
+    try:
+        cursor = db.cursor()
+        cursor.execute("SELECT id, name, song FROM songs")
+        data = cursor.fetchall()
 
+        with open('SongQueue.csv', 'wb') as f:
+            writer = csv.writer(f)
+            writer.writerow(['ID', 'Requested By', 'Song Title / Youtube URL'])
+            writer.writerows(data)
 
-    with open('SongQueue.csv', 'wb') as f:
-        writer = csv.writer(f)
-        writer.writerow(['ID', 'Requested By', 'Song Title / Youtube URL'])
-        writer.writerows(data)
-
-    db.close()
+    except Error as e: print e
 
 
 
@@ -111,3 +127,5 @@ def getmoderators():
             MODERATORS.append(item)
 
     return MODERATORS
+
+

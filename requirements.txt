@@ -2,4 +2,3 @@ gmusicapi
 validators
 pytube
 python-vlc
-keyboard
