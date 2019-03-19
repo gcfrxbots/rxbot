@@ -91,17 +91,18 @@ This is a list of commands for the bot, which users will type into Twitch chat:
 **Google Play Music:** Following the command with a search term will add the song from Google Play Music. For example:`!sr Ginuwine Pony` will search "Ginuwine Pony" on Google Play Music, and add the best result. Users can also add their own blacklisted terms to their search by putting a hyphen before the word they wish to exclude. For example: `!sr Ginuwine Pony -remix` will look up "Ginuwine Pony" on Google Play Music, but will exclude all search results containing the word "Remix" in the title.   
 **Youtube:** Instead of looking up a song, users can instead paste a Youtube link. For example: `!sr https://www.youtube.com/watch?v=lbnoG2dsUk0`  
 **Uploaded Music File:** If you upload a music file (.mp3, .wav, etc.) to the internet and can get a direct streaming link to it, you can request that as well. For example: You can upload your song file to a website like [Instaudio](https://instaud.io/), then request the song with the direct streaming link, like so: `!sr https://instaud.io/_/3nOe.mp3`  
-Note that every song in the queue has an ID, which can be used in other commands. This ID is *not* based on the song's current position in the queue, and does not change.
 
-`!addsong` **(Mod Only)** || Like `!sr`, but adds the song to the backup playlist rather than the song request queue.
+Note that every song in the queue has an ID, which can be used in other commands. This ID is *not* based on the song's current position in the queue, and does not change. The ID is shown when the song is requested.
 
 `!nowplaying` || Displays the currently-playing song in chat. Note: the current song is saved to the **nowplaying.txt** file in the bot folder, so you can add this as a text source in OBS (or your streaming program of choice) to display the current song on screen.
 
 `!wrongsong` || If a user requests a song, but the search does not yield the correct song, the user can type this command to remove the last song they requested from the queue. They can also add a song ID after the command, if they wish to remove one of their requests that isn't the most recent one. For example, `!wrongsong 7` will remove song 7 from the queue, assuming the same user requested it.
 
-`!wrongplaylistsong` **(Mod Only)** || Like `!wrongsong`, but removes the most recent song added via `!addsong`.
-
 `!clearsong` **(Mod Only)** || Removes the last song added to the queue, regardless of who requested it. Can also add a song ID after the command, if they wish to remove a song besides the most recent one. For example: `!clearsong 7` will remove song 7 from the queue.
+
+`!plsr` **(Mod Only)** || Functions like `!sr`, but adds the song to the backup playlist rather than the song request queue.
+
+`!plclearsong` **(Mod Only)** || Functions like `!clearsong`, but removes the most recent song added via `!plsr`.
 
 `!volume` **(Mod Only)** || Doing the command by itself will display the current music volume in chat. Adding a number after the command will set the volume to that number. For example: `!volume 75` will set the volume to 75 (out of 100).
 
@@ -124,8 +125,11 @@ Note that every song in the queue has an ID, which can be used in other commands
 **Q:** Is this bot purely for song requests?  
 **A:** At the moment, yes. We do plan to add normal commands later on though, so stay tuned!
 
+**Q:** I have all this *money* and don't know what to do with it!
+**A:** The dev is a poor college student, so it'd help him out a ton if you wanted to donate! (Link below)
+
 ## Credits and Stuff
-[**Rxbots**](https://www.twitch.tv/rxbots) - Sole creator of the bot.
+[**Rxbots**](https://www.twitch.tv/rxbots) (AKA Grant) - Sole creator of the bot.
 
 [**iCeCoCaCoLa64**](https://www.twitch.tv/icecocacola64) - Ideas, motivation, testing, and documentation (hi there 👋🏻).
 
