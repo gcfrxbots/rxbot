@@ -1,5 +1,5 @@
 import time
-from Initialize import joinRoom, initsqlite, socket, getmoderators
+from Initialize import joinRoom, socket, getmoderators
 from SongRequest import *
 import string
 from threading import Thread
@@ -45,7 +45,6 @@ All this stuff up here runs when the script first runs and is the init code.'''
 
 nowplaying = False
 paused = False
-initsqlite()
 
 if SHUFFLE_ON_START == True: #Playlist Shuffler
     from random import shuffle
@@ -111,6 +110,7 @@ def runcommand(command, cmdarguments, user):
         "!songrequest": (sr.songrequest, cmdarguments, user),  # Alias
         "!wrongsong": (sr.wrongsong, getint(cmdarguments), user),
         "!nowplaying": (sr.getnowplaying, None, user),
+        "!timeleft": (sr.queuetime, getint(cmdarguments), user),
 
         # NowPlaying Control
         "!play": ("MOD", play, None, None),

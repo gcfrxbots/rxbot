@@ -119,6 +119,25 @@ def playfromplaylist():
     cursor.execute(('''INSERT INTO songs(name, song, key) VALUES("BotPlaylist", "{song_name}", "{key}");''').format(song_name=songtitle, key=songkey))
     db.commit()
 
+def getsongtime(title, key):
+    try:
+        if title:
+            if title == "Online":
+                songurl = key
+            else:
+                songurl = YouTube(title).streams.filter(only_audio=True).order_by('abr').first().url
+        else:  # Otherwise it's GPM
+            songurl = sr_geturl(key)
+        v = vlc.MediaPlayer(songurl)
+        v.play()
+        time.sleep(0.2)
+        songtime = v.get_length()
+        v.stop()
+    except Exception as e:
+        print "GETSONGTIME ISSUE"
+        print e
+        return
+    return (songtime - 1500) #Most songs have a 1.5 to 2 second offset
 
 
 
@@ -128,7 +147,6 @@ class SRcontrol:
         self.songtitle = ""
 
     def playsong(self):
-        #from Run import hotkeys
         row = sqliteread('''SELECT id, name, song, key FROM songs ORDER BY id ASC''') # Pick the top song
         try:
             self.songtitle = row[2]
@@ -184,9 +202,9 @@ class SRcontrol:
 
 
     def volume(self, vol, user):
-        if not vol:
+        if vol == None:
             return "Current volume: " + str(self.p.audio_get_volume())
-        if vol > 100 or vol < 0:
+        if (vol > 100) or (vol < 0):
             return "Invalid volume level. Must be between 0-100."
         self.p.audio_set_volume(vol)
         return "Music volume set to: " + str(vol)
@@ -252,19 +270,30 @@ class SRcommands:
             if "youtu" in request:
                 try:
                     title = YouTube(request).title
-                except Exception: return "Unable to use that video for some reason."
+                except Exception as e:
+                    print e
+                    return "Unable to use that video for some reason."
                 key = getytkey(request)
                 if not key: return "Something is wrong with your Youtube link."
 
                 # Check the queue to see if the song is already in there.
                 self.db = sqliteread('''SELECT id, count(*) FROM songs WHERE key="{0}"'''.format(key))
+
                 if self.db[1] > (MAX_DUPLICATE_SONGS - 1):
-                    return user + " >> That song is already in the queue. ID: " + str(self.db[0])
-                sqlitewrite('''INSERT INTO songs(name, song, key) VALUES("{user}", "{request}", "{key}");'''.format(user=user, request=request, key=key))
+                    return user + " >> That song is already in the queue."
+                songtime = getsongtime(request, key)
+                if songtime > (MAXTIME * 60000):
+                    return user + " >> That song exceeds the maximum length of " + str(MAXTIME) + " minutes."
+
+                sqlitewrite('''INSERT INTO songs(name, song, key, time) VALUES("{user}", "{request}", "{key}", "{time}");'''.format(user=user, request=request, key=key, time=songtime))
                 removetopqueue()
                 return user + " >> Added: " + title + " to the queue (YT). ID: " + getnewentry()
             else:  # OTHER MP3 REQUESTS <<<<<<<
-                sqlitewrite('''INSERT INTO songs(name, song, key) VALUES("{user}", "{request}", "{request}");'''.format(user=user, request=request))
+                songtime = getsongtime("Online", request)
+                if songtime > (MAXTIME * 60000):
+                    return user + " >> That song exceeds the maximum length of " + str(MAXTIME) + " minutes."
+
+                sqlitewrite('''INSERT INTO songs(name, song, key, time) VALUES("{user}", "{request}", "{request}", "{time}");'''.format(user=user, request=request, time=songtime))
                 removetopqueue()
                 return user + " >> Added that link to the queue. ID: " + getnewentry()
 
@@ -280,9 +309,14 @@ class SRcommands:
                 # Test if the song is already in the queue
                 self.db = sqliteread('''SELECT id, count(*) FROM songs WHERE key="{0}"'''.format(key))
                 if self.db[1] > (MAX_DUPLICATE_SONGS - 1):
-                    return user + " >> That song is already in the queue. ID: " + str(self.db[0])
+                    return user + " >> That song is already in the queue."
+                songtime = getsongtime(None, key)
+
+                if songtime > (MAXTIME * 60000):
+                    return user + " >> That song exceeds the maximum length of " + str(MAXTIME) + " minutes."
+
                 # Add song to the queue
-                sqlitewrite('''INSERT INTO songs(name, song, key) VALUES("{user}", "{request}", "{key}");'''.format(user=user, request=songtitle, key=key))
+                sqlitewrite('''INSERT INTO songs(name, song, key, time) VALUES("{user}", "{request}", "{key}", "{time}");'''.format(user=user, request=songtitle, key=key, time=songtime))
                 removetopqueue()
                 return user + " >> Added: " + songtitle + " to the queue. ID: " + getnewentry()
 
@@ -339,6 +373,37 @@ class SRcommands:
                 raise e
             except:
                 return user + " >> Couldn't find that request."
+
+
+    def queuetime(self, id, user):
+        import sqlite3
+        from sqlite3 import Error
+        data = []
+        db = sqlite3.connect('songqueue.db')
+        try:
+            cursor = db.cursor()
+            if not id:  # If there's no ID, get the total song
+                cursor.execute('''SELECT time FROM songs''')
+            else:  # Get up to that song
+                cursor.execute('''SELECT time FROM songs WHERE id < {0}'''.format(id))
+            data = cursor.fetchall()
+            if (not data) or (data[0][0] == None):
+                if id:
+                    return user + " >> That ID is not in the queue."
+                else:
+                    return user + " >> There are currently no songs in the queue."
+            totaltime = 0
+            for item in data:
+                totaltime += int(item[0])
+            seconds=(totaltime/1000)%60
+            minutes=(totaltime/(1000*60))%60
+            hours=(totaltime/(1000*60*60))%24
+            db.close()
+            return user + " >> There is about " + str(hours) + "h " + str(minutes) + "m " + str(seconds) + "s of songs in the queue."
+        except Error as e:
+            db.rollback()
+            print "QUEUETIME ERROR:"
+            print e
 
     '''--------------------BACKUP PL CONTROL--------------------'''
 

@@ -53,14 +53,6 @@ def loadingComplete(line):
     else:
         return True
 
-def initsqlite():
-    import sqlite3
-    from sqlite3 import Error
-    #initalize the database
-    try:
-        db = sqlite3.connect("songqueue.db")
-    except Error as e:
-        print(e)
 
 def sqliteread(command):
     import sqlite3
