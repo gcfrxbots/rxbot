@@ -7,6 +7,8 @@ RXBot is a song request bot for Twitch streamers: viewers can request songs in c
 
 ⚠️ This project is still in early development, so despite pre-release testing, it may not function as expected. Please report bugs using Github's *Issues* tab, or in the [Rxbots Discord](https://discord.gg/8FRQBJy). ⚠️
 
+*(Readme last updated for v2.1)*
+
 -----
 
 ## Requirements
