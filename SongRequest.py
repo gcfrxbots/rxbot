@@ -14,17 +14,17 @@ sys.setdefaultencoding('utf-8')
 
 s = openSocket()
 
-if GPM_ENABLE: #Log into google play music if it's enabled
-    api = Mobileclient()
+
+api = Mobileclient()
+api.oauth_login(device_id=Mobileclient.FROM_MAC_ADDRESS, oauth_credentials="oauth.txt")
+
+
+if Mobileclient.is_authenticated(api) == True:
+    print("Logged into GPM successfully")
+else:
+    sendMessage(s, "Can't log into Google Play Music! Please check the console and follow the instructions!")
+    api.perform_oauth(storage_filepath="oauth.txt")
     api.oauth_login(device_id=Mobileclient.FROM_MAC_ADDRESS, oauth_credentials="oauth.txt")
-
-
-    if Mobileclient.is_authenticated(api) == True:
-        print("Logged into GPM successfully")
-    else:
-        sendMessage(s, "Can't log into Google Play Music! Please check the console and follow the instructions!")
-        api.perform_oauth(storage_filepath="oauth.txt")
-        api.oauth_login(device_id=Mobileclient.FROM_MAC_ADDRESS, oauth_credentials="oauth.txt")
 
 
 stream_url = ""
