@@ -13,16 +13,20 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 
 s = openSocket()
-api = Mobileclient()
-api.oauth_login(device_id=Mobileclient.FROM_MAC_ADDRESS, oauth_credentials="oauth.txt")
 
-
-if Mobileclient.is_authenticated(api) == True:
-    print("Logged into GPM successfully")
-else:
-    sendMessage(s, "Can't log into Google Play Music! Please check the console and follow the instructions!")
-    api.perform_oauth(storage_filepath="oauth.txt")
+if GPM_ENABLE: #Log into google play music if it's enabled
+    api = Mobileclient()
     api.oauth_login(device_id=Mobileclient.FROM_MAC_ADDRESS, oauth_credentials="oauth.txt")
+
+
+    if Mobileclient.is_authenticated(api) == True:
+        print("Logged into GPM successfully")
+    else:
+        sendMessage(s, "Can't log into Google Play Music! Please check the console and follow the instructions!")
+        api.perform_oauth(storage_filepath="oauth.txt")
+        api.oauth_login(device_id=Mobileclient.FROM_MAC_ADDRESS, oauth_credentials="oauth.txt")
+
+
 stream_url = ""
 
 
@@ -120,6 +124,7 @@ def playfromplaylist():
     db.commit()
 
 def getsongtime(title, key):
+    songtime = -1
     try:
         if title:
             if title == "Online":
@@ -128,11 +133,17 @@ def getsongtime(title, key):
                 songurl = YouTube(title).streams.filter(only_audio=True).order_by('abr').first().url
         else:  # Otherwise it's GPM
             songurl = sr_geturl(key)
-        v = vlc.MediaPlayer(songurl)
-        v.play()
-        time.sleep(0.2)
-        songtime = v.get_length()
-        v.stop()
+        instance = vlc.Instance()
+        media = instance.media_new(songurl)
+        player = instance.media_player_new()
+        player.set_media(media)
+
+        while songtime == -1:  # Yes, this is bad. Sometimes it doesn't get the time, so it keeps trying if it doesnt. It's totally random. Sorry.
+            player.play()
+            time.sleep(0.05)
+            player.stop()
+            songtime = media.get_duration()
+
     except Exception as e:
         print "GETSONGTIME ISSUE"
         print e
@@ -319,6 +330,9 @@ class SRcommands:
                 sqlitewrite('''INSERT INTO songs(name, song, key, time) VALUES("{user}", "{request}", "{key}", "{time}");'''.format(user=user, request=songtitle, key=key, time=songtime))
                 removetopqueue()
                 return user + " >> Added: " + songtitle + " to the queue. ID: " + getnewentry()
+
+    def youtubesr(self, request, user):
+        pass
 
 
     def wrongsong(self, songid, user):
