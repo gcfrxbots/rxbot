@@ -126,6 +126,7 @@ Note that every song in the queue has an ID, which can be used in other commands
 **A:** At the moment, yes. We do plan to add normal commands later on though, so stay tuned!
 
 **Q:** I have all this *money* and don't know what to do with it!
+
 **A:** The dev is a poor college student, so it'd help him out a ton if you wanted to donate! (Link below)
 
 ## Credits and Stuff
