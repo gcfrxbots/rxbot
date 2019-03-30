@@ -1,3 +1,4 @@
+
 # **RXBot**
 
 Hi, thank you for choosing RXBot! This documentation serves to help you understand what the bot is, what it can do, and how to use it, with the instructions being as simple and clear as possible.
@@ -54,6 +55,9 @@ The **Settings.py** file is where you can adjust your personal settings for the 
 
 `VOL_INCREMENT = 5` || Adjusts how much the volume will change when using a volume hotkey, or `!volumeup`/`volumedown`. For example: if you have this set to 5, and your volume is at 50, hitting your volume up hotkey will change the volume to 55.
 
+`MAXTIME = 10` || This is the maximum song length, in minutes. If a user tries to request a song that exceeds this length, it will be rejected, and not added to the queue.
+
+`DEFAULT_SR_MSG = ""` || The message that will show up if a user types `!sr` or `!songrequest` by itself. Put your message between the quotes.
 ##### TITLE BLACKLIST FILTER
 
 `SONGBLSIZE = 8` || When a user requests a song (aside from Youtube links, obviously), the song they typed is searched on Google Play Music, and the bot picks the top result. However, the top result is sometimes a cover, remix, live performance, etc. which the user will probably not want. If this setting is above 1, the bot will take that many results, and sort through them using your blacklisted terms. So for example, if you have the word "remix" set as a blacklisted term, the bot will prioritize search results *without* the word "remix" in them. The higher this number is set, the more accurate your search results will be, but the slower the bot will respond to them. We recommend a setting between 3 and 8.
@@ -94,7 +98,10 @@ This is a list of commands for the bot, which users will type into Twitch chat:
 
 Note that every song in the queue has an ID, which can be used in other commands. This ID is *not* based on the song's current position in the queue, and does not change. The ID is shown when the song is requested.
 
-`!nowplaying` || Displays the currently-playing song in chat. Note: the current song is saved to the **nowplaying.txt** file in the bot folder, so you can add this as a text source in OBS (or your streaming program of choice) to display the current song on screen.
+`!nowplaying` || Displays the currently-playing song in chat. Note: the current song is saved to the **nowplaying.txt** file in the bot folder, so you can add this as a text source in OBS (or your streaming program of choice) to display the current song on screen.  
+There is also a file called **SongQueue.csv**, which contains the whole queue in a readable format. We recommend using something like [Google Drive]([https://www.google.com/drive/download/backup-and-sync/](https://www.google.com/drive/download/backup-and-sync/)) to upload the file every time it updates. Your viewers can then visit this link at any time to see all upcoming songs and their IDs.
+
+`!timeleft` || Displays how much time is left on the current song. Putting a song ID after the command will display the combined length of all songs leading up to that one, i.e. how long until that song begins playing (assuming no pausing or skipping, of course).
 
 `!wrongsong` || If a user requests a song, but the search does not yield the correct song, the user can type this command to remove the last song they requested from the queue. They can also add a song ID after the command, if they wish to remove one of their requests that isn't the most recent one. For example, `!wrongsong 7` will remove song 7 from the queue, assuming the same user requested it.
 
@@ -125,11 +132,8 @@ Note that every song in the queue has an ID, which can be used in other commands
 **Q:** Is this bot purely for song requests?  
 **A:** At the moment, yes. We do plan to add normal commands later on though, so stay tuned!
 
-**Q:** I have all this *money* and don't know what to do with it!  
-**A:** The dev is a poor college student, so it'd help him out a ton if you wanted to donate! (Link below)
-
 ## Credits and Stuff
-[**Rxbots**](https://www.twitch.tv/rxbots) (AKA Grant) - Sole creator of the bot.
+[**Rxbots**](https://www.twitch.tv/rxbots) - Sole creator of the bot.
 
 [**iCeCoCaCoLa64**](https://www.twitch.tv/icecocacola64) - Ideas, motivation, testing, and documentation (hi there 👋🏻).
 
