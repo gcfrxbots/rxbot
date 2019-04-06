@@ -197,6 +197,7 @@ def tick():
 
         elif not paused and not nowplaying: # When a song is over, start a new song
             nowplaying = srcontrol.playsong()
+            time.sleep(0.5)
 
 
 
