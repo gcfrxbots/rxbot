@@ -5,6 +5,7 @@ from pytube import YouTube
 import keyboard
 import validators
 import vlc
+from vlc import EventType
 from Settings import *
 import time
 import sqlite3
@@ -13,12 +14,8 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 
 s = openSocket()
-
-
 api = Mobileclient()
 api.oauth_login(device_id=Mobileclient.FROM_MAC_ADDRESS, oauth_credentials="oauth.txt")
-
-
 if Mobileclient.is_authenticated(api) == True:
     print("Logged into GPM successfully")
 else:
@@ -49,7 +46,7 @@ def getytkey(url):
 def songtitlefilter(song_name, redo):
     blacklist = BLACKLISTED_SONG_TITLE_CONTENTS[:]
 
-    results = (Mobileclient.search(api, song_name)['song_hits'])[:SONGBLSIZE]
+    results = (Mobileclient.search(api, song_name, SONGBLSIZE)['song_hits'])[:SONGBLSIZE]
     songs = []
 
     for item in results:
@@ -97,31 +94,21 @@ def sr_geturl(songkey):
         sendMessage(s, "There was an issue playing the song.")
 
 def playfromplaylist():
-    import sqlite3 #Open the db, get the song out
-    from sqlite3 import Error
-    db = sqlite3.connect('songqueue.db')
-    cursor = db.cursor()
-    cursor.execute('''SELECT id, song, key FROM playlist ORDER BY id ASC''') #Pick the top song
-    row = cursor.fetchone()
+    row = sqliteread('''SELECT id, song, key FROM playlist ORDER BY id ASC''') #Pick the top song
     if row == None: #>>>>>> DO THIS STUFF IF THE LIST IS EMPTY!
-        print "Backup Playlist is empty!"
+        return
     try:
         songtitle = row[1]
         songkey = row[2]
     except:
-        print(">>>>>>BACKUP PLAYLIST IS EMPTY! ADD SOME SONGS TO IT WITH FillPlaylist.py or !addsong !!!! <<<<<<<<<<<<<<<<")
         return
 
     #Delete the top result
-    cursor.execute('SELECT id FROM playlist ORDER BY id ASC LIMIT 1')
-    row = cursor.fetchone()
+    row = sqliteread('SELECT id FROM playlist ORDER BY id ASC LIMIT 1')
+    sqlitewrite(('''DELETE FROM playlist WHERE id={0}''').format(int(row[0]))) #Delete the top song
+    sqlitewrite(('''INSERT INTO playlist(song, key) VALUES("{song_name}", "{key}");''').format(song_name=songtitle, key=songkey))
+    sqlitewrite(('''INSERT INTO songs(name, song, key) VALUES("BotPlaylist", "{song_name}", "{key}");''').format(song_name=songtitle, key=songkey))
 
-    cursor.execute(('''DELETE FROM playlist WHERE id={0}''').format(int(row[0]))) #Delete the top song
-
-    cursor.execute(('''INSERT INTO playlist(song, key) VALUES("{song_name}", "{key}");''').format(song_name=songtitle, key=songkey))
-
-    cursor.execute(('''INSERT INTO songs(name, song, key) VALUES("BotPlaylist", "{song_name}", "{key}");''').format(song_name=songtitle, key=songkey))
-    db.commit()
 
 def getsongtime(title, key):
     songtime = -1
@@ -137,20 +124,24 @@ def getsongtime(title, key):
         media = instance.media_new(songurl)
         player = instance.media_player_new()
         player.set_media(media)
-
-        while songtime == -1:  # Yes, this is bad. Sometimes it doesn't get the time, so it keeps trying if it doesnt. It's totally random. Sorry.
-            player.play()
-            time.sleep(0.05)
-            player.stop()
-            songtime = media.get_duration()
-
+        #Start the parser
+        media.parse_with_options(1,0)
+        cycle = 0
+        while True:
+            cycle += 1
+            if str(media.get_parsed_status()) == 'MediaParsedStatus.done':
+                break
+            if cycle > 99999999:
+                print "CRITICAL ERROR - GETSONGTIME IS BROKEN!"
+                break
+        songtime = media.get_duration()
+# Let it be known to whatever brave adventurer is exploring my code, that this is the place that
+# Grant's sanity died for nearly two weeks straight.
     except Exception as e:
         print "GETSONGTIME ISSUE"
         print e
         return
-    return (songtime - 1500) #Most songs have a 1.5 to 2 second offset
-
-
+    return (songtime - 2000) #Most songs have a short offset.
 
 class SRcontrol:
     def __init__(self):
@@ -163,8 +154,7 @@ class SRcontrol:
             self.songtitle = row[2]
             songkey = row[3]
         except Exception as e:
-            print e
-            print(">>>>>>BACKUP PLAYLIST IS EMPTY! ADD SOME SONGS TO IT WITH PlaylistEditor.py or !plsr<<<<<<")
+            time.sleep(0.4)
             return
         sqlitewrite(('''DELETE FROM songs WHERE id={0}''').format(row[0]))  # Delete the top song
 
@@ -181,14 +171,11 @@ class SRcontrol:
             else:  # Otherwise it's GPM
                 playurl = sr_geturl(songkey)
                 writenowplaying(True, self.songtitle)
-
-            self.p = vlc.MediaPlayer(playurl)  # Play the music
+            self.instance = vlc.Instance()
+            self.p = self.instance.media_player_new(playurl)  # Play the music
             self.p.play()
             writenowplaying(True, self.songtitle)
             createqueuecsv()
-            if ENABLE_HOTKEYS:
-                pass
-                #hotkeys()
             return True
         except Exception as e:
             print "PLAYSONG ERROR:"
@@ -265,7 +252,7 @@ class SRcommands:
     def __init__(self):
         self.db = None
 
-    '''--------------------QUEUE CONTROL--------------------'''
+    '''--------------------SONG REQUEST--------------------'''
 
     def songrequest(self, request, user):
         if request == "\r":  # Send a message if they request nothing
@@ -283,7 +270,7 @@ class SRcommands:
                     title = YouTube(request).title
                 except Exception as e:
                     print e
-                    return "Unable to use that video for some reason."
+                    return "Unable to use that video for some reason. It might be age restricted."
                 key = getytkey(request)
                 if not key: return "Something is wrong with your Youtube link."
 
@@ -308,14 +295,17 @@ class SRcommands:
                 removetopqueue()
                 return user + " >> Added that link to the queue. ID: " + getnewentry()
 
-        else:  # GOOGLE PLAY MUSIC STUFF
+        elif GPM_ENABLE:  # GOOGLE PLAY MUSIC STUFF
             try:
                 top_song_result = songtitlefilter(request, 0)
                 key = top_song_result['storeId']
                 songtitle = str(top_song_result['artist'] + " - " + top_song_result['title'])
             # If theres an error (its unable to find the song) then announce it, otherwise write the song data to the db
             except IndexError:
-                return "No results found for that song. Please try a different one."
+                if YT_IF_NO_RESULT:
+                    return self.youtubesr(request, user)
+                else:
+                    return user + " >> No results found for that song. Please try a different one."
             else:
                 # Test if the song is already in the queue
                 self.db = sqliteread('''SELECT id, count(*) FROM songs WHERE key="{0}"'''.format(key))
@@ -330,10 +320,31 @@ class SRcommands:
                 sqlitewrite('''INSERT INTO songs(name, song, key, time) VALUES("{user}", "{request}", "{key}", "{time}");'''.format(user=user, request=songtitle, key=key, time=songtime))
                 removetopqueue()
                 return user + " >> Added: " + songtitle + " to the queue. ID: " + getnewentry()
+        else:
+            return self.youtubesr(request, user)
 
     def youtubesr(self, request, user):
-        pass
+        try:
+            results = (Mobileclient.search(api, request, SONGBLSIZE)['video_hits'])
+            top_result = results[0]['youtube_video']
+            video_url = "https://www.youtube.com/watch?v=" + top_result['id']
+            key = top_result['id']
+        except IndexError:
+            return user + " >> No results found for that song on Google Play Music or YouTube."
+        title = top_result['title']
+        # Check the queue to see if the song is already in there.
+        self.db = sqliteread('''SELECT id, count(*) FROM songs WHERE key="{0}"'''.format(key))
+        if self.db[1] > (MAX_DUPLICATE_SONGS - 1):
+            return user + " >> That song is already in the queue."
+        songtime = getsongtime(video_url, key)
+        if songtime > (MAXTIME * 60000):
+            return user + " >> That song exceeds the maximum length of " + str(MAXTIME) + " minutes."
 
+        sqlitewrite('''INSERT INTO songs(name, song, key, time) VALUES("{user}", "{request}", "{key}", "{time}");'''.format(user=user, request=video_url, key=key, time=songtime))
+        removetopqueue()
+        return user + " >> Added: " + title + " to the queue (YT). ID: " + getnewentry()
+
+    '''--------------------QUEUE CONTROL--------------------'''
 
     def wrongsong(self, songid, user):
         if not songid:
@@ -357,15 +368,6 @@ class SRcommands:
                 raise e
             except:
                 return user + " >> Couldn't find that request."
-
-
-    def getnowplaying(self, x, user):
-        with open("nowplaying.txt", "r") as f:
-            returnnp = f.readlines()
-        if not returnnp:
-            sendMessage(s, (user + " >> The music is currently paused."))
-        else:
-            sendMessage(s, (user + " >> " + returnnp[0]))
 
 
     def clearsong(self, songid, user):
@@ -478,3 +480,20 @@ class SRcommands:
                 raise e
             except:
                 return user + " >> Couldn't find that request."
+
+    '''--------------------MISC--------------------'''
+
+    def getnowplaying(self, x, user):
+        with open("nowplaying.txt", "r") as f:
+            returnnp = f.readlines()
+        if not returnnp:
+            sendMessage(s, (user + " >> The music is currently paused."))
+        else:
+            sendMessage(s, (user + " >> " + returnnp[0]))
+
+    def clearqueue(self, x, y):
+        try:
+            sqlitewrite('DELETE FROM songs')
+            return "Cleared the current songrequest queue"
+        except:
+            return "There was some sort of issue clearing the queue."
