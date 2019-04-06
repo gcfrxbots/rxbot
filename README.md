@@ -1,5 +1,3 @@
-⚠️ WARNING - Do not download the most recent version, there is an issue with the timing detection with VLC itself. This will be resolved ASAP. Version 2.0 is stable. ⚠️
-
 
 # **RXBot**
 
