@@ -2,13 +2,10 @@ from gmusicapi import Mobileclient
 from Initialize import sqliteread, sqlitewrite, openSocket, sendMessage,  createqueuecsv
 import sys
 from pytube import YouTube
-import keyboard
 import validators
 import vlc
-from vlc import EventType
 from Settings import *
 import time
-import sqlite3
 from sqlite3 import Error
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -110,39 +107,6 @@ def playfromplaylist():
     sqlitewrite(('''INSERT INTO songs(name, song, key) VALUES("BotPlaylist", "{song_name}", "{key}");''').format(song_name=songtitle, key=songkey))
 
 
-def getsongtime(title, key):
-    songtime = -1
-    try:
-        if title:
-            if title == "Online":
-                songurl = key
-            else:
-                songurl = YouTube(title).streams.filter(only_audio=True).order_by('abr').first().url
-        else:  # Otherwise it's GPM
-            songurl = sr_geturl(key)
-        instance = vlc.Instance()
-        media = instance.media_new(songurl)
-        player = instance.media_player_new()
-        player.set_media(media)
-        #Start the parser
-        media.parse_with_options(1,0)
-        cycle = 0
-        while True:
-            cycle += 1
-            if str(media.get_parsed_status()) == 'MediaParsedStatus.done':
-                break
-            if cycle > 99999999:
-                print "CRITICAL ERROR - GETSONGTIME IS BROKEN!"
-                break
-        songtime = media.get_duration()
-# Let it be known to whatever brave adventurer is exploring my code, that this is the place that
-# Grant's sanity died for nearly two weeks straight.
-    except Exception as e:
-        print "GETSONGTIME ISSUE"
-        print e
-        return
-    return (songtime - 2000) #Most songs have a short offset.
-
 class SRcontrol:
     def __init__(self):
         self.msg = None
@@ -158,28 +122,26 @@ class SRcontrol:
             return
         sqlitewrite(('''DELETE FROM songs WHERE id={0}''').format(row[0]))  # Delete the top song
 
-        try:
-            if validators.url(self.songtitle) == True: # TEST IF THE REQUEST IS A LINK
-                if "youtu" in self.songtitle:  # IS IT A YOUTUBE LINK?
-                    playurl = YouTube(self.songtitle).streams.filter(only_audio=True).order_by('abr').first().url
-                    self.songtitle = YouTube(self.songtitle).title
-                    writenowplaying(True, self.songtitle)
-                else:  # If not YT link, play normal music file.
-                    playurl = self.songtitle
-                    self.songtitle = "Online Music File"
-                    writenowplaying(True, self.songtitle)
-            else:  # Otherwise it's GPM
-                playurl = sr_geturl(songkey)
+
+        if validators.url(self.songtitle) == True: # TEST IF THE REQUEST IS A LINK
+            if "youtu" in self.songtitle:  # IS IT A YOUTUBE LINK?
+                yt = YouTube(self.songtitle)
+                playurl = yt.streams.filter(only_audio=True).order_by('abr').first().url
+                self.songtitle = yt.title
                 writenowplaying(True, self.songtitle)
-            self.instance = vlc.Instance()
-            self.p = self.instance.media_player_new(playurl)  # Play the music
-            self.p.play()
+            else:  # If not YT link, play normal music file.
+                playurl = self.songtitle
+                self.songtitle = "Online Music File"
+                writenowplaying(True, self.songtitle)
+        else:  # Otherwise it's GPM
+            playurl = sr_geturl(songkey)
             writenowplaying(True, self.songtitle)
-            createqueuecsv()
-            return True
-        except Exception as e:
-            print "PLAYSONG ERROR:"
-            print e
+        self.instance = vlc.Instance()
+        self.p = self.instance.media_player_new(playurl)  # Play the music
+        self.p.play()
+        writenowplaying(True, self.songtitle)
+        createqueuecsv()
+        return True
 
     def songover(self):
         print("Song is over!")
@@ -200,57 +162,65 @@ class SRcontrol:
 
 
     def volume(self, vol, user):
-        if vol == None:
-            return "Current volume: " + str(self.p.audio_get_volume())
-        if (vol > 100) or (vol < 0):
-            return "Invalid volume level. Must be between 0-100."
-        self.p.audio_set_volume(vol)
-        return "Music volume set to: " + str(vol)
+        try:
+            if vol == None:
+                return "Current volume: " + str(self.p.audio_get_volume())
+            if (vol > 100) or (vol < 0):
+                return "Invalid volume level. Must be between 0-100."
+            self.p.audio_set_volume(vol)
+            return "Music volume set to: " + str(vol)
+        except AttributeError:
+            return "Music needs to be playing before adjusting the volume."
 
     def volumeup(self, vol, user):
-        if not vol:
-            vol = VOL_INCREMENT
-        currentvolume = self.p.audio_get_volume()
-        if (currentvolume + vol) > 100:
-            self.p.audio_set_volume(100)
-            print "Raised the volume to: 100"
-            return "Raised the volume to: 100"
-        self.p.audio_set_volume(currentvolume + vol)
-        self.msg = "Raised the volume to: " + str(currentvolume + vol)
-        print self.msg
-        return self.msg
+        try:
+            if not vol:
+                vol = VOL_INCREMENT
+            currentvolume = self.p.audio_get_volume()
+            if (currentvolume + vol) > 100:
+                self.p.audio_set_volume(100)
+                print "Raised the volume to: 100"
+                return "Raised the volume to: 100"
+            self.p.audio_set_volume(currentvolume + vol)
+            self.msg = "Raised the volume to: " + str(currentvolume + vol)
+            print self.msg
+            return self.msg
+        except AttributeError:
+            return "Music needs to be playing before adjusting the volume."
 
     def volumedown(self, vol, user):
-        if not vol:
-            vol = VOL_INCREMENT
-        currentvolume = self.p.audio_get_volume()
-        if (currentvolume - vol) < 0:
-            self.p.audio_set_volume(0)
-            print "Lowered the volume to: 0"
-            return "Lowered the volume to: 0"
-        self.p.audio_set_volume(currentvolume - vol)
-        self.msg = "Lowered the volume to: " + str(currentvolume - vol)
-        print self.msg
-        return self.msg
-
+        try:
+            if not vol:
+                vol = VOL_INCREMENT
+            currentvolume = self.p.audio_get_volume()
+            if (currentvolume - vol) < 0:
+                self.p.audio_set_volume(0)
+                print "Lowered the volume to: 0"
+                return "Lowered the volume to: 0"
+            self.p.audio_set_volume(currentvolume - vol)
+            self.msg = "Lowered the volume to: " + str(currentvolume - vol)
+            print self.msg
+            return self.msg
+        except AttributeError:
+            return "Music needs to be playing before adjusting the volume."
 
     def play(self):
-        print "Resumed the music"
-        writenowplaying(True, self.songtitle)
-        self.p.set_pause(False)
-
+            print "Resumed the music"
+            writenowplaying(True, self.songtitle)
+            self.p.set_pause(False)
 
     def pause(self):
-        print "Paused the music"
-        writenowplaying(False, "")
-        self.p.set_pause(True)
-
+            print self.p
+            print "Paused the music"
+            writenowplaying(False, "")
+            self.p.set_pause(True)
 
 
 
 class SRcommands:
     def __init__(self):
         self.db = None
+        self.video = None
 
     '''--------------------SONG REQUEST--------------------'''
 
@@ -266,11 +236,6 @@ class SRcommands:
         # DETERMINE LINK TYPE
         if validators.url(request):
             if "youtu" in request:
-                try:
-                    title = YouTube(request).title
-                except Exception as e:
-                    print e
-                    return "Unable to use that video for some reason. It might be age restricted."
                 key = getytkey(request)
                 if not key: return "Something is wrong with your Youtube link."
 
@@ -279,20 +244,28 @@ class SRcommands:
 
                 if self.db[1] > (MAX_DUPLICATE_SONGS - 1):
                     return user + " >> That song is already in the queue."
-                songtime = getsongtime(request, key)
+
+                try:
+                    self.video = YouTube(request)
+                except:
+                    return user + " >> That video is unavailable, it's probably age restricted."
+
+                songtime = self.getsongtime(request, key)
                 if songtime > (MAXTIME * 60000):
                     return user + " >> That song exceeds the maximum length of " + str(MAXTIME) + " minutes."
 
+                title = self.video.title
                 sqlitewrite('''INSERT INTO songs(name, song, key, time) VALUES("{user}", "{request}", "{key}", "{time}");'''.format(user=user, request=request, key=key, time=songtime))
                 removetopqueue()
                 return user + " >> Added: " + title + " to the queue (YT). ID: " + getnewentry()
             else:  # OTHER MP3 REQUESTS <<<<<<<
-                songtime = getsongtime("Online", request)
+                songtime = self.getsongtime("Online", request)
                 if songtime > (MAXTIME * 60000):
                     return user + " >> That song exceeds the maximum length of " + str(MAXTIME) + " minutes."
 
                 sqlitewrite('''INSERT INTO songs(name, song, key, time) VALUES("{user}", "{request}", "{request}", "{time}");'''.format(user=user, request=request, time=songtime))
                 removetopqueue()
+
                 return user + " >> Added that link to the queue. ID: " + getnewentry()
 
         elif GPM_ENABLE:  # GOOGLE PLAY MUSIC STUFF
@@ -311,7 +284,7 @@ class SRcommands:
                 self.db = sqliteread('''SELECT id, count(*) FROM songs WHERE key="{0}"'''.format(key))
                 if self.db[1] > (MAX_DUPLICATE_SONGS - 1):
                     return user + " >> That song is already in the queue."
-                songtime = getsongtime(None, key)
+                songtime = self.getsongtime(None, key)
 
                 if songtime > (MAXTIME * 60000):
                     return user + " >> That song exceeds the maximum length of " + str(MAXTIME) + " minutes."
@@ -329,14 +302,23 @@ class SRcommands:
             top_result = results[0]['youtube_video']
             video_url = "https://www.youtube.com/watch?v=" + top_result['id']
             key = top_result['id']
+            title = top_result['title']
         except IndexError:
-            return user + " >> No results found for that song on Google Play Music or YouTube."
-        title = top_result['title']
+            try:
+                self.video = YouTube("https://www.youtube.com/watch?v=" + request)
+                return self.songrequest(" https://www.youtube.com/watch?v=" + request, user)
+            except:
+                return "No results at all"
+
+        try:
+            self.video = YouTube(video_url)
+        except:
+            return user + " >> That video is unavailable, it's probably age restricted."
         # Check the queue to see if the song is already in there.
         self.db = sqliteread('''SELECT id, count(*) FROM songs WHERE key="{0}"'''.format(key))
         if self.db[1] > (MAX_DUPLICATE_SONGS - 1):
             return user + " >> That song is already in the queue."
-        songtime = getsongtime(video_url, key)
+        songtime = self.getsongtime(video_url, key)
         if songtime > (MAXTIME * 60000):
             return user + " >> That song exceeds the maximum length of " + str(MAXTIME) + " minutes."
 
@@ -497,3 +479,37 @@ class SRcommands:
             return "Cleared the current songrequest queue"
         except:
             return "There was some sort of issue clearing the queue."
+
+    def getsongtime(self, title, key):
+        songtime = -1
+        try:
+            if title:
+                if title == "Online":
+                    songurl = key
+                else:
+                    songurl = self.video.streams.filter(only_audio=True).order_by('abr').first().url
+            else:  # Otherwise it's GPM
+                songurl = sr_geturl(key)
+            instance = vlc.Instance()
+            media = instance.media_new(songurl)
+            player = instance.media_player_new()
+            player.set_media(media)
+            #Start the parser
+            media.parse_with_options(1,0)
+            cycle = 0
+            while True:
+                cycle += 1
+                if str(media.get_parsed_status()) == 'MediaParsedStatus.done':
+                    break
+                if cycle > 99999999:
+                    print "CRITICAL ERROR - GETSONGTIME IS BROKEN!"
+                    break
+            songtime = media.get_duration()
+        # Let it be known to whatever brave adventurer is exploring my code, that this is the place that
+        # Grant's sanity died for nearly two weeks straight.
+        except Exception as e:
+            print "GETSONGTIME ISSUE"
+            print e
+            return
+        return (songtime - 2000) #Most songs have a short offset.
+

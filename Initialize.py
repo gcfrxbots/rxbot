@@ -1,13 +1,11 @@
 import string
 import socket
 import sys
-import keyboard
 import csv
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
 from Settings import *
-
 
 
 

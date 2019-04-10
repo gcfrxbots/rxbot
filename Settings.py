@@ -17,12 +17,17 @@ BOT_NAME = ""
 CHANNEL = ""
 # The twitch username of the channel you are connecting to (Lowercase)
 
+GPM_ENABLE = True
+# Are you using Google Play Music? If this is set to false, all requests will only search youtube.
+# If false, this will result in sporadic volumes, bad quality, and annoying intros/outros.
+# This will throw a LOT OF ERRORS if you have GPM songs in your backup playlist and you set this to False.
+
 '''-------------------->>SONGREQUEST<<--------------------'''
 
 MAX_DUPLICATE_SONGS = 1
 # This is the maximum amount of duplicate songs that can be in the queue. Leave 1 to only have one of each song in the queue at once.
 
-MAX_REQUESTS_USER = 5
+MAX_REQUESTS_USER = 10
 # This is the maximum amount of songs that a user may request. Ranks coming soon.
 
 SHUFFLE_ON_START = True
@@ -35,13 +40,18 @@ VOL_INCREMENT = 5
 # This is how much the volume will be changed by when you type !volumeup, !volumedown, or use a hotkey to adjust volume.
 
 MAXTIME = 10
-#The maximum song length in minutes. Songs longer than this duration won't be requested.
+# The maximum song length in minutes. Songs longer than this duration won't be requested.
+
+YT_IF_NO_RESULT = True
+# If no results are found searching Google Play Music, the bot will plug the same query into youtube and play the top result from there.
+# This has no effect if GPM_ENABLE is set to False.
 
 DEFAULT_SR_MSG = "You need to type a song's name, or a link to a Youtube video or music file. You can type !wrongsong if the wrong one is selected."
 # This is the message that will show up if someone types "!sr" or "!songrequest"
 
 
 '''-------------------->>TITLE BLACKLIST FILTER<<--------------------'''
+# This only applies to GPM and does nothing if GPM_ENABLE is set to False.
 
 SONGBLSIZE = 5
 # This is how many songs are loaded into the sorter and checked to see if they get affected by the blacklist.

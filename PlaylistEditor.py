@@ -68,7 +68,7 @@ def fillPlaylist():
                 errors += 1
                 print e
         else:
-            print str(index) + " - >>>>>>>>User Uploaded File - Cannot add to the playlist. Try !addsong with Youtube or an online link."
+            print str(index) + " - >>>>>>>>User Uploaded File - Cannot add to the playlist. Try !plsr with Youtube or an online link."
             errors += 1
         index += 1
     print ">>>Finished! Out of " + str(index) + " songs, " + str(index - errors) + " were added successfully. There were " + str(errors) + " songs that couldn't be added, probably because they were user uploaded files."

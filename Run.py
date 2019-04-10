@@ -112,6 +112,8 @@ def runcommand(command, cmdarguments, user):
         "!nowplaying": (sr.getnowplaying, None, user),
         "!timeleft": (sr.queuetime, getint(cmdarguments), user),
 
+        "!test": (sr.youtubesr, cmdarguments, user),
+
         # NowPlaying Control
         "!play": ("MOD", play, None, None),
         "!pause": ("MOD", pause, None, None),
@@ -126,7 +128,9 @@ def runcommand(command, cmdarguments, user):
         "!clearsong": ("MOD", sr.clearsong, getint(cmdarguments), user),
         "!plsr": ("MOD", sr.plsongrequest, cmdarguments, user),
         "!plclearsong": ("MOD", sr.plclearsong, cmdarguments, user),
+        "!clearqueue": ("MOD", sr.clearqueue, None, None),
     }
+
     for item in commands:
         if item == command:
             if commands[item][0] == "MOD": #MOD ONLY COMMANDS:
@@ -139,7 +143,13 @@ def runcommand(command, cmdarguments, user):
             break
     if not torun:
         return
-    sendMessage(s, torun)
+    output = torun
+    #Modifiers to do something other than send a message
+    if output == None:
+        pass
+
+    else:
+        sendMessage(s, output)
     return
 
 
@@ -179,26 +189,26 @@ def tick():
     timecache = 0
     global nowplaying, paused
     while True:
-        time.sleep(0.3)
-        # Check if there's nothing in the playlist.
-        if not sqliteread('''SELECT id, name, song, key FROM songs ORDER BY id ASC'''):
-            playfromplaylist() # Move a song from the playlist into the queue.
-
-        if paused or not nowplaying:  # If for any reason the music isnt playing, change the nowplaying to nothing
-            writenowplaying(False, "")
-
-        if nowplaying and not paused:  # If music IS playing:
             time.sleep(0.3)
-            nptime = srcontrol.gettime()  # Save the current now playing time
+            # Check if there's nothing in the playlist.
+            if not sqliteread('''SELECT id, name, song, key FROM songs ORDER BY id ASC'''):
+                playfromplaylist() # Move a song from the playlist into the queue.
 
-            if timecache == nptime:  # If the cache (written 0.3 seconds before) and the time are equal, songs over
-                nowplaying = srcontrol.songover()
-            timecache = nptime
+            if paused or not nowplaying:  # If for any reason the music isnt playing, change the nowplaying to nothing
+                writenowplaying(False, "")
 
-        elif not paused and not nowplaying: # When a song is over, start a new song
-            nowplaying = srcontrol.playsong()
-            time.sleep(0.5)
+            if nowplaying and not paused:  # If music IS playing:
+                time.sleep(0.3)
+                nptime = srcontrol.gettime()  # Save the current now playing time
 
+                if timecache == nptime:  # If the cache (written 0.3 seconds before) and the time are equal, songs over
+                    nowplaying = srcontrol.songover()
+                timecache = nptime
+
+            elif not paused and not nowplaying: # When a song is over, start a new song
+                nowplaying = srcontrol.playsong()
+                timecache = 1
+                time.sleep(1)
 
 
 
