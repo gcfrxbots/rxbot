@@ -112,8 +112,6 @@ def runcommand(command, cmdarguments, user):
         "!nowplaying": (sr.getnowplaying, None, user),
         "!timeleft": (sr.queuetime, getint(cmdarguments), user),
 
-        "!test": (sr.youtubesr, cmdarguments, user),
-
         # NowPlaying Control
         "!play": ("MOD", play, None, None),
         "!pause": ("MOD", pause, None, None),
