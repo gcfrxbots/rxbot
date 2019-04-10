@@ -33,7 +33,7 @@ If there are no song requests in the queue, the bot will play songs from your ba
 
 ## Settings
 
-The **Settings.py** file is where you can adjust your personal settings for the bot. Make sure you read this section completely, as you *need* to change some of these for the bot to work in your channel. To edit this file, us a program such as IDLE or Notepad++.
+The **Settings.py** file is where you can adjust your personal settings for the bot. Make sure you read this section completely, as you *need* to change some of these for the bot to work in your channel. To edit this file, use a program such as IDLE or Notepad++.
 
 ##### BOT
 
