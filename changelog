@@ -1,17 +1,22 @@
-VERSION 2.1
+VERSION 2.2
 
-Primary Change Focus: TIMING
+Primary Change Focus: YOUTUBE UPGRADES
 
 Changes:
 
 SONGREQUEST:
-All songs are now stored in the database table with a "time" value in ms. This allows the time to be referenced whenever needed.
-When songs are tested for timing, they must be 'played' for 0.02 seconds. This should be short enough that most computers won't detect it, but needs testing on much slower CPUs.
-Songs now have a configurable maximum time, adjustable in Settings as MAXTIME. 
+Added a setting GPM_ENABLE which allows for the option to disable Google Play Music entirely. Remember to clear playlist/queue first.
+Added a setting YT_IF_NO_RESULT which allows the bot to automatically search and play YT songs if a request isn't found on GPM.
+Because sometimes GPM isn't able to properly bring up videos when requesting just YT id's, added a fallback to triple check that the request works.
+
+Sped up requests for youtube and GPM slightly.
+Fixed a bug where songs randomly skip less than a second after playing.
+Hated VLC a lot for making my life incredibly difficult.
 
 COMMANDS:
-Fixed !volume 0 returning the current volume due to python thinking 0 is the same as None
-Added DEFAULT_SR_MSG to settings, so that a user just typing !sr or !songrequest in chat won't request "", but instead get a configurable message with instructions about songrequest.
+Added a potential bypass to commands so that a function can be run without sending a message back. Doesn't really change anything other than make my life easier.
+Re-Added !clearqueue since I completely forgot to add it back during the rewrite. This clears the songrequest queue.
 
-Added !timeleft [id]. Typing the command will return the hours/min/seconds total of all songs in the queue, or send a message if there are no songs. 
-!timeleft [id] will return the time up until the song with the given id (not including it) so that users may know how much time remains until their request.
+
+This will be the final release before advertising the bot to the public. 
+
