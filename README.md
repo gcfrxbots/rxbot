@@ -3,11 +3,11 @@
 
 Hi, thank you for choosing RXBot! This documentation serves to help you understand what the bot is, what it can do, and how to use it, with the instructions being as simple and clear as possible.
 
-RXBot is a song request bot for Twitch streamers: viewers can request songs in chat, and they will be added to a queue for the streamer to listen to while they stream. What makes RXBot unique is that it supports not only YouTube, but Google Play Music as well (yes, you must have a subscription). It's also very lightweight, so it will have virtually no impact on system performance.
+RXBot is a song request bot for Twitch streamers: viewers can request songs in chat, and they will be added to a queue for the streamer to listen to while they stream. What makes RXBot unique is that it supports not only YouTube, but Google Play Music as well (though you must have a subscription to use that functionality). It's also very lightweight, so it will have virtually no impact on system performance.
 
 ⚠️ This project is still in early development, so despite pre-release testing, it may not function as expected. Please report bugs using Github's *Issues* tab, or in the [Rxbots Discord](https://discord.gg/8FRQBJy). ⚠️
 
-*(Readme last updated for v2.1)*
+*(Readme last updated for v2.2)*
 
 -----
 
@@ -17,7 +17,7 @@ Once you download the bot, make sure you have all the requirements installed bef
 
 • [**Python 2.7.9**](https://www.python.org/downloads/release/python-279/)
 
-• [**VLC Media Player**](https://www.videolan.org/vlc/index.html) needs to be *installed*, but it does not need to actually be *running* for the bot to work.
+• [**VLC Media Player**](https://www.videolan.org/vlc/index.html) needs to be *installed*, but it does not need to actually be *running* alongside the bot for it to work.
 
 • Finally, run **Install_Requirements.bat** in the bot's folder. If you wish, you can delete this file and **requirements.txt** afterwards, as they are no longer needed.
 
@@ -27,7 +27,7 @@ Once you download the bot, make sure you have all the requirements installed bef
 
 Before doing anything, you need to create a Twitch account for your bot to use. Don't use the account you'll actually be streaming from. It would probably be a good idea to make your bot a chat moderator. And if you use the BetterTTV extension, make sure to [add your new bot.](https://manage.betterttv.net/channel)
 
-Run the bot by opening **Run.py** in the bot's folder. The first time you run it, the bot will tell you to go to [this page](https://accounts.google.com/o/oauth2/v2/auth?scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fskyjam&redirect_uri=urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob&response_type=code&client_id=228293309116.apps.googleusercontent.com&access_type=offline) to generate an oauth link. Log in with your Google Play Account and follow all the prompts until it gives you a code. Copy that code, paste it in the bot window, and press Enter. If you entered it correctly, the bot will tell you that your backup playlist is empty. Close the bot so we can fix that.
+Run the bot by opening **Run.py** in the bot's folder. The first time you run it, the bot will tell you to go to [this page](https://accounts.google.com/o/oauth2/v2/auth?scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fskyjam&redirect_uri=urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob&response_type=code&client_id=228293309116.apps.googleusercontent.com&access_type=offline) to generate an oauth link. You ***do not need*** a Google Play Music subscription, you only need the account. However, if you do not have a subscription, the bot's GPM integration will not work and you must disable it. Log in with your Google Play Account and follow all the prompts until it gives you a code. Copy that code, paste it in the bot window, and press Enter. If you entered it correctly, the bot will tell you that your backup playlist is empty. Close the bot so we can fix that.
 
 If there are no song requests in the queue, the bot will play songs from your backup playlist. Since this is your first time using the bot, your backup playlist is empty. Run **PlaylistEditor.py**, and it will present you with three options: `1. Fill Playlist || 2. Shuffle Playlist || 3. Clear Playlist` To add songs, type 1 and hit enter. The bot will then detect all playlists on your Google Play Music account (only playlists you've created, not ones you follow). Type the number of the playlist you wish to import and hit enter. Once the bot is finished importing (it should take less than a second), it will close itself, but you can re-open it and add import more playlists if you wish. Note that song files you've *uploaded* to your GPM account will not work, but you can add those songs to the bot via Youtube or uploaded files (more on that later). For now, it's time to adjust your settings.
 
@@ -45,6 +45,8 @@ The **Settings.py** file is where you can adjust your personal settings for the 
 
 `CHANNEL = ""` || Your Twitch username. Put it between the quotes, in all lowercase.
 
+`GPM_ENABLE = True` || Turn Google Play Music integration on or off. This *must* be set to `False` if you do not have a Google Play Music subscription.
+
 ##### SONGREQUEST
 
 `MAX_DUPLICATE_SONGS = 1` || The same song cannot be in the queue more than this many times. Most sane users will want to keep this set to 1.
@@ -58,6 +60,8 @@ The **Settings.py** file is where you can adjust your personal settings for the 
 `VOL_INCREMENT = 5` || Adjusts how much the volume will change when using a volume hotkey, or `!volumeup`/`volumedown`. For example: if you have this set to 5, and your volume is at 50, hitting your volume up hotkey will change the volume to 55.
 
 `MAXTIME = 10` || This is the maximum song length, in minutes. If a user tries to request a song that exceeds this length, it will be rejected, and not added to the queue.
+
+`YT_IF_NO_RESULT = True` || If a user's request is not found on Google Play Music, the bot will search the request on Youtube instead, and add the top result to the list. If you don't want that feature, change this setting to `False`.
 
 `DEFAULT_SR_MSG = ""` || The message that will show up if a user types `!sr` or `!songrequest` by itself. Put your message between the quotes.
 ##### TITLE BLACKLIST FILTER
@@ -95,7 +99,7 @@ This is a list of commands for the bot, which users will type into Twitch chat:
 
 `!sr` or `!songrequest` || This is the command users will type to request songs. They type the command, then the song they want to request.  
 **Google Play Music:** Following the command with a search term will add the song from Google Play Music. For example:`!sr Ginuwine Pony` will search "Ginuwine Pony" on Google Play Music, and add the best result. Users can also add their own blacklisted terms to their search by putting a hyphen before the word they wish to exclude. For example: `!sr Ginuwine Pony -remix` will look up "Ginuwine Pony" on Google Play Music, but will exclude all search results containing the word "Remix" in the title.   
-**Youtube:** Instead of looking up a song, users can instead paste a Youtube link. For example: `!sr https://www.youtube.com/watch?v=lbnoG2dsUk0`  
+**Youtube:** Instead of looking up a song, users can instead paste a Youtube link. For example: `!sr https://www.youtube.com/watch?v=lbnoG2dsUk0`
 **Uploaded Music File:** If you upload a music file (.mp3, .wav, etc.) to the internet and can get a direct streaming link to it, you can request that as well. For example: You can upload your song file to a website like [Instaudio](https://instaud.io/), then request the song with the direct streaming link, like so: `!sr https://instaud.io/_/3nOe.mp3`  
 
 Note that every song in the queue has an ID, which can be used in other commands. This ID is *not* based on the song's current position in the queue, and does not change. The ID is shown when the song is requested.
