@@ -259,6 +259,9 @@ class SRcommands:
                 removetopqueue()
                 return user + " >> Added: " + title + " to the queue (YT). ID: " + getnewentry()
             else:  # OTHER MP3 REQUESTS <<<<<<<
+                if not MEDIA_FILE_ENABLE:
+                    return user + " >> Online Media Links are disabled by the streamer, you'll need to request something else."
+
                 songtime = self.getsongtime("Online", request)
                 if songtime > (MAXTIME * 60000):
                     return user + " >> That song exceeds the maximum length of " + str(MAXTIME) + " minutes."
@@ -479,6 +482,10 @@ class SRcommands:
             return "Cleared the current songrequest queue"
         except:
             return "There was some sort of issue clearing the queue."
+
+    def queuelink(self, user, x):
+        return user + " >> " + QUEUE_LINK
+
 
     def getsongtime(self, title, key):
         songtime = -1

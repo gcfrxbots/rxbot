@@ -68,7 +68,7 @@ keyboard.add_hotkey(HK_VOLUP, srcontrol.volumeup, args=(None, None))
 keyboard.add_hotkey(HK_VOLDN, srcontrol.volumedown, args=(None, None))
 keyboard.add_hotkey(HK_PAUSE, togglepause)
 keyboard.add_hotkey(HK_VETO, veto, args=(None, None))
-keyboard.add_hotkey(HK_CLRSONG, sr.clearsong, args=(None, "STREAMER"))
+keyboard.add_hotkey(HK_CLRSONG, sendMessage, args=(s, sr.clearsong(None, "STREAMER")))
 
 
 
@@ -111,6 +111,7 @@ def runcommand(command, cmdarguments, user):
         "!wrongsong": (sr.wrongsong, getint(cmdarguments), user),
         "!nowplaying": (sr.getnowplaying, None, user),
         "!timeleft": (sr.queuetime, getint(cmdarguments), user),
+        "!queue": (sr.queuelink, user, None),
 
         # NowPlaying Control
         "!play": ("MOD", play, None, None),
@@ -119,8 +120,11 @@ def runcommand(command, cmdarguments, user):
 
         # Volume Control
         "!volume": ("MOD", srcontrol.volume, getint(cmdarguments), user),
+        "!v": ("MOD", srcontrol.volume, getint(cmdarguments), user), # Alias
         "!volumeup": ("MOD", srcontrol.volumeup, getint(cmdarguments), user),
+        "!vu": ("MOD", srcontrol.volumeup, getint(cmdarguments), user), # Alias
         "!volumedown": ("MOD", srcontrol.volumedown, getint(cmdarguments), user),
+        "!vd": ("MOD", srcontrol.volumedown, getint(cmdarguments), user), # Alias
 
         # Playlist Control
         "!clearsong": ("MOD", sr.clearsong, getint(cmdarguments), user),

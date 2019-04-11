@@ -27,7 +27,7 @@ GPM_ENABLE = True
 MAX_DUPLICATE_SONGS = 1
 # This is the maximum amount of duplicate songs that can be in the queue. Leave 1 to only have one of each song in the queue at once.
 
-MAX_REQUESTS_USER = 10
+MAX_REQUESTS_USER = 5
 # This is the maximum amount of songs that a user may request. Ranks coming soon.
 
 SHUFFLE_ON_START = True
@@ -46,8 +46,18 @@ YT_IF_NO_RESULT = True
 # If no results are found searching Google Play Music, the bot will plug the same query into youtube and play the top result from there.
 # This has no effect if GPM_ENABLE is set to False.
 
+MEDIA_FILE_ENABLE = True
+# This is an option to toggle online media, such as a link directly to an .mp3 or .wav
+# This gives users more options for requests, but use with caution as people can request bad stuff.
+
+QUEUE_LINK = "There is not a queue link set by the streamer yet."
+# This is the link to your SongQueue.csv, hosted wherever you can online.
+# We recommend using Google Backup and Sync. Bonus points for embedding the file in your own site.
+# When a user types !queue this link will appear.
+
 DEFAULT_SR_MSG = "You need to type a song's name, or a link to a Youtube video or music file. You can type !wrongsong if the wrong one is selected."
-# This is the message that will show up if someone types "!sr" or "!songrequest"
+# This is the message that will show up if someone types "!sr" or "!songrequest" without any request.
+# Usually this is for when you have "!songrequest" in your stream title and someone wants to see what it is.
 
 
 '''-------------------->>TITLE BLACKLIST FILTER<<--------------------'''
@@ -77,22 +87,20 @@ MODERATORS = [
 
 ]
 # These are people listed as moderators within the bot. It will automatically pull in moderators from chat as mods as well, but you can define mods here that have mod perms in the bot and not in chat.
-# This is case sensitive. I recommend using yourself.
+# This is case sensitive.
 
 
 '''-------------------->>HOTKEYS<<--------------------'''
 ENABLE_HOTKEYS = True # If this is set to true, you'll need to have something in all the hotkey options below.
-HK_VOLUP = "F20"    # Volume Up
-HK_VOLDN = "F14"    # Volume Down
-HK_PAUSE = "F16"    # Toggle play/pause the music
-HK_VETO = "F15"     # Veto the currently playing track
-HK_CLRSONG = "F22"  # Remove the last song that anyone requested
+HK_VOLUP = ""    # Volume Up
+HK_VOLDN = ""    # Volume Down
+HK_PAUSE = ""    # Toggle play/pause the music
+HK_VETO = ""     # Veto the currently playing track
+HK_CLRSONG = ""  # Remove the last song that anyone requested
 
 # Hotkeys must be formatted in a specific way. Valid formats are listed below:
-# Key scan codes (like 57 for Space) may be used, or a key's name may be used.
 # VALID MODIFIERS: 'alt', 'alt gr', 'ctrl', 'left alt', 'left ctrl', 'left shift', 'left windows', 'right alt', 'right ctrl', 'right shift', 'right windows', 'shift', 'windows'
 
 # "alt+q"
 # "Space"
-# "57"
 # "ctrl+shift+f11"
