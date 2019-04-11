@@ -1,22 +1,17 @@
-VERSION 2.2
+VERSION 2.2.1
 
-Primary Change Focus: YOUTUBE UPGRADES
+Primary Change Focus: EASE OF USE CHANGES
 
 Changes:
 
 SONGREQUEST:
-Added a setting GPM_ENABLE which allows for the option to disable Google Play Music entirely. Remember to clear playlist/queue first.
-Added a setting YT_IF_NO_RESULT which allows the bot to automatically search and play YT songs if a request isn't found on GPM.
-Because sometimes GPM isn't able to properly bring up videos when requesting just YT id's, added a fallback to triple check that the request works.
+Added a setting MEDIA_FILE_ENABLE to allow users to disable online hosted media files if they choose to.
 
-Sped up requests for youtube and GPM slightly.
-Fixed a bug where songs randomly skip less than a second after playing.
-Hated VLC a lot for making my life incredibly difficult.
 
 COMMANDS:
-Added a potential bypass to commands so that a function can be run without sending a message back. Doesn't really change anything other than make my life easier.
-Re-Added !clearqueue since I completely forgot to add it back during the rewrite. This clears the songrequest queue.
-
-
-This will be the final release before advertising the bot to the public. 
+Added !queue and setting QUEUE_LINK. Use any online backup service to automatically upload SongQueue.csv and put the link here so users can see it.
+Added shorter aliases for the !volume, !volumeup, and !volumedown as !v, !vu, and !vd respectively.
+Fixed the HK_CLRSONG "!clearsong" hotkey to send a message in chat when it's activated to let a user know that their request was cleared.
+Cleaned up some of the wording in the Settings.py file to not mislead people.
+Apparently Keyboard Scan codes don't actually work with the hotkeys. Whoops. Will be changing over to AHK's python lib soon.
 
