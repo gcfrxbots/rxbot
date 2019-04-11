@@ -91,7 +91,7 @@ MODERATORS = [
 
 
 '''-------------------->>HOTKEYS<<--------------------'''
-ENABLE_HOTKEYS = True # If this is set to true, you'll need to have something in all the hotkey options below.
+ENABLE_HOTKEYS = False # If this is set to true, you'll need to have something in all the hotkey options below.
 HK_VOLUP = ""    # Volume Up
 HK_VOLDN = ""    # Volume Down
 HK_PAUSE = ""    # Toggle play/pause the music
