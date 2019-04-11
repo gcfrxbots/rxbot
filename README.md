@@ -7,7 +7,7 @@ RXBot is a song request bot for Twitch streamers: viewers can request songs in c
 
 ⚠️ This project is still in early development, so despite pre-release testing, it may not function as expected. Please report bugs using Github's *Issues* tab, or in the [Rxbots Discord](https://discord.gg/8FRQBJy). ⚠️
 
-*(Readme last updated for v2.2)*
+*(Readme last updated for v2.2.1)*
 
 -----
 
@@ -63,6 +63,10 @@ The **Settings.py** file is where you can adjust your personal settings for the 
 
 `YT_IF_NO_RESULT = True` || If a user's request is not found on Google Play Music, the bot will search the request on Youtube instead, and add the top result to the list. If you don't want that feature, change this setting to `False`.
 
+`MEDIA_FILE_ENABLE = True` || Sets whether or not users are allowed to request uploaded music file links. Enabling this gives users more options, but can also be easily abused. Use with caution.
+
+`QUEUE_LINK = ""` || There is  a file called **SongQueue.csv** in the bot's folder, which contains the whole queue in a readable format. We recommend using something like [Google Drive]([https://www.google.com/drive/download/backup-and-sync/](https://www.google.com/drive/download/backup-and-sync/)) to upload the file every time it updates. Get the shareable link to the uploaded file, and paste it between the quotes to set your queue link, which users can view with `!queue`.
+
 `DEFAULT_SR_MSG = ""` || The message that will show up if a user types `!sr` or `!songrequest` by itself. Put your message between the quotes.
 ##### TITLE BLACKLIST FILTER
 
@@ -77,7 +81,7 @@ Note that the terms are in order from most-hated to least-hated. For example: If
 
 ##### HOTKEYS
 
-`ENABLE_HOTKEYS = True` || Enable or disable hotkeys for pausing, adjusting the volume, skipping songs, or removing the last song added to the queue. 
+`ENABLE_HOTKEYS = False` || Enable or disable hotkeys for pausing, adjusting the volume, skipping songs, or removing the last song added to the queue.  If this is set to `True`, you **must** add a key binding for all of the hotkey functions, otherwise the bot will crash.
 
 `HK_VOLUP` || Turns the volume up.
 
@@ -104,8 +108,9 @@ This is a list of commands for the bot, which users will type into Twitch chat:
 
 Note that every song in the queue has an ID, which can be used in other commands. This ID is *not* based on the song's current position in the queue, and does not change. The ID is shown when the song is requested.
 
-`!nowplaying` || Displays the currently-playing song in chat. Note: the current song is saved to the **nowplaying.txt** file in the bot folder, so you can add this as a text source in OBS (or your streaming program of choice) to display the current song on screen.  
-There is also a file called **SongQueue.csv**, which contains the whole queue in a readable format. We recommend using something like [Google Drive]([https://www.google.com/drive/download/backup-and-sync/](https://www.google.com/drive/download/backup-and-sync/)) to upload the file every time it updates. Your viewers can then visit this link at any time to see all upcoming songs and their IDs.
+`!nowplaying` || Displays the currently-playing song in chat. Note: the current song is saved to the **nowplaying.txt** file in the bot folder, so you can add this as a text source in OBS (or your streaming program of choice) to display the current song on screen. 
+
+`!queue` || Displays the link to your uploaded song queue in chat. Set this link in the **Settings.py** file with the `QUEUE_LINK` setting.
 
 `!timeleft` || Displays how much time is left on the current song. Putting a song ID after the command will display the combined length of all songs leading up to that one, i.e. how long until that song begins playing (assuming no pausing or skipping, of course).
 
@@ -117,9 +122,9 @@ There is also a file called **SongQueue.csv**, which contains the whole queue in
 
 `!plclearsong` **(Mod Only)** || Functions like `!clearsong`, but removes the most recent song added via `!plsr`.
 
-`!volume` **(Mod Only)** || Doing the command by itself will display the current music volume in chat. Adding a number after the command will set the volume to that number. For example: `!volume 75` will set the volume to 75 (out of 100).
+`!volume` or `!v` **(Mod Only)** || Doing the command by itself will display the current music volume in chat. Adding a number after the command will set the volume to that number. For example: `!volume 75` will set the volume to 75 (out of 100).
 
-`!volumeup`/`!volumedown` **(Mod Only))** || Turn the music volume up or down. Doing the command by itself will adjust the volume based on your `VOL_INCREMENT` setting, but adding a number after the command will adjust the volume by that increment. For example: if your volume is at 50, `!volumeup 20` will change the volume to 70.
+`!volumeup` or `!vu`/`!volumedown` or `!vd` **(Mod Only))** || Turn the music volume up or down. Doing the command by itself will adjust the volume based on your `VOL_INCREMENT` setting, but adding a number after the command will adjust the volume by that increment. For example: if your volume is at 50, `!volumeup 20` will change the volume to 70.
 
 `!veto` **(Mod Only)** || Skip the current song.
 
@@ -129,6 +134,8 @@ There is also a file called **SongQueue.csv**, which contains the whole queue in
 
 ## FAQ/Troubleshooting
 
+If you wish, you can join the [Rxbots Discord](https://discord.gg/8FRQBJy) for help with the bot. Use the **#bot-support** channel to ask questions, report bugs, or suggest new features.
+
 **Q:** My bot crashes on startup!  
 **A:** Your dependencies aren't working. Open command prompt as administrator, and manually type in each line from **requirements.txt**. If it says pip is not recognized as a command, reinstall Python 2.7.9. If it says something else, report it to us as a bug.
 
@@ -137,6 +144,9 @@ There is also a file called **SongQueue.csv**, which contains the whole queue in
 
 **Q:** Is this bot purely for song requests?  
 **A:** At the moment, yes. We do plan to add normal commands later on though, so stay tuned!
+
+**Q:** Why use Google Play Music instead of the more popular Spotify?  
+**A:** A while back, Spotify removed their public API, meaning that Spotify integration in any unauthorized program is impossible. Google Play Music, on the other hand, does *not* suck, and has a free-to-use public API.
 
 ## Credits and Stuff
 [**Rxbots**](https://www.twitch.tv/rxbots) - Sole creator of the bot.
