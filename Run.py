@@ -61,14 +61,14 @@ if SHUFFLE_ON_START == True: #Playlist Shuffler
     db.commit()
     db.close()
     print(">> Backup Playlist has been shuffled.")
-
-keyboard.add_hotkey(HK_VOLUP, srcontrol.volumeup, args=(None, None))
-keyboard.unhook_all_hotkeys() #Currently the best way to allow the hotkeys access to the p. class is to redefine them every time a new song is played.
-keyboard.add_hotkey(HK_VOLUP, srcontrol.volumeup, args=(None, None))
-keyboard.add_hotkey(HK_VOLDN, srcontrol.volumedown, args=(None, None))
-keyboard.add_hotkey(HK_PAUSE, togglepause)
-keyboard.add_hotkey(HK_VETO, veto, args=(None, None))
-keyboard.add_hotkey(HK_CLRSONG, sendMessage, args=(s, sr.clearsong(None, "STREAMER")))
+if ENABLE_HOTKEYS:
+    keyboard.add_hotkey(HK_VOLUP, srcontrol.volumeup, args=(None, None))
+    keyboard.unhook_all_hotkeys() #Currently the best way to allow the hotkeys access to the p. class is to redefine them every time a new song is played.
+    keyboard.add_hotkey(HK_VOLUP, srcontrol.volumeup, args=(None, None))
+    keyboard.add_hotkey(HK_VOLDN, srcontrol.volumedown, args=(None, None))
+    keyboard.add_hotkey(HK_PAUSE, togglepause)
+    keyboard.add_hotkey(HK_VETO, veto, args=(None, None))
+    keyboard.add_hotkey(HK_CLRSONG, sendMessage, args=(s, sr.clearsong(None, "STREAMER")))
 
 
 
