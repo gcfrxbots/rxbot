@@ -1,17 +1,12 @@
-VERSION 2.2.1
+VERSION 2.2.2
 
-Primary Change Focus: EASE OF USE CHANGES
+Primary Change Focus: BUGFIXES
 
 Changes:
 
 SONGREQUEST:
-Added a setting MEDIA_FILE_ENABLE to allow users to disable online hosted media files if they choose to.
-
+Probably fixed a very rare bug in which songs end slightly before they're supposed to. Added a short delay after the song is detected as over before it stops it.
+Fixed a bug that caused the bot to crash when a song containing quotations in the title/artist was requested
 
 COMMANDS:
-Added !queue and setting QUEUE_LINK. Use any online backup service to automatically upload SongQueue.csv and put the link here so users can see it.
-Added shorter aliases for the !volume, !volumeup, and !volumedown as !v, !vu, and !vd respectively.
-Fixed the HK_CLRSONG "!clearsong" hotkey to send a message in chat when it's activated to let a user know that their request was cleared.
-Cleaned up some of the wording in the Settings.py file to not mislead people.
-Apparently Keyboard Scan codes don't actually work with the hotkeys. Whoops. Will be changing over to AHK's python lib soon.
-
+No Changes
