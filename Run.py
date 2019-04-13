@@ -191,26 +191,27 @@ def tick():
     timecache = 0
     global nowplaying, paused
     while True:
+        time.sleep(0.3)
+        # Check if there's nothing in the playlist.
+        if not sqliteread('''SELECT id, name, song, key FROM songs ORDER BY id ASC'''):
+            playfromplaylist() # Move a song from the playlist into the queue.
+
+        if paused or not nowplaying:  # If for any reason the music isnt playing, change the nowplaying to nothing
+            writenowplaying(False, "")
+
+        if nowplaying and not paused:  # If music IS playing:
             time.sleep(0.3)
-            # Check if there's nothing in the playlist.
-            if not sqliteread('''SELECT id, name, song, key FROM songs ORDER BY id ASC'''):
-                playfromplaylist() # Move a song from the playlist into the queue.
+            nptime = srcontrol.gettime()  # Save the current now playing time
 
-            if paused or not nowplaying:  # If for any reason the music isnt playing, change the nowplaying to nothing
-                writenowplaying(False, "")
+            if timecache == nptime:  # If the cache (written 0.3 seconds before) and the time are equal, songs over
+                time.sleep(0.5)
+                nowplaying = srcontrol.songover()
+            timecache = nptime
 
-            if nowplaying and not paused:  # If music IS playing:
-                time.sleep(0.3)
-                nptime = srcontrol.gettime()  # Save the current now playing time
-
-                if timecache == nptime:  # If the cache (written 0.3 seconds before) and the time are equal, songs over
-                    nowplaying = srcontrol.songover()
-                timecache = nptime
-
-            elif not paused and not nowplaying: # When a song is over, start a new song
-                nowplaying = srcontrol.playsong()
-                timecache = 1
-                time.sleep(1)
+        elif not paused and not nowplaying: # When a song is over, start a new song
+            nowplaying = srcontrol.playsong()
+            timecache = 1
+            time.sleep(1)
 
 
 

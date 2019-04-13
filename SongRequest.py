@@ -205,15 +205,15 @@ class SRcontrol:
             return "Music needs to be playing before adjusting the volume."
 
     def play(self):
-            print "Resumed the music"
-            writenowplaying(True, self.songtitle)
-            self.p.set_pause(False)
+        print "Resumed the music"
+        writenowplaying(True, self.songtitle)
+        self.p.set_pause(False)
 
     def pause(self):
-            print self.p
-            print "Paused the music"
-            writenowplaying(False, "")
-            self.p.set_pause(True)
+        print self.p
+        print "Paused the music"
+        writenowplaying(False, "")
+        self.p.set_pause(True)
 
 
 
@@ -255,7 +255,7 @@ class SRcommands:
                     return user + " >> That song exceeds the maximum length of " + str(MAXTIME) + " minutes."
 
                 title = self.video.title
-                sqlitewrite('''INSERT INTO songs(name, song, key, time) VALUES("{user}", "{request}", "{key}", "{time}");'''.format(user=user, request=request, key=key, time=songtime))
+                sqlitewrite('''INSERT INTO songs(name, song, key, time) VALUES("{user}", "{request}", "{key}", "{time}");'''.format(user=user, request=(request.replace('"', "'")), key=(key.replace('"', "'")), time=songtime))
                 removetopqueue()
                 return user + " >> Added: " + title + " to the queue (YT). ID: " + getnewentry()
             else:  # OTHER MP3 REQUESTS <<<<<<<
@@ -266,7 +266,7 @@ class SRcommands:
                 if songtime > (MAXTIME * 60000):
                     return user + " >> That song exceeds the maximum length of " + str(MAXTIME) + " minutes."
 
-                sqlitewrite('''INSERT INTO songs(name, song, key, time) VALUES("{user}", "{request}", "{request}", "{time}");'''.format(user=user, request=request, time=songtime))
+                sqlitewrite('''INSERT INTO songs(name, song, key, time) VALUES("{user}", "{request}", "{request}", "{time}");'''.format(user=user, request=(request.replace('"', "'")), time=songtime))
                 removetopqueue()
 
                 return user + " >> Added that link to the queue. ID: " + getnewentry()
@@ -293,7 +293,7 @@ class SRcommands:
                     return user + " >> That song exceeds the maximum length of " + str(MAXTIME) + " minutes."
 
                 # Add song to the queue
-                sqlitewrite('''INSERT INTO songs(name, song, key, time) VALUES("{user}", "{request}", "{key}", "{time}");'''.format(user=user, request=songtitle, key=key, time=songtime))
+                sqlitewrite('''INSERT INTO songs(name, song, key, time) VALUES("{user}", "{request}", "{key}", "{time}");'''.format(user=user, request=(songtitle.replace('"', "'")), key=(key.replace('"', "'")), time=songtime))
                 removetopqueue()
                 return user + " >> Added: " + songtitle + " to the queue. ID: " + getnewentry()
         else:
@@ -325,7 +325,7 @@ class SRcommands:
         if songtime > (MAXTIME * 60000):
             return user + " >> That song exceeds the maximum length of " + str(MAXTIME) + " minutes."
 
-        sqlitewrite('''INSERT INTO songs(name, song, key, time) VALUES("{user}", "{request}", "{key}", "{time}");'''.format(user=user, request=video_url, key=key, time=songtime))
+        sqlitewrite('''INSERT INTO songs(name, song, key, time) VALUES("{user}", "{request}", "{key}", "{time}");'''.format(user=user, request=(video_url.replace('"', "'")), key=(key.replace('"', "'")), time=songtime))
         removetopqueue()
         return user + " >> Added: " + title + " to the queue (YT). ID: " + getnewentry()
 
@@ -424,10 +424,10 @@ class SRcommands:
                 self.db = sqliteread('''SELECT id, count(*) FROM playlist WHERE key="{0}"'''.format(key))
                 if self.db[1] > (MAX_DUPLICATE_SONGS - 1):
                     return user + " >> That song is already in the playlist. ID: " + str(self.db[0])
-                sqlitewrite('''INSERT INTO playlist(song, key) VALUES("{request}", "{key}");'''.format(request=request, key=key))
+                sqlitewrite('''INSERT INTO playlist(song, key) VALUES("{request}", "{key}");'''.format(request=(request.replace('"', "'")), key=(key.replace('"', "'"))))
                 return user + " >> Added: " + title + " to the playlist (YT). ID: " + str(sqliteread('SELECT id FROM playlist ORDER BY id DESC LIMIT 1')[0])
             else:  # OTHER MP3 REQUESTS <<<<<<<
-                sqlitewrite('''INSERT INTO playlist(song, key) VALUES("{request}", "{request}");'''.format(request=request))
+                sqlitewrite('''INSERT INTO playlist(song, key) VALUES("{request}", "{request}");'''.format(request=(request.replace('"', "'"))))
                 return user + " >> Added that link to the playlist. ID: " + str(sqliteread('SELECT id FROM playlist ORDER BY id DESC LIMIT 1')[0])
         else:  # GOOGLE PLAY MUSIC STUFF
             try:
@@ -443,7 +443,7 @@ class SRcommands:
                 if self.db[1] > (MAX_DUPLICATE_SONGS - 1):
                     return user + " >> That song is already in the playlist. ID: " + str(self.db[0])
                 # Add song to the playlist
-                sqlitewrite('''INSERT INTO playlist(song, key) VALUES("{request}", "{key}");'''.format(request=songtitle, key=key))
+                sqlitewrite('''INSERT INTO playlist(song, key) VALUES("{request}", "{key}");'''.format(request=(songtitle.replace('"', "'")), key=(key.replace('"', "'"))))
                 return user + " >> Added: " + songtitle + " to the playlist. ID: " + str(sqliteread('SELECT id FROM playlist ORDER BY id DESC LIMIT 1')[0])
 
 
@@ -519,4 +519,3 @@ class SRcommands:
             print e
             return
         return (songtime - 2000) #Most songs have a short offset.
-
