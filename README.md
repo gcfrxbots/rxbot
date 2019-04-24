@@ -95,6 +95,14 @@ Note that the terms are in order from most-hated to least-hated. For example: If
 
 More info on these hotkeys later, because honestly we have no fucking idea right now.
 
+## Updating to a Newer Version
+
+If a new update releases for RXBot, that likely means bugs have been fixed and/or new features have been added. Here's a short guide on updating:
+
+1. Backup your current bot installation! Simply copy the folder, and keep it to the side just in case you need to roll back or bring over any files.  
+2. Download the zip of the new version from GitHub, and while you're here, look at the version number written next to the **Settings.py** file. Is it older than the version you're updating to? If so, that's good.  
+3. Overwrite your old files with the new files. If **Settings.py** is still for an older version, you don't need to overwrite your current one. If you *do* need to update the file, then you will have to manually copy over your settings from your old file to the new one.
+
 ## Commands
 
 This is a list of commands for the bot, which users will type into Twitch chat:
@@ -138,6 +146,12 @@ If you wish, you can join the [Rxbots Discord](https://discord.gg/8FRQBJy) for h
 
 **Q:** My bot crashes on startup!  
 **A:** Your dependencies aren't working. Open command prompt as administrator, and manually type in each line from **requirements.txt**. If it says pip is not recognized as a command, reinstall Python 2.7.9. If it says something else, report it to us as a bug.
+
+**Q:** The bot outputs this error when a song starts: `prefetch stream error: unimplemented query (264) in control`  
+**A:** This error is 100% harmless, and can safely be ignored. It seems to just be an output error within VLC, nothing we can fix.
+
+**Q:** The bot outputs a *bunch* of `main libvlc error`s when a song is requested, but still seems to work.  
+**A:** Try re-installing VLC, that seems to fix it. These errors also seem to be completely harmless, as we've yet to encounter any actual problems with them, but better safe than sorry. 
 
 **Q:** Hotkeys don't work while I'm in certain programs!  
 **A:** Run the bot as administrator.
