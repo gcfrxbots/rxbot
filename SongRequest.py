@@ -1,14 +1,13 @@
 from gmusicapi import Mobileclient
 from Initialize import sqliteread, sqlitewrite, openSocket, sendMessage,  createqueuecsv
-import sys
 from pytube import YouTube
 import validators
 import vlc
 from Settings import *
 import time
 from sqlite3 import Error
-reload(sys)
-sys.setdefaultencoding('utf-8')
+import urllib
+from shutil import copyfile
 
 s = openSocket()
 api = Mobileclient()
@@ -26,7 +25,7 @@ stream_url = ""
 
 
 def writenowplaying(isPlaying, song_name):
-    with open("nowplaying.txt", "w") as f:
+    with open("Output/nowplaying.txt", "w") as f:
         if isPlaying == True:
             f.write(song_name)
         else:
@@ -42,7 +41,6 @@ def getytkey(url):
 
 def songtitlefilter(song_name, redo):
     blacklist = BLACKLISTED_SONG_TITLE_CONTENTS[:]
-
     results = (Mobileclient.search(api, song_name, SONGBLSIZE)['song_hits'])[:SONGBLSIZE]
     songs = []
 
@@ -62,14 +60,34 @@ def songtitlefilter(song_name, redo):
             if len(songs) == 1:
                 break
             if term.lower() in song['title'].lower():
-                print ">Removed: " + song['title']
+                print (">Removed: " + song['title'])
                 songs.remove(song)
 
 
     for item in songs:
-        print ">>>Allowed: " + item['title']
-    print ">>>>>>Playing: " + songs[0]['title']
+        print (">>>Allowed: " + item['title'])
+    print (">>>>>>Playing: " + songs[0]['title'])
     return songs[redo]
+
+
+def sr_geturl(songkey):
+    try:
+        stream_url = Mobileclient.get_stream_url(api, songkey, "3e9ff840362801d4")
+        return(stream_url)
+    except Exception as e:
+        print (e)
+        sendMessage(s, "There was an issue playing the song. (GPM)")
+
+def saveAlbumArt(songkey):
+    if songkey[0] == "T": #If the key is from GPM - all GPM keys start with T.
+        songinfo = Mobileclient.get_track_info(api, songkey)
+        imgLink = songinfo['albumArtRef'][0]['url']
+        f = open('Output/albumart.jpg', 'wb')
+        f.write(urllib.urlopen(imgLink).read())
+        f.close()
+    else: #Otherwise just use the generic image.
+        copyfile('generic_art.jpg', 'Output/albumart.jpg')
+
 
 def removetopqueue():
     row = sqliteread('''SELECT id, name, song, key FROM songs ORDER BY id ASC''') #Pick the top song
@@ -82,13 +100,6 @@ def getnewentry():
     result = sqliteread('SELECT id FROM songs ORDER BY id DESC LIMIT 1')
     return(str(result[0]))
 
-def sr_geturl(songkey):
-    try:
-        stream_url = Mobileclient.get_stream_url(api, songkey, "3e9ff840362801d4")
-        return(stream_url)
-    except Exception as e:
-        print e
-        sendMessage(s, "There was an issue playing the song.")
 
 def playfromplaylist():
     row = sqliteread('''SELECT id, song, key FROM playlist ORDER BY id ASC''') #Pick the top song
@@ -113,6 +124,7 @@ class SRcontrol:
         self.songtitle = ""
 
     def playsong(self):
+        global skiprequests, skipusers
         row = sqliteread('''SELECT id, name, song, key FROM songs ORDER BY id ASC''') # Pick the top song
         try:
             self.songtitle = row[2]
@@ -139,8 +151,11 @@ class SRcontrol:
         self.instance = vlc.Instance()
         self.p = self.instance.media_player_new(playurl)  # Play the music
         self.p.play()
+        saveAlbumArt(songkey)
         writenowplaying(True, self.songtitle)
         createqueuecsv()
+        skiprequests = 0
+        skipusers = []
         return True
 
     def songover(self):
@@ -179,11 +194,11 @@ class SRcontrol:
             currentvolume = self.p.audio_get_volume()
             if (currentvolume + vol) > 100:
                 self.p.audio_set_volume(100)
-                print "Raised the volume to: 100"
+                print ("Raised the volume to: 100")
                 return "Raised the volume to: 100"
             self.p.audio_set_volume(currentvolume + vol)
             self.msg = "Raised the volume to: " + str(currentvolume + vol)
-            print self.msg
+            print (self.msg)
             return self.msg
         except AttributeError:
             return "Music needs to be playing before adjusting the volume."
@@ -195,23 +210,22 @@ class SRcontrol:
             currentvolume = self.p.audio_get_volume()
             if (currentvolume - vol) < 0:
                 self.p.audio_set_volume(0)
-                print "Lowered the volume to: 0"
+                print ("Lowered the volume to: 0")
                 return "Lowered the volume to: 0"
             self.p.audio_set_volume(currentvolume - vol)
             self.msg = "Lowered the volume to: " + str(currentvolume - vol)
-            print self.msg
+            print (self.msg)
             return self.msg
         except AttributeError:
             return "Music needs to be playing before adjusting the volume."
 
     def play(self):
-        print "Resumed the music"
+        print ("Resumed the music")
         writenowplaying(True, self.songtitle)
         self.p.set_pause(False)
 
     def pause(self):
-        print self.p
-        print "Paused the music"
+        print ("Paused the music")
         writenowplaying(False, "")
         self.p.set_pause(True)
 
@@ -221,6 +235,10 @@ class SRcommands:
     def __init__(self):
         self.db = None
         self.video = None
+        global skiprequests, skipusers
+        skiprequests = 0
+        skipusers = []
+
 
     '''--------------------SONG REQUEST--------------------'''
 
@@ -403,8 +421,26 @@ class SRcommands:
             return user + " >> There is about " + str(hours) + "h " + str(minutes) + "m " + str(seconds) + "s of songs in the queue."
         except Error as e:
             db.rollback()
-            print "QUEUETIME ERROR:"
-            print e
+            print ("QUEUETIME ERROR:")
+            print (e)
+
+
+    def skip(self, user, x):
+        global skiprequests, skipusers
+        from Run import veto
+
+        if user in skipusers:
+            return user + " >> You've already requested to skip this song."
+        #Do the stuff to process the skip
+        skipusers.append(user)
+        skiprequests += 1
+
+        if skiprequests >= VOTES_TO_SKIP:
+            veto(None, None)
+            return user + " >> Your vote to skip was enough to skip the song."
+
+
+
 
     '''--------------------BACKUP PL CONTROL--------------------'''
 
@@ -454,7 +490,7 @@ class SRcommands:
                 sqlitewrite('DELETE FROM playlist WHERE id={0}'.format(str(result[0])))
                 return user + ' >> Removed your request: "' + str(result[1]) + '" from the backup playlist.'
             except Exception as e:
-                print e
+                print (e)
                 return user + " >> Couldn't find the most recent request."
         else:
             try:
@@ -509,13 +545,13 @@ class SRcommands:
                 if str(media.get_parsed_status()) == 'MediaParsedStatus.done':
                     break
                 if cycle > 99999999:
-                    print "CRITICAL ERROR - GETSONGTIME IS BROKEN!"
+                    print ("CRITICAL ERROR - GETSONGTIME IS BROKEN!")
                     break
             songtime = media.get_duration()
         # Let it be known to whatever brave adventurer is exploring my code, that this is the place that
         # Grant's sanity died for nearly two weeks straight.
         except Exception as e:
-            print "GETSONGTIME ISSUE"
-            print e
+            print ("GETSONGTIME ISSUE")
+            print (e)
             return
         return (songtime - 2000) #Most songs have a short offset.
