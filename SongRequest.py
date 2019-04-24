@@ -505,7 +505,7 @@ class SRcommands:
     '''--------------------MISC--------------------'''
 
     def getnowplaying(self, x, user):
-        with open("nowplaying.txt", "r") as f:
+        with open("Output/nowplaying.txt", "r") as f:
             returnnp = f.readlines()
         if not returnnp:
             sendMessage(s, (user + " >> The music is currently paused."))
