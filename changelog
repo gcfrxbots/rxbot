@@ -1,12 +1,15 @@
-VERSION 2.2.2
+VERSION 2.3
 
-Primary Change Focus: BUGFIXES
+Primary Change Focus: ALBUM ART
 
 Changes:
 
+Created the Output folder, where everything that changes lives. It's currently home to albumart.jpg, nowplaying.txt, and SongQueue.csv.
+Make sure you have this folder or there will be errors.
+
 SONGREQUEST:
-Probably fixed a very rare bug in which songs end slightly before they're supposed to. Added a short delay after the song is detected as over before it stops it.
-Fixed a bug that caused the bot to crash when a song containing quotations in the title/artist was requested
+Whenever a song is played, the Album Art for that song is downloaded and put into the Output folder.
+If the song is not on google play music, the album art is set as a generic artwork. This is customizeable by editing generic_art.jpg, but keep it 512x512.
 
 COMMANDS:
 No Changes
