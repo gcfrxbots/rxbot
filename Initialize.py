@@ -2,7 +2,6 @@ import string
 import socket
 import sys
 import csv
-
 reload(sys)
 sys.setdefaultencoding('utf-8')
 from Settings import *
@@ -23,8 +22,8 @@ def openSocket():
 
 def sendMessage(s, message):
     messageTemp = "PRIVMSG #" + CHANNEL + " : " + message
-    s.send(messageTemp + "\r\n")
-    print("Sent: " + messageTemp)
+    s.send((messageTemp + "\r\n").encode("utf-8"))
+    print(("Sent: " + messageTemp).encode("utf-8"))
 
 
 def joinRoom(s):

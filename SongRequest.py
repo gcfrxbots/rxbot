@@ -8,6 +8,9 @@ import time
 from sqlite3 import Error
 import urllib
 from shutil import copyfile
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 s = openSocket()
 api = Mobileclient()
