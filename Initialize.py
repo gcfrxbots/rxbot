@@ -96,7 +96,7 @@ def createqueuecsv():
         cursor.execute("SELECT id, name, song FROM songs")
         data = cursor.fetchall()
 
-        with open('SongQueue.csv', 'wb') as f:
+        with open('Output/SongQueue.csv', 'wb') as f:
             writer = csv.writer(f)
             writer.writerow(['ID', 'Requested By', 'Song Title / Youtube URL'])
             writer.writerows(data)
