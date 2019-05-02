@@ -1,15 +1,23 @@
-VERSION 2.3
+VERSION 2.4
 
-Primary Change Focus: ALBUM ART
+Primary Change Focus: SONGQUEUE FORMATTING
 
 Changes:
 
-Created the Output folder, where everything that changes lives. It's currently home to albumart.jpg, nowplaying.txt, and SongQueue.csv.
-Make sure you have this folder or there will be errors.
+All requirements should now be installed automatically. Upon starting the bot it'll check if there are any packages you don't have and automatically attempt to install them.
+The bot now uses the 'xlsxwriter' package. It should install automatically.
+Added timestamps to chat messages displayed in the console.
+Fixed some potential encoding issues with sending messages and managing usernames with non-english characters.
+
+SONGQUEUE:
+Made some changes to how often the bot re-writes the SongQueue file. It's only as-needed now rather than constantly.
+The SongQueue is no longer a .csv and is instead an .xlsx. This means it can incorporate formatting and just generally look WAY nicer.
+The new SongQueue is formatted and has columns extended so things don't get cut off.
+Wrote some HTML to properly embed the file in a website and crop out the ugly parts of the doc. Link here: https://rxbots.weebly.com/song-queue.html
 
 SONGREQUEST:
-Whenever a song is played, the Album Art for that song is downloaded and put into the Output folder.
-If the song is not on google play music, the album art is set as a generic artwork. This is customizeable by editing generic_art.jpg, but keep it 512x512.
+No Changes
 
 COMMANDS:
-No Changes
+Added !songlist as an alias to !queue
+
