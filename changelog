@@ -8,6 +8,7 @@ All requirements should now be installed automatically. Upon starting the bot it
 The bot now uses the 'xlsxwriter' package. It should install automatically.
 Added timestamps to chat messages displayed in the console.
 Fixed some potential encoding issues with sending messages and managing usernames with non-english characters.
+The bot will now automatically create the Output folder if it doesn't exist, so there's no reason to download an empty folder.
 
 SONGQUEUE:
 Made some changes to how often the bot re-writes the SongQueue file. It's only as-needed now rather than constantly.
