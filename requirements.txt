@@ -1,4 +1,0 @@
-gmusicapi
-validators
-pytube
-python-vlc
