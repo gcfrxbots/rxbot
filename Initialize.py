@@ -9,6 +9,7 @@ import xlsxwriter
 import sqlite3
 from sqlite3 import Error
 from Settings import *
+import os
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
@@ -20,6 +21,11 @@ for package in required:
     if package not in installed:
         print "INITIAL SETUP >> " + package + " seems to be missing. Installing it."
         pipmain(['install', '-q', package])
+
+
+if not os.path.exists('Output'):
+    os.makedirs('Output')
+
 
 def openSocket():
     global s
