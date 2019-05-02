@@ -5,9 +5,10 @@ import validators
 import vlc
 from Settings import *
 import time
-from sqlite3 import Error
 import urllib
 from shutil import copyfile
+import sqlite3
+from sqlite3 import Error
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -21,7 +22,6 @@ else:
     sendMessage(s, "Can't log into Google Play Music! Please check the console and follow the instructions!")
     api.perform_oauth(storage_filepath="oauth.txt")
     api.oauth_login(device_id=Mobileclient.FROM_MAC_ADDRESS, oauth_credentials="oauth.txt")
-
 
 stream_url = ""
 
@@ -75,11 +75,12 @@ def songtitlefilter(song_name, redo):
 
 def sr_geturl(songkey):
     try:
-        stream_url = Mobileclient.get_stream_url(api, songkey, "3e9ff840362801d4")
+        stream_url = Mobileclient.get_stream_url(api, songkey)
         return(stream_url)
     except Exception as e:
         print (e)
         sendMessage(s, "There was an issue playing the song. (GPM)")
+
 
 def saveAlbumArt(songkey):
     if songkey[0] == "T": #If the key is from GPM - all GPM keys start with T.
@@ -398,8 +399,6 @@ class SRcommands:
 
 
     def queuetime(self, id, user):
-        import sqlite3
-        from sqlite3 import Error
         data = []
         db = sqlite3.connect('songqueue.db')
         try:

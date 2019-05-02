@@ -1,22 +1,33 @@
 import string
+import urllib, json
 import socket
 import sys
-import csv
+import pip
+from pip._internal import main as pipmain
+from pip._internal.utils.misc import get_installed_distributions
+import xlsxwriter
+import sqlite3
+from sqlite3 import Error
+from Settings import *
 reload(sys)
 sys.setdefaultencoding('utf-8')
-from Settings import *
 
 
+required = ['gmusicapi', 'validators', 'pytube', 'python-vlc', 'xlsxwriter']
+installed = [pkg.key for pkg in pip._internal.utils.misc.get_installed_distributions()]
 
-
+for package in required:
+    if package not in installed:
+        print "INITIAL SETUP >> " + package + " seems to be missing. Installing it."
+        pipmain(['install', '-q', package])
 
 def openSocket():
-
+    global s
     s = socket.socket()
-    s.connect(("irc.twitch.tv", PORT))
-    s.send("PASS " + BOT_OAUTH + "\r\n")
-    s.send("NICK " + BOT_NAME + "\r\n")
-    s.send("JOIN #" + CHANNEL + "\r\n")
+    s.connect(("irc.chat.twitch.tv", PORT))
+    s.send(("PASS " + BOT_OAUTH + "\r\n").encode("utf-8"))
+    s.send(("NICK " + BOT_NAME + "\r\n").encode("utf-8"))
+    s.send(("JOIN #" + CHANNEL + "\r\n").encode("utf-8"))
     return s
 
 
@@ -39,9 +50,6 @@ def joinRoom(s):
             print(line)
             Loading = loadingComplete(line)
 
-    sendMessage(s, "Successfully joined the chat!")
-    global nowplaying
-    nowplaying = False
 
 
 def loadingComplete(line):
@@ -52,15 +60,12 @@ def loadingComplete(line):
 
 
 def sqliteread(command):
-    import sqlite3
-    from sqlite3 import Error
     db = sqlite3.connect('songqueue.db')
     try:
         cursor = db.cursor()
         cursor.execute(command)
         data = cursor.fetchone()
         db.close()
-        createqueuecsv()
         return data
     except Error as e:
         db.rollback()
@@ -68,8 +73,6 @@ def sqliteread(command):
         print e
 
 def sqlitewrite(command):
-    import sqlite3
-    from sqlite3 import Error
     db = sqlite3.connect('songqueue.db')
     try:
         cursor = db.cursor()
@@ -87,25 +90,36 @@ def sqlitewrite(command):
 
 
 def createqueuecsv():
-    import sqlite3
-    from sqlite3 import Error
     db = sqlite3.connect('songqueue.db')
+
+    cursor = db.cursor()
+    cursor.execute("SELECT id, name, song FROM songs")
+    data = cursor.fetchall()
+    # Write to the excel workbook
+    row = 1
+    col = 0
     try:
-        cursor = db.cursor()
-        cursor.execute("SELECT id, name, song FROM songs")
-        data = cursor.fetchall()
-
-        with open('Output/SongQueue.csv', 'wb') as f:
-            writer = csv.writer(f)
-            writer.writerow(['ID', 'Requested By', 'Song Title / Youtube URL'])
-            writer.writerows(data)
-
-    except Error as e: print e
+        with xlsxwriter.Workbook('Output/SongQueue.xlsx') as workbook:
+            worksheet = workbook.add_worksheet('Queue')
+            format = workbook.add_format({'bold': True, 'center_across': True, 'font_color': 'white', 'bg_color': 'gray'})
+            center = workbook.add_format({'center_across': True})
+            worksheet.set_column(0, 0, 8)
+            worksheet.set_column(1, 1, 30)
+            worksheet.set_column(2, 2, 100)
+            worksheet.write(0, 0, "ID", format)
+            worksheet.write(0, 1, "User", format)
+            worksheet.write(0, 2, "Title / Link", format)
+            for id, name, song in (data):
+                worksheet.write(row, col,   id, center)
+                worksheet.write(row, col + 1, name, center)
+                worksheet.write(row, col + 2, song)
+                row += 1
+    except IOError:
+        print "ERROR - UNABLE TO READ XLSX DOC! You probably have it open, close it ya buffoon"
 
 
 
 def getmoderators():
-    import urllib, json
     json_url = urllib.urlopen('http://tmi.twitch.tv/group/user/' + CHANNEL + '/chatters')
 
     data = json.loads(json_url.read())

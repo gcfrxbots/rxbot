@@ -1,10 +1,15 @@
 import time
+import datetime
 from Initialize import joinRoom, socket, getmoderators
 from SongRequest import *
 import string
+import threading
 from threading import Thread
 import keyboard
 import sys
+import re
+from random import shuffle
+import sqlite3
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
@@ -47,8 +52,6 @@ nowplaying = False
 paused = False
 
 if SHUFFLE_ON_START == True: #Playlist Shuffler
-    from random import shuffle
-    import sqlite3
     db = sqlite3.connect('songqueue.db')
     cursor = db.cursor()
     cursor.execute('''SELECT * FROM playlist ORDER BY RANDOM()''')
@@ -70,9 +73,8 @@ if ENABLE_HOTKEYS:
     keyboard.add_hotkey(HK_VETO, veto, args=(None, None))
     keyboard.add_hotkey(HK_CLRSONG, sendMessage, args=(s, sr.clearsong(None, "STREAMER")))
 
-
-
 '''END INIT'''
+
 
 
 def getUser(line):
@@ -86,9 +88,11 @@ def getMessage(line):
     message = seperate[2]
     return message
 
+def formatted_time():
+    return datetime.datetime.today().now().strftime("%I:%M")
+    # Thanks to Zerg3rr for this code and some other help
 
 def getint(cmdarguments):
-    import re
     try:
         out = int(re.search(r'\d+', cmdarguments).group())
         return out
@@ -96,9 +100,8 @@ def getint(cmdarguments):
 
 
 def PONG():
-    import threading
-    s.send(bytes('PONG :tmi.twitch.tv\r\n'))
-    threading.Timer(240, PONG).start()
+    s.send("PONG :tmi.twitch.tv\r\n".encode("utf-8"))
+    threading.Timer(200, PONG).start()
 PONG()
 
 
@@ -112,11 +115,13 @@ def runcommand(command, cmdarguments, user):
         "!nowplaying": (sr.getnowplaying, None, user),
         "!timeleft": (sr.queuetime, getint(cmdarguments), user),
         "!queue": (sr.queuelink, user, None),
+        "!songlist": (sr.queuelink, user, None), #Alias
 
         # NowPlaying Control
         "!play": ("MOD", play, None, None),
         "!pause": ("MOD", pause, None, None),
         "!veto": ("MOD", veto, None, None),
+
 
         # Volume Control
         "!volume": ("MOD", srcontrol.volume, getint(cmdarguments), user),
@@ -152,8 +157,6 @@ def runcommand(command, cmdarguments, user):
 
     else:
         sendMessage(s, output)
-    return
-
 
 
 
@@ -169,19 +172,20 @@ def main():
             readbuffer = temp.pop()
             for line in temp:
                 if "PING" in line:
-                    s.send("PONG %s\r\n" % line[1])
+                    s.send(("PONG :tmi.twitch.tv\r\n".encode("utf-8")))
                 else:
-                    global user #All these things break apart the given chat message to make things easier to work with.
+                    #All these things break apart the given chat message to make things easier to work with.
                     user = getUser(line)
                     message = str(getMessage(line))
                     command = ((message.split(' ', 1)[0]).lower()).replace("\r", "")
                     cmdarguments = message.replace(command or "\r" or "\n", "")
                     getint(cmdarguments)
-                    print(">> " + user + ": " + message)
+                    print("(" + formatted_time() + ")>> " + user + ": " + message)
                     #Run the commands function
                     runcommand(command, cmdarguments, user)
         except socket.error:
             print("Socket died")
+
 
 
 # If the queue is completely empty at start, add a song so it's not pulling nonexistent values in the loop below
@@ -210,6 +214,7 @@ def tick():
 
         elif not paused and not nowplaying: # When a song is over, start a new song
             nowplaying = srcontrol.playsong()
+
             timecache = 1
             time.sleep(1)
 
