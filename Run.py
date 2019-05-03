@@ -167,24 +167,28 @@ def main():
     readbuffer = ""
     while True:
         try:
-            readbuffer = readbuffer + s.recv(1024)
+            recvData = s.recv(1024)
+            if recvData.len() == 0:
+                reconnect() # Detect if the data being sent is nonexistent, reconnect
+            readbuffer = readbuffer + recvData
             temp = string.split(readbuffer, "\n")
             readbuffer = temp.pop()
             for line in temp:
                 if "PING" in line:
                     s.send(("PONG :tmi.twitch.tv\r\n".encode("utf-8")))
                 else:
-                    #All these things break apart the given chat message to make things easier to work with.
+                    # All these things break apart the given chat message to make things easier to work with.
                     user = getUser(line)
                     message = str(getMessage(line))
                     command = ((message.split(' ', 1)[0]).lower()).replace("\r", "")
                     cmdarguments = message.replace(command or "\r" or "\n", "")
                     getint(cmdarguments)
                     print("(" + formatted_time() + ")>> " + user + ": " + message)
-                    #Run the commands function
+                    # Run the commands function
                     runcommand(command, cmdarguments, user)
         except socket.error:
             print("Socket died")
+            reconnect()
 
 
 

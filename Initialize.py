@@ -27,6 +27,13 @@ import xlsxwriter
 if not os.path.exists('Output'):
     os.makedirs('Output')
 
+def reconnect():
+    if RESTART:
+        print "Detected a critical error with the bot's connection to GPM or Twitch. Restarting connections!"
+        s.send(("PART #" + CHANNEL + "\r\n").encode("utf-8"))
+        s.close()
+        os.execv(sys.executable, ['python'] + sys.argv)
+        quit()
 
 def openSocket():
     global s
@@ -87,7 +94,7 @@ def sqlitewrite(command):
         data = cursor.fetchone()
         db.commit()
         db.close()
-        createqueuecsv()
+        createsongqueue()
         return data
     except Error as e:
         db.rollback()
@@ -96,7 +103,7 @@ def sqlitewrite(command):
 
 
 
-def createqueuecsv():
+def createsongqueue():
     db = sqlite3.connect('songqueue.db')
 
     cursor = db.cursor()

@@ -1,5 +1,5 @@
 from gmusicapi import Mobileclient
-from Initialize import sqliteread, sqlitewrite, openSocket, sendMessage,  createqueuecsv
+from Initialize import sqliteread, sqlitewrite, openSocket, sendMessage,  createsongqueue, reconnect
 from pytube import YouTube
 import validators
 import vlc
@@ -44,7 +44,11 @@ def getytkey(url):
 
 def songtitlefilter(song_name, redo):
     blacklist = BLACKLISTED_SONG_TITLE_CONTENTS[:]
-    results = (Mobileclient.search(api, song_name, SONGBLSIZE)['song_hits'])[:SONGBLSIZE]
+    try:
+        results = (Mobileclient.search(api, song_name, SONGBLSIZE)['song_hits'])[:SONGBLSIZE]
+    except Exception as e:
+        print e
+        reconnect()
     songs = []
 
     for item in results:
@@ -78,8 +82,8 @@ def sr_geturl(songkey):
         stream_url = Mobileclient.get_stream_url(api, songkey)
         return(stream_url)
     except Exception as e:
-        print (e)
-        sendMessage(s, "There was an issue playing the song. (GPM)")
+        print e
+        reconnect()
 
 
 def saveAlbumArt(songkey):
@@ -157,7 +161,7 @@ class SRcontrol:
         self.p.play()
         saveAlbumArt(songkey)
         writenowplaying(True, self.songtitle)
-        createqueuecsv()
+        createsongqueue()
         skiprequests = 0
         skipusers = []
         return True

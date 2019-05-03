@@ -22,12 +22,15 @@ GPM_ENABLE = True
 # If false, this will result in sporadic volumes, bad quality, and annoying intros/outros.
 # This will throw a LOT OF ERRORS if you have GPM songs in your backup playlist and you set this to False.
 
+RESTART = True
+# If for some reason the bot isn't able to connect to Google Play Music, this will fully restart the bot once it detects an issue.
+
 '''-------------------->>SONGREQUEST<<--------------------'''
 
 MAX_DUPLICATE_SONGS = 1
 # This is the maximum amount of duplicate songs that can be in the queue. Leave 1 to only have one of each song in the queue at once.
 
-MAX_REQUESTS_USER = 5
+MAX_REQUESTS_USER = 10
 # This is the maximum amount of songs that a user may request. Ranks coming soon.
 
 SHUFFLE_ON_START = True
@@ -42,6 +45,9 @@ VOL_INCREMENT = 5
 MAXTIME = 10
 # The maximum song length in minutes. Songs longer than this duration won't be requested.
 
+VOTES_TO_SKIP = 1
+# The number of votes needed to
+
 YT_IF_NO_RESULT = True
 # If no results are found searching Google Play Music, the bot will plug the same query into youtube and play the top result from there.
 # This has no effect if GPM_ENABLE is set to False.
@@ -50,7 +56,7 @@ MEDIA_FILE_ENABLE = True
 # This is an option to toggle online media, such as a link directly to an .mp3 or .wav
 # This gives users more options for requests, but use with caution as people can request bad stuff.
 
-QUEUE_LINK = "There is not a queue link set by the streamer yet."
+QUEUE_LINK = "There is not currently a link to the queue."
 # This is the link to your SongQueue.csv, hosted wherever you can online.
 # We recommend using Google Backup and Sync. Bonus points for embedding the file in your own site.
 # When a user types !queue this link will appear.
@@ -83,6 +89,7 @@ BLACKLISTED_SONG_TITLE_CONTENTS = [
 '''-------------------->>GENERAL<<--------------------'''
 
 MODERATORS = [
+    'rxbots',
     CHANNEL,
 
 ]
@@ -91,12 +98,12 @@ MODERATORS = [
 
 
 '''-------------------->>HOTKEYS<<--------------------'''
-ENABLE_HOTKEYS = False # If this is set to true, you'll need to have something in all the hotkey options below.
-HK_VOLUP = ""    # Volume Up
-HK_VOLDN = ""    # Volume Down
-HK_PAUSE = ""    # Toggle play/pause the music
-HK_VETO = ""     # Veto the currently playing track
-HK_CLRSONG = ""  # Remove the last song that anyone requested
+ENABLE_HOTKEYS = True # If this is set to true, you'll need to have something in all the hotkey options below.
+HK_VOLUP = "F20"    # Volume Up
+HK_VOLDN = "F14"    # Volume Down
+HK_PAUSE = "F16"    # Toggle play/pause the music
+HK_VETO = "F15"     # Veto the currently playing track
+HK_CLRSONG = "F22"  # Remove the last song that anyone requested
 
 # Hotkeys must be formatted in a specific way. Valid formats are listed below:
 # VALID MODIFIERS: 'alt', 'alt gr', 'ctrl', 'left alt', 'left ctrl', 'left shift', 'left windows', 'right alt', 'right ctrl', 'right shift', 'right windows', 'shift', 'windows'
