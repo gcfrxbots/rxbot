@@ -168,7 +168,7 @@ def main():
     while True:
         try:
             recvData = s.recv(1024)
-            if recvData.len() == 0:
+            if len(recvData) == 0:
                 reconnect() # Detect if the data being sent is nonexistent, reconnect
             readbuffer = readbuffer + recvData
             temp = string.split(readbuffer, "\n")
