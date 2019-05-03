@@ -156,6 +156,9 @@ If you wish, you can join the [Rxbots Discord](https://discord.gg/8FRQBJy) for h
 **Q:** Hotkeys don't work while I'm in certain programs!  
 **A:** Run the bot as administrator.
 
+**Q:** There's a `regex` error when I try to request youtube songs.
+**A:** This was an issue with Pytube, a library the bot uses to decipher youtube stuff. Open command prompt and type `python.exe -m pip uninstall pytube` to uninstall it, then run the bot which will automatically download the newest version of it.
+
 **Q:** Is this bot purely for song requests?  
 **A:** At the moment, yes. We do plan to add normal commands later on though, so stay tuned!
 
