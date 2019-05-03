@@ -3,9 +3,6 @@ import urllib, json
 import socket
 import sys
 import pip
-from pip._internal import main as pipmain
-from pip._internal.utils.misc import get_installed_distributions
-import xlsxwriter
 import sqlite3
 from sqlite3 import Error
 from Settings import *
@@ -15,13 +12,17 @@ sys.setdefaultencoding('utf-8')
 
 
 required = ['gmusicapi', 'validators', 'pytube', 'python-vlc', 'xlsxwriter']
-installed = [pkg.key for pkg in pip._internal.utils.misc.get_installed_distributions()]
+installed = [pkg.key for pkg in pip.get_installed_distributions()]
 
 for package in required:
     if package not in installed:
-        print "INITIAL SETUP >> " + package + " seems to be missing. Installing it."
-        pipmain(['install', '-q', package])
+        print ("INITIAL SETUP >> " + package + " seems to be missing. Installing it.")
+        try:
+            pip.main(['install', '-q', package])
+        except WindowsError:
+            print "WinErr"
 
+import xlsxwriter
 
 if not os.path.exists('Output'):
     os.makedirs('Output')
