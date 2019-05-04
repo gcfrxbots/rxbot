@@ -2,27 +2,27 @@ import string
 import urllib, json
 import socket
 import sys
-import pip
 import sqlite3
 from sqlite3 import Error
 from Settings import *
+import xlsxwriter
 import os
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
+# Auto package installer. Causes issues with new pip version.
+#required = ['gmusicapi', 'validators', 'pytube', 'python-vlc', 'xlsxwriter']
+#installed = [pkg.key for pkg in pip.get_installed_distributions()]
+#
+#for package in required:
+#    if package not in installed:
+#        print ("INITIAL SETUP >> " + package + " seems to be missing. Installing it.")
+#        try:
+#            pip.main(['install', '-q', package])
+#        except WindowsError:
+#            print "WinErr"
 
-required = ['gmusicapi', 'validators', 'keyboard', 'pytube', 'python-vlc', 'xlsxwriter']
-installed = [pkg.key for pkg in pip.get_installed_distributions()]
 
-for package in required:
-    if package not in installed:
-        print ("INITIAL SETUP >> " + package + " seems to be missing. Installing it.")
-        try:
-            pip.main(['install', '-q', package])
-        except WindowsError:
-            print "WinErr"
-
-import xlsxwriter
 
 if not os.path.exists('Output'):
     os.makedirs('Output')
