@@ -100,7 +100,7 @@ def getint(cmdarguments):
 
 
 def PONG():
-    s.send("PONG :tmi.twitch.tv\r\n".encode("utf-8"))
+    s.send(bytes("PONG :tmi.twitch.tv\r\n".encode("utf-8")))
     threading.Timer(200, PONG).start()
 PONG()
 
@@ -167,15 +167,12 @@ def main():
     readbuffer = ""
     while True:
         try:
-            recvData = s.recv(1024)
-            if len(recvData) == 0:
-                reconnect() # Detect if the data being sent is nonexistent, reconnect
-            readbuffer = readbuffer + recvData
+            readbuffer = readbuffer + s.recv(1024)
             temp = string.split(readbuffer, "\n")
             readbuffer = temp.pop()
             for line in temp:
                 if "PING" in line:
-                    s.send(("PONG :tmi.twitch.tv\r\n".encode("utf-8")))
+                    s.send(bytes("PONG :tmi.twitch.tv\r\n".encode("utf-8")))
                 else:
                     # All these things break apart the given chat message to make things easier to work with.
                     user = getUser(line)

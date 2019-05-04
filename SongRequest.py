@@ -145,9 +145,13 @@ class SRcontrol:
 
         if validators.url(self.songtitle) == True: # TEST IF THE REQUEST IS A LINK
             if "youtu" in self.songtitle:  # IS IT A YOUTUBE LINK?
-                yt = YouTube(self.songtitle)
-                playurl = yt.streams.filter(only_audio=True).order_by('abr').first().url
-                self.songtitle = yt.title
+                try:
+                    yt = YouTube(self.songtitle)
+                    playurl = yt.streams.filter(only_audio=True).order_by('abr').first().url
+                    self.songtitle = yt.title
+                except Exception as e:
+                    print "Pytube Error:"
+                    print e
                 writenowplaying(True, self.songtitle)
             else:  # If not YT link, play normal music file.
                 playurl = self.songtitle
