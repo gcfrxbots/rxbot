@@ -11,7 +11,7 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 
 
-required = ['gmusicapi', 'validators', 'pytube', 'python-vlc', 'xlsxwriter']
+required = ['gmusicapi', 'validators', 'keyboard', 'pytube', 'python-vlc', 'xlsxwriter']
 installed = [pkg.key for pkg in pip.get_installed_distributions()]
 
 for package in required:
