@@ -1,5 +1,5 @@
 from gmusicapi import Mobileclient
-from Initialize import sqliteread, sqlitewrite, openSocket, sendMessage,  createsongqueue, reconnect
+from Initialize import sqliteread, sqlitewrite, openSocket, sendMessage, createsongqueue, reconnect
 from pytube import YouTube
 import validators
 import vlc
@@ -67,13 +67,13 @@ def songtitlefilter(song_name, redo):
             if len(songs) == 1:
                 break
             if term.lower() in song['title'].lower():
-                print (">Removed: " + song['title'])
+                print ((">Removed: " + song['title']).encode("utf-8"))
                 songs.remove(song)
 
 
     for item in songs:
-        print (">>>Allowed: " + item['title'])
-    print (">>>>>>Playing: " + songs[0]['title'])
+        print ((">>>Allowed: " + item['title']).encode("utf-8"))
+    print ((">>>>>>Playing: " + songs[0]['title']).encode("utf-8"))
     return songs[redo]
 
 
@@ -550,11 +550,12 @@ class SRcommands:
             #Start the parser
             media.parse_with_options(1,0)
             cycle = 0
-            while True:
+            while str(media.get_parsed_status()) != 'MediaParsedStatus.done':
                 cycle += 1
-                if str(media.get_parsed_status()) == 'MediaParsedStatus.done':
-                    break
-                if cycle > 99999999:
+                if str(media.get_parsed_status()) == 'MediaParsedStatus.failed':
+                    print "!!PYTUBE SUCKS AGAIN - TIMELEFT MIGHT BE INACCURATE!!"
+                    return 250000
+                if cycle > 999999:
                     print ("CRITICAL ERROR - GETSONGTIME IS BROKEN!")
                     break
             songtime = media.get_duration()

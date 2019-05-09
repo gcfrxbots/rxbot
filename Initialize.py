@@ -2,6 +2,7 @@ import string
 import urllib, json
 import socket
 import sys
+import ssl
 import sqlite3
 from sqlite3 import Error
 from Settings import *
@@ -37,7 +38,11 @@ def reconnect():
 
 def openSocket():
     global s
-    s = socket.socket()
+    if PORT in (443, 6697):
+        old_s = socket.socket()
+        s = ssl.wrap_socket(old_s)
+    else:
+        s = socket.socket()
     s.connect(("irc.chat.twitch.tv", PORT))
     s.send(("PASS " + BOT_OAUTH + "\r\n").encode("utf-8"))
     s.send(("NICK " + BOT_NAME + "\r\n").encode("utf-8"))

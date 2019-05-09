@@ -100,8 +100,8 @@ def getint(cmdarguments):
 
 
 def PONG():
-    s.send(bytes("PONG :tmi.twitch.tv\r\n".encode("utf-8")))
-    threading.Timer(200, PONG).start()
+    s.send(bytes('PONG :tmi.twitch.tv\r\n'))
+    threading.Timer(240, PONG).start()
 PONG()
 
 
@@ -121,7 +121,6 @@ def runcommand(command, cmdarguments, user):
         "!play": ("MOD", play, None, None),
         "!pause": ("MOD", pause, None, None),
         "!veto": ("MOD", veto, None, None),
-
 
         # Volume Control
         "!volume": ("MOD", srcontrol.volume, getint(cmdarguments), user),
@@ -172,20 +171,19 @@ def main():
             readbuffer = temp.pop()
             for line in temp:
                 if "PING" in line:
-                    s.send(bytes("PONG :tmi.twitch.tv\r\n".encode("utf-8")))
+                    s.send("PONG %s\r\n" % line[1])
                 else:
                     # All these things break apart the given chat message to make things easier to work with.
                     user = getUser(line)
                     message = str(getMessage(line))
                     command = ((message.split(' ', 1)[0]).lower()).replace("\r", "")
                     cmdarguments = message.replace(command or "\r" or "\n", "")
-                    getint(cmdarguments)
                     print("(" + formatted_time() + ")>> " + user + ": " + message)
                     # Run the commands function
                     runcommand(command, cmdarguments, user)
         except socket.error:
             print("Socket died")
-            reconnect()
+            quit()
 
 
 
