@@ -1,16 +1,25 @@
-VERSION 2.4.4
+VERSION 3.0
 
-Primary Change Focus: SSL + Fixes
-
+Primary Change: Rxbot3 Initial Release
 Changes:
 
-The bot is now capable of connecting to Twitch using SSL. When the port in Settings is set to 80 or 6667 a standard connection will be used,
-or if the port is 443 or 6697 a SSL connection will be used.
+The bot now runs using Python 3.7! Uninstall 2.7 or run the bot using py -3.7 Run.py
+
+The bot now has an initial checkup feature. When started, it will create or verify all of the required files and ensure everything is set up correctly.
+Added a /Resources folder to put all of the files that are needed after the bot's first setup. Auto generates.
+Renamed "songqueue.db" to "botData.db" since it'll be used for way more than the song queue in the future.
+Added two new files, Bot.py and CustomCommands.py. Both are pretty empty now, but will be expanded upon later for more features.
+Hotkeys have been overhauled to be much easier to use and more reliable. There's now a simple way to bind any chat command to any hotkey.
+
 
 SONGREQUEST:
-PyTube sucks again, and occasionally gives a bad song which might occasionally result in songs not playing. Working on a fix soon, but for
-now the getsongtime wont get stuck in an infinite loop if it breaks. Fixes the "Disconnecting" issue after a few hours.
+PyTube is GONE! Pafy and Youtube-Dl are now used.
+Youtube-Dl NEEDS to be the newest version, so there's an auto updater built in on startup.
 
 COMMANDS:
-No Changes
+Reworked how the runcommand() function works to be more optimized, and to take all of it's input from strings so that the commands can be defined anywhere.
+The commands library is now defined at the top of each file, currently SongRequest, Bot, and CustomCommands. This can be expanded infinitely.
+CustomCommands.py has documentation in it and fully works to allow users to create their own custom functions and bot commands.
+
+Special thanks to kc0zhq for the initial Py3 port and for help with this big update.
 
