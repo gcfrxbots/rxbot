@@ -1,39 +1,34 @@
-import time
 import datetime
-from Initialize import joinRoom, socket, getmoderators
-from SongRequest import *
-import string
-import threading
-from threading import Thread
-import keyboard
-import sys
 import re
-from random import shuffle
-import sqlite3
-reload(sys)
-sys.setdefaultencoding('utf-8')
+from threading import Thread
+from Bot import *
+from CustomCommands import CustomCommands, commands_CustomCommands
+from SongRequest import *
 
+sr = SRcommands()
+srcontrol = SRcontrol()
+bot = BotCommands()
+customcmds = CustomCommands()
+nowplaying = False
+paused = False
 
-
-
-
-def togglepause():
-    if paused == True:
+def togglepause(x, y):
+    if paused:
         play(None, None)
-    elif paused == False:
+    elif not paused:
         pause(None, None)
 #These functions require two variables to call to avoid having way more code in the top loop.
 def play(x, y):
     global nowplaying, paused
-    srcontrol.play()
     nowplaying = True
     paused = False
+    print(srcontrol.play())
 
 def pause(x, y):
     global nowplaying, paused
-    srcontrol.pause()
     nowplaying = False
     paused = True
+    print(srcontrol.pause())
 
 def veto(x, y):
     global nowplaying, paused
@@ -41,40 +36,13 @@ def veto(x, y):
     paused = False
     nowplaying = False
 
-
-sr = SRcommands()
-srcontrol = SRcontrol()
-'''INITALIZE EVERYTHING
-All this stuff up here runs when the script first runs and is the init code.'''
-
-
-nowplaying = False
-paused = False
-
-if SHUFFLE_ON_START == True: #Playlist Shuffler
-    db = sqlite3.connect('songqueue.db')
-    cursor = db.cursor()
-    cursor.execute('''SELECT * FROM playlist ORDER BY RANDOM()''')
-    listSongs = cursor.fetchall()
-    shuffle(listSongs)
-    sqlcommand = '''DELETE FROM playlist'''
-    cursor.execute(sqlcommand)
-    for item in listSongs:
-        cursor.execute('''INSERT INTO playlist(song, key) VALUES("{song_name}", "{key}");'''.format(song_name=item[1], key=item[2]))
-    db.commit()
-    db.close()
-    print(">> Backup Playlist has been shuffled.")
+# Init Hotkeys
+def manageHotkeys(event, hotkey, args):
+    runcommand(args[0], None, "Hotkey", True)
 if ENABLE_HOTKEYS:
-    keyboard.add_hotkey(HK_VOLUP, srcontrol.volumeup, args=(None, None))
-    keyboard.unhook_all_hotkeys() #Currently the best way to allow the hotkeys access to the p. class is to redefine them every time a new song is played.
-    keyboard.add_hotkey(HK_VOLUP, srcontrol.volumeup, args=(None, None))
-    keyboard.add_hotkey(HK_VOLDN, srcontrol.volumedown, args=(None, None))
-    keyboard.add_hotkey(HK_PAUSE, togglepause)
-    keyboard.add_hotkey(HK_VETO, veto, args=(None, None))
-    keyboard.add_hotkey(HK_CLRSONG, sendMessage, args=(s, sr.clearsong(None, "STREAMER")))
-
-'''END INIT'''
-
+    hk = SystemHotkey(consumer=manageHotkeys)
+    for item in HOTKEYS:
+        hk.register(HOTKEYS[item], callback=item)
 
 
 def getUser(line):
@@ -88,9 +56,11 @@ def getMessage(line):
     message = seperate[2]
     return message
 
+
 def formatted_time():
     return datetime.datetime.today().now().strftime("%I:%M")
     # Thanks to Zerg3rr for this code and some other help
+
 
 def getint(cmdarguments):
     try:
@@ -99,63 +69,36 @@ def getint(cmdarguments):
     except: return None
 
 
-def PONG():
-    s.send(bytes('PONG :tmi.twitch.tv\r\n'))
-    threading.Timer(240, PONG).start()
-PONG()
-
-
-def runcommand(command, cmdarguments, user):
-    torun = None
-    commands = {
-        # Public SR Commands
-        "!sr": (sr.songrequest, cmdarguments, user),
-        "!songrequest": (sr.songrequest, cmdarguments, user),  # Alias
-        "!wrongsong": (sr.wrongsong, getint(cmdarguments), user),
-        "!nowplaying": (sr.getnowplaying, None, user),
-        "!timeleft": (sr.queuetime, getint(cmdarguments), user),
-        "!queue": (sr.queuelink, user, None),
-        "!songlist": (sr.queuelink, user, None), #Alias
-
-        # NowPlaying Control
-        "!play": ("MOD", play, None, None),
-        "!pause": ("MOD", pause, None, None),
-        "!veto": ("MOD", veto, None, None),
-
-        # Volume Control
-        "!volume": ("MOD", srcontrol.volume, getint(cmdarguments), user),
-        "!v": ("MOD", srcontrol.volume, getint(cmdarguments), user), # Alias
-        "!volumeup": ("MOD", srcontrol.volumeup, getint(cmdarguments), user),
-        "!vu": ("MOD", srcontrol.volumeup, getint(cmdarguments), user), # Alias
-        "!volumedown": ("MOD", srcontrol.volumedown, getint(cmdarguments), user),
-        "!vd": ("MOD", srcontrol.volumedown, getint(cmdarguments), user), # Alias
-
-        # Playlist Control
-        "!clearsong": ("MOD", sr.clearsong, getint(cmdarguments), user),
-        "!plsr": ("MOD", sr.plsongrequest, cmdarguments, user),
-        "!plclearsong": ("MOD", sr.plclearsong, cmdarguments, user),
-        "!clearqueue": ("MOD", sr.clearqueue, None, None),
-    }
+def runcommand(command, cmdarguments, user, mute):
+    commands = {**commands_SongRequest, **commands_BotCommands, **commands_CustomCommands}
+    cmd = None
+    arg1 = None
+    arg2 = None
 
     for item in commands:
         if item == command:
             if commands[item][0] == "MOD": #MOD ONLY COMMANDS:
-                if user in getmoderators():
-                    torun = commands[item][1](commands[item][2], commands[item][3])
+                if user in getmoderators() or mute:
+                    cmd = commands[item][1]
+                    arg1 = commands[item][2]
+                    arg2 = commands[item][3]
                 else:
-                    sendMessage(s, "You don't have permission to do this.")
+                    sendMessage("You don't have permission to do this.")
+                    return
             else:
-                torun = commands[item][0](commands[item][1], commands[item][2])
+                cmd = commands[item][0]
+                arg1 = commands[item][1]
+                arg2 = commands[item][2]
             break
-    if not torun:
+    if not cmd:
         return
-    output = torun
-    #Modifiers to do something other than send a message
-    if output == None:
-        pass
-
+    output = eval(cmd + '(' + arg1 + ', ' + arg2 + ')')
+    if not output:
+        return
+    if mute:
+        print(output)
     else:
-        sendMessage(s, output)
+        sendMessage(output)
 
 
 
@@ -166,37 +109,39 @@ def main():
     readbuffer = ""
     while True:
         try:
-            readbuffer = readbuffer + s.recv(1024)
-            temp = string.split(readbuffer, "\n")
+            readbuffer = readbuffer + s.recv(1024).decode("utf-8")
+            temp = readbuffer.split("\n")
             readbuffer = temp.pop()
             for line in temp:
                 if "PING" in line:
-                    s.send("PONG %s\r\n" % line[1])
+                    s.send(bytes("PONG :tmi.twitch.tv\r\n".encode("utf-8")))
                 else:
                     # All these things break apart the given chat message to make things easier to work with.
                     user = getUser(line)
                     message = str(getMessage(line))
                     command = ((message.split(' ', 1)[0]).lower()).replace("\r", "")
                     cmdarguments = message.replace(command or "\r" or "\n", "")
-                    print("(" + formatted_time() + ")>> " + user + ": " + message)
+                    getint(cmdarguments)
+                    print(("(" + formatted_time() + ")>> " + user + ": " + message))
                     # Run the commands function
-                    runcommand(command, cmdarguments, user)
+                    if command[0] == "!":
+                        runcommand(command, cmdarguments, user, False)
         except socket.error:
             print("Socket died")
-            quit()
-
 
 
 # If the queue is completely empty at start, add a song so it's not pulling nonexistent values in the loop below
-if not sqliteread('''SELECT id, name, song, key FROM songs ORDER BY id ASC'''):
-    playfromplaylist() # Move a song from the playlist into the queue.
+if not sqliteread('''SELECT id, name, song, key FROM queue ORDER BY id ASC'''):
+    playfromplaylist()
+
+
 def tick():
     timecache = 0
     global nowplaying, paused
     while True:
-        time.sleep(0.3)
+        time.sleep(0.2)
         # Check if there's nothing in the playlist.
-        if not sqliteread('''SELECT id, name, song, key FROM songs ORDER BY id ASC'''):
+        if not sqliteread('''SELECT id, name, song, key FROM queue ORDER BY id ASC'''):
             playfromplaylist() # Move a song from the playlist into the queue.
 
         if paused or not nowplaying:  # If for any reason the music isnt playing, change the nowplaying to nothing
@@ -207,13 +152,12 @@ def tick():
             nptime = srcontrol.gettime()  # Save the current now playing time
 
             if timecache == nptime:  # If the cache (written 0.3 seconds before) and the time are equal, songs over
-                time.sleep(0.5)
+                time.sleep(0.3)
                 nowplaying = srcontrol.songover()
             timecache = nptime
 
         elif not paused and not nowplaying: # When a song is over, start a new song
             nowplaying = srcontrol.playsong()
-
             timecache = 1
             time.sleep(1)
 

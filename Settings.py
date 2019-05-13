@@ -6,7 +6,7 @@ Pretty much everything has a default value other than the >>BOT<< category, whic
 
 '''-------------------->>BOT<<--------------------'''
 PORT = 80
-# Use whatever port is open on your network. If 80 doesn't work, try 443
+# Use ports 80 or 6667 for a normal connection, or use ports 443 or 6697 for a secure connection (SSL).
 
 BOT_OAUTH = ""
 # To get this Oauth, head to https://twitchapps.com/tmi/ and log in with YOUR BOT'S ACCOUNT!
@@ -22,9 +22,6 @@ GPM_ENABLE = True
 # If false, this will result in sporadic volumes, bad quality, and annoying intros/outros.
 # This will throw a LOT OF ERRORS if you have GPM songs in your backup playlist and you set this to False.
 
-RESTART = True
-# If for some reason the bot isn't able to connect to Google Play Music, this will fully restart the bot once it detects an issue.
-
 '''-------------------->>SONGREQUEST<<--------------------'''
 
 MAX_DUPLICATE_SONGS = 1
@@ -36,7 +33,7 @@ MAX_REQUESTS_USER = 10
 SHUFFLE_ON_START = True
 # This will automatically shuffle the contents of the backup playlist whenever you start the bot if set to True. Depending on the playlists size this will delay the bot's startup a bit.
 
-DELAY_BETWEEN_SONGS = 0.5
+DELAY_BETWEEN_SONGS = 0.2
 # The amount of time in seconds between one song ending and another starting.
 
 VOL_INCREMENT = 5
@@ -44,9 +41,6 @@ VOL_INCREMENT = 5
 
 MAXTIME = 10
 # The maximum song length in minutes. Songs longer than this duration won't be requested.
-
-VOTES_TO_SKIP = 1
-# The number of votes needed to
 
 YT_IF_NO_RESULT = True
 # If no results are found searching Google Play Music, the bot will plug the same query into youtube and play the top result from there.
@@ -56,7 +50,7 @@ MEDIA_FILE_ENABLE = True
 # This is an option to toggle online media, such as a link directly to an .mp3 or .wav
 # This gives users more options for requests, but use with caution as people can request bad stuff.
 
-QUEUE_LINK = "There is not currently a link to the queue."
+QUEUE_LINK = "The streamer has not set a queue link yet."
 # This is the link to your SongQueue.csv, hosted wherever you can online.
 # We recommend using Google Backup and Sync. Bonus points for embedding the file in your own site.
 # When a user types !queue this link will appear.
@@ -81,6 +75,7 @@ BLACKLISTED_SONG_TITLE_CONTENTS = [
     "nightcore",
     "Edit",
     "Mix",
+    "Commentary",
 ]
 # One entry per line, followed by a comma. Songs not containing these keywords will be prioritized when requested.
 # IMPORTANT! The phrases at the TOP of this list will be blacklisted first. Ex: "Song - Live" will be removed first, and "Song (Different Version)" might be played instead if there are no better options.
@@ -93,21 +88,22 @@ MODERATORS = [
     CHANNEL,
 
 ]
-# These are people listed as moderators within the bot. It will automatically pull in moderators from chat as mods as well, but you can define mods here that have mod perms in the bot and not in chat.
+# These are people listed as moderators within the bot.
+# It will automatically pull in moderators from chat as mods as well, but you can define mods here that have mod perms in the bot and not in chat.
 # This is case sensitive.
 
 
 '''-------------------->>HOTKEYS<<--------------------'''
 ENABLE_HOTKEYS = True # If this is set to true, you'll need to have something in all the hotkey options below.
-HK_VOLUP = "F20"    # Volume Up
-HK_VOLDN = "F14"    # Volume Down
-HK_PAUSE = "F16"    # Toggle play/pause the music
-HK_VETO = "F15"     # Veto the currently playing track
-HK_CLRSONG = "F22"  # Remove the last song that anyone requested
 
-# Hotkeys must be formatted in a specific way. Valid formats are listed below:
-# VALID MODIFIERS: 'alt', 'alt gr', 'ctrl', 'left alt', 'left ctrl', 'left shift', 'left windows', 'right alt', 'right ctrl', 'right shift', 'right windows', 'shift', 'windows'
+HOTKEYS = {
+    # Each hotkey should be formatted like the following: "!command": ('modifier', 'modifier', 'key') - You need one modifier and can use up to 3.
+    # Supported modifiers are 'control', 'shift', 'super' (Win Key), and 'alt'. A list of all keys can be found here: http://bit.ly/2HfPiSZ
+    "!togglepause": ('alt', 'f6'),
+    "!veto": ('alt', 'f5'),
+    "!clearsong": ('alt', 'f2'),
 
-# "alt+q"
-# "Space"
-# "ctrl+shift+f11"
+    "!vu": ('alt', 'f3'),
+    "!vd": ('alt', 'f4'),
+}
+

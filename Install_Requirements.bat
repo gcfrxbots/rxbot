@@ -1,6 +1,6 @@
-echo You need PIP and Python installed for this to work. Download Python v2.7.9 to get both in one package.
+echo ================================================================= & echo.You need to have Python 3.7 (and the included PIP package) installed for this to work! & echo.THIS NEEDS TO BE RUN AS ADMINISTRATOR TO INSTALL PACKAGES!
 pause
 
-pip install -r requirements.txt
+py -3.7 -m pip install -r requirements.txt --user --no-warn-script-location
 
 pause

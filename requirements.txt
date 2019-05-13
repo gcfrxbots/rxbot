@@ -2,9 +2,14 @@ gmusicapi
 
 validators
 
-pytube
+pafy
+
+youtube-dl
 
 python-vlc
 
-keyboard
 xlsxwriter
+
+system_hotkey
+
+pywin32
