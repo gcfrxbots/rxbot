@@ -15,7 +15,7 @@ RXBot is a song request bot for Twitch streamers: viewers can request songs in c
 
 Once you download the bot, make sure you have all the requirements installed before running it:
 
-• [**Python 3.7.0**](https://www.python.org/downloads/release/python-370/ is what the bot runs off of. If you have an older Python version like 2.7.9, and you don't need that specific version, uninstall it *before* installing 3.7.0. Will potentially save headaches in the future.
+• [**Python 3.7.0**](https://www.python.org/downloads/release/python-370/) is what the bot runs off of. If you have an older Python version like 2.7.9, and you don't need that specific version, uninstall it *before* installing 3.7.0. Will potentially save headaches in the future.
 
 • [**VLC Media Player**](https://www.videolan.org/vlc/index.html) needs to be *installed*, but it does not need to actually be *running* alongside the bot for it to work.
 
