@@ -1,25 +1,18 @@
 VERSION 3.0
 
-Primary Change: Rxbot3 Initial Release
+Primary Change: Youtube Search Changes
 Changes:
 
-The bot now runs using Python 3.7! Uninstall 2.7 or run the bot using py -3.7 Run.py
-
-The bot now has an initial checkup feature. When started, it will create or verify all of the required files and ensure everything is set up correctly.
-Added a /Resources folder to put all of the files that are needed after the bot's first setup. Auto generates.
-Renamed "songqueue.db" to "botData.db" since it'll be used for way more than the song queue in the future.
-Added two new files, Bot.py and CustomCommands.py. Both are pretty empty now, but will be expanded upon later for more features.
-Hotkeys have been overhauled to be much easier to use and more reliable. There's now a simple way to bind any chat command to any hotkey.
+PlaylistEditor now has an option to show you your playlist.
+PlaylistEditor is now functional without logging into GPM.
+Fixed the youtube-dl updater to use `py -3.7 -m pip` rather than just `pip`
+Added more checks on startup. It now detects if your oauth is incorrect and instructs you how to fix, as well as checking hotkey formatting.
 
 
 SONGREQUEST:
-PyTube is GONE! Pafy and Youtube-Dl are now used.
-Youtube-Dl NEEDS to be the newest version, so there's an auto updater built in on startup.
+I found out that gmusicapi DOES requrie you to be a subscriber to search youtube. Rewrote youtube search to use youtube-dl so no login is required.
+Fixed a bug that'd cause the bot to occasionally crash when using sr or plsr
+If for any reason your song's ID is "err" please report it immediately
 
 COMMANDS:
-Reworked how the runcommand() function works to be more optimized, and to take all of it's input from strings so that the commands can be defined anywhere.
-The commands library is now defined at the top of each file, currently SongRequest, Bot, and CustomCommands. This can be expanded infinitely.
-CustomCommands.py has documentation in it and fully works to allow users to create their own custom functions and bot commands.
-
-Special thanks to kc0zhq for the initial Py3 port and for help with this big update.
-
+No changes to commands
