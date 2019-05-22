@@ -7,7 +7,7 @@ RXBot is a song request bot for Twitch streamers: viewers can request songs in c
 
 ⚠️ This project is still in early development, so despite pre-release testing, it may not function as expected. Please report bugs using Github's *Issues* tab, or in the [Rxbots Discord](https://discord.gg/8FRQBJy). ⚠️
 
-*(Readme last updated for v2.2.1)*
+*(Readme last updated for v3.0)*
 
 -----
 
@@ -15,7 +15,7 @@ RXBot is a song request bot for Twitch streamers: viewers can request songs in c
 
 Once you download the bot, make sure you have all the requirements installed before running it:
 
-• [**Python 2.7.9**](https://www.python.org/downloads/release/python-279/)
+• [**Python 3.7.0**](https://www.python.org/downloads/release/python-370/ is what the bot runs off of. If you have an older Python version like 2.7.9, and you don't need that specific version, uninstall it *before* installing 3.7.0. Will potentially save headaches in the future.
 
 • [**VLC Media Player**](https://www.videolan.org/vlc/index.html) needs to be *installed*, but it does not need to actually be *running* alongside the bot for it to work.
 
@@ -27,7 +27,7 @@ Once you download the bot, make sure you have all the requirements installed bef
 
 Before doing anything, you need to create a Twitch account for your bot to use. Don't use the account you'll actually be streaming from. It would probably be a good idea to make your bot a chat moderator. And if you use the BetterTTV extension, make sure to [add your new bot.](https://manage.betterttv.net/channel)
 
-Run the bot by opening **Run.py** in the bot's folder. The first time you run it, the bot will tell you to go to [this page](https://accounts.google.com/o/oauth2/v2/auth?scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fskyjam&redirect_uri=urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob&response_type=code&client_id=228293309116.apps.googleusercontent.com&access_type=offline) to generate an oauth link. You ***do not need*** a Google Play Music subscription, you only need the account. However, if you do not have a subscription, the bot's GPM integration will not work and you must disable it. Log in with your Google Play Account and follow all the prompts until it gives you a code. Copy that code, paste it in the bot window, and press Enter. If you entered it correctly, the bot will tell you that your backup playlist is empty. Close the bot so we can fix that.
+Run the bot by opening **RUN.bat** in the bot's folder. The first time you run it, the bot will tell you to go to [this page](https://accounts.google.com/o/oauth2/v2/auth?scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fskyjam&redirect_uri=urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob&response_type=code&client_id=228293309116.apps.googleusercontent.com&access_type=offline) to generate an oauth link. You ***do not need*** a Google Play Music subscription, you only need the account. However, if you do not have a subscription, the bot's GPM integration will not work and you must disable it. Log in with your Google Play Account and follow all the prompts until it gives you a code. Copy that code, paste it in the bot window, and press Enter. If you entered it correctly, the bot will tell you that your backup playlist is empty. Close the bot so we can fix that.
 
 If there are no song requests in the queue, the bot will play songs from your backup playlist. Since this is your first time using the bot, your backup playlist is empty. Run **PlaylistEditor.py**, and it will present you with three options: `1. Fill Playlist || 2. Shuffle Playlist || 3. Clear Playlist` To add songs, type 1 and hit enter. The bot will then detect all playlists on your Google Play Music account (only playlists you've created, not ones you follow). Type the number of the playlist you wish to import and hit enter. Once the bot is finished importing (it should take less than a second), it will close itself, but you can re-open it and add import more playlists if you wish. Note that song files you've *uploaded* to your GPM account will not work, but you can add those songs to the bot via Youtube or uploaded files (more on that later). For now, it's time to adjust your settings.
 
@@ -37,7 +37,7 @@ The **Settings.py** file is where you can adjust your personal settings for the 
 
 ##### BOT
 
-`PORT = 80` || The bot connects to Twitch through this port. 80 will already be open on most networks, so that is the default setting. If 80 doesn't work, try 6667.
+`PORT = 80` || The bot connects to Twitch through this port. 80 will already be open on most networks, so that is the default setting. If 80 doesn't work, try 6667. If you want an SSL connection, use 443 or 6697.
 
 `BOT_OAUTH = ""` || This is your bot's Twitch OAuth token. To put it simply, it's a password that only *this bot* can use to sign into your bot's Twitch account. [Click here to generate your oauth token](https://twitchapps.com/tmi/) (make sure you sign in with ***your bot's account,*** not your own). Once it's generated, copy it and paste it between the quotes.
 
@@ -68,6 +68,7 @@ The **Settings.py** file is where you can adjust your personal settings for the 
 `QUEUE_LINK = ""` || There is  a file called **SongQueue.csv** in the bot's folder, which contains the whole queue in a readable format. We recommend using something like [Google Drive]([https://www.google.com/drive/download/backup-and-sync/](https://www.google.com/drive/download/backup-and-sync/)) to upload the file every time it updates. Get the shareable link to the uploaded file, and paste it between the quotes to set your queue link, which users can view with `!queue`.
 
 `DEFAULT_SR_MSG = ""` || The message that will show up if a user types `!sr` or `!songrequest` by itself. Put your message between the quotes.
+
 ##### TITLE BLACKLIST FILTER
 
 `SONGBLSIZE = 8` || When a user requests a song (aside from Youtube links, obviously), the song they typed is searched on Google Play Music, and the bot picks the top result. However, the top result is sometimes a cover, remix, live performance, etc. which the user will probably not want. If this setting is above 1, the bot will take that many results, and sort through them using your blacklisted terms. So for example, if you have the word "remix" set as a blacklisted term, the bot will prioritize search results *without* the word "remix" in them. The higher this number is set, the more accurate your search results will be, but the slower the bot will respond to them. We recommend a setting between 3 and 8.
@@ -81,19 +82,18 @@ Note that the terms are in order from most-hated to least-hated. For example: If
 
 ##### HOTKEYS
 
-`ENABLE_HOTKEYS = False` || Enable or disable hotkeys for pausing, adjusting the volume, skipping songs, or removing the last song added to the queue.  If this is set to `True`, you **must** add a key binding for all of the hotkey functions, otherwise the bot will crash.
+`ENABLE_HOTKEYS = False` || Enable or disable hotkeys for pausing, adjusting the volume, skipping songs, or removing the last song added to the queue.  If this is set to `True` and you do not have a key binding for *all* of the hotkey functions, the bot will throw an error on startup, but the hotkeys you *have* bound will still function.  
+Formatting for a keybinding is `('modifier', 'key')`, where the modifier can be `control`, `shift`, or `alt`. If you don't want a modifier, format it like `('key',),`. [List of all key IDs here.](http://bit.ly/2HfPiSZ)
 
-`HK_VOLUP` || Turns the volume up.
+`"!togglepause":` || Pause/play the music.
 
-`HK_VOLDN` || Turns the volume down.
+`"!veto":` || Skips the current song.
 
-`HK_PAUSE` || Pause/play the music.
+`"!clearsong":` || Removes the last song added to the queue.
 
-`HK_VETO` || Skips the current song.
+`"!vu":` || Turns the volume up.
 
-`HK_CLRSONG` || Removes the last song added to the queue.
-
-More info on these hotkeys later, because honestly we have no fucking idea right now.
+`"!vd":` || Turns the volume down.
 
 ## Updating to a Newer Version
 
@@ -116,7 +116,8 @@ This is a list of commands for the bot, which users will type into Twitch chat:
 
 Note that every song in the queue has an ID, which can be used in other commands. This ID is *not* based on the song's current position in the queue, and does not change. The ID is shown when the song is requested.
 
-`!nowplaying` || Displays the currently-playing song in chat. Note: the current song is saved to the **nowplaying.txt** file in the bot folder, so you can add this as a text source in OBS (or your streaming program of choice) to display the current song on screen. 
+`!nowplaying` || Displays the currently-playing song in chat. Note: the current song is saved to the **nowplaying.txt** file in the bot's Output folder, so you can add this as a text source in OBS (or your streaming program of choice) to display the current song on screen.  
+The bot will also output the current song's album art to **albumart.jpg** in the bot's Output folder. If a song does not have album art (ex. if it's a Youtube request), the file will be generic album art. You can set your generic album art by editing **generic_art.jpg** in the bot's Resources folder, just make sure to keep the resolution 512x512.
 
 `!queue` || Displays the link to your uploaded song queue in chat. Set this link in the **Settings.py** file with the `QUEUE_LINK` setting.
 
@@ -142,22 +143,19 @@ Note that every song in the queue has an ID, which can be used in other commands
 
 ## FAQ/Troubleshooting
 
-If you wish, you can join the [Rxbots Discord](https://discord.gg/8FRQBJy) for help with the bot. Use the **#bot-support** channel to ask questions, report bugs, or suggest new features.
+If you wish, you can join the [Rxbots Discord](https://discord.gg/8FRQBJy) for help with the bot. Use the **#dev-chat** channel to ask questions, report bugs, or suggest new features.
 
 **Q:** My bot crashes on startup!  
-**A:** Your dependencies aren't working. Open command prompt as administrator, and manually type in each line from **requirements.txt**. If it says pip is not recognized as a command, reinstall Python 2.7.9. If it says something else, report it to us as a bug.
+**A:** Reinstall Python 3.7.0. If that doesn't work, please contact us in the Discord.
 
 **Q:** The bot outputs this error when a song starts: `prefetch stream error: unimplemented query (264) in control`  
 **A:** This error is 100% harmless, and can safely be ignored. It seems to just be an output error within VLC, nothing we can fix.
 
 **Q:** The bot outputs a *bunch* of `main libvlc error`s when a song is requested, but still seems to work.  
-**A:** Try re-installing VLC, that seems to fix it. These errors also seem to be completely harmless, as we've yet to encounter any actual problems with them, but better safe than sorry. 
+**A:** Try re-installing VLC, that seems to fix it. These errors *also* seem to be completely harmless, as we've yet to encounter any actual problems with them, but better safe than sorry. 
 
 **Q:** Hotkeys don't work while I'm in certain programs!  
-**A:** Run the bot as administrator.
-
-**Q:** There's a `regex` error when I try to request youtube songs.  
-**A:** This was an issue with Pytube, a library the bot uses to decipher youtube stuff. Open command prompt and type `python.exe -m pip uninstall pytube` to uninstall it, then run the bot which will automatically download the newest version of it.
+**A:** This is usually because the program is being run as admin, not much we can do there. If you want to try running the bot as admin, you must first edit **RUN.bat** and replace `Run.py` with the full file directory, [like this.](https://i.imgur.com/kcu4Grv.png) Then, right click **Run.bat** and select "Run as Administrator".
 
 **Q:** Is this bot purely for song requests?  
 **A:** At the moment, yes. We do plan to add normal commands later on though, so stay tuned!
@@ -170,9 +168,9 @@ If you wish, you can join the [Rxbots Discord](https://discord.gg/8FRQBJy) for h
 
 [**iCeCoCaCoLa64**](https://www.twitch.tv/icecocacola64) - Ideas, motivation, testing, and documentation (hi there 👋🏻).
 
-[**Grrenix**](https://www.twitch.tv/Grrenix) - Coding help and motivation.
-
 [**kc0zhq**](https://www.twitch.tv/kc0zhq) - Coding help and motivation.
+
+[**Grrenix**](https://www.twitch.tv/Grrenix) - Coding help and motivation.
 
 **StreamLabs Chatbot** - For becoming such ungodly amounts of terrible that you inspired a random college student to become a coding God.
 
