@@ -99,11 +99,10 @@ ENABLE_HOTKEYS = True # If this is set to true, you'll need to have something in
 HOTKEYS = {
     # Each hotkey should be formatted like the following: "!command": ('modifier', 'modifier', 'key') - You need one modifier and can use up to 3.
     # Supported modifiers are 'control', 'shift', 'super' (Win Key), and 'alt'. A list of all keys can be found here: http://bit.ly/2HfPiSZ
-    "!togglepause": ('alt', 'f6'),
-    "!veto": ('alt', 'f5'),
-    "!clearsong": ('alt', 'f2'),
-
-    "!vu": ('alt', 'f3'),
-    "!vd": ('alt', 'f4'),
+    "!togglepause": ('control', 'f1'),
+    "!veto": ('control', 'f2'),
+    "!clearsong": ('control', 'f3'),
+    "!vu": ('control', 'f4'),
+    "!vd": ('control', 'f5'),
 }
 
