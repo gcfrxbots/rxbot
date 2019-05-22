@@ -1,19 +1,19 @@
 #This script is meant to populate the playlist table with a user's playlist from google play music.
 from gmusicapi import Mobileclient
 import sqlite3
+from Settings import GPM_ENABLE
 import sys
-api = Mobileclient()
-#Now using the newer oauth login!
-
-api.oauth_login(device_id=Mobileclient.FROM_MAC_ADDRESS, oauth_credentials="Resources/oauth.txt")
-
-
-if Mobileclient.is_authenticated(api) == True:
-    print("Logged into GPM successfully")
+if GPM_ENABLE:
+    api = Mobileclient()
+    print("Logging into Google Play Music...")
+    if api.oauth_login(device_id=Mobileclient.FROM_MAC_ADDRESS, oauth_credentials="Resources/oauth.txt"):
+        print("Logged into GPM successfully")
+    else:
+        api.perform_oauth(storage_filepath="Resources/oauth.txt")
+        if not api.oauth_login(device_id=Mobileclient.FROM_MAC_ADDRESS, oauth_credentials="Resources/oauth.txt"):
+            raise ConnectionError("Unable to log into Google Play Music!")
 else:
-    print("Please log into Google Play Music")
-    api.perform_oauth(storage_filepath="oauth.txt")
-    api.oauth_login(device_id=Mobileclient.FROM_MAC_ADDRESS, oauth_credentials="Resources/oauth.txt")
+    print("Youtube-Only mode enabled. As of now, filling the playlist is not supported here and you'll need to add songs with !plsr.")
 
 
 
@@ -70,8 +70,6 @@ def fillPlaylist():
         index += 1
     print(">>>Finished! Out of " + str(index) + " songs, " + str(index - errors) + " were added successfully. There were " + str(errors) + " songs that couldn't be added, probably because they were user uploaded files.")
 
-
-#
     db.commit()
     db.close()
 
@@ -94,8 +92,17 @@ def shuffleplaylist():
     db.commit()
     db.close()
 
+def viewplaylist():
+    db = sqlite3.connect('Resources/botData.db')
+    cursor = db.cursor()
+    cursor.execute('''SELECT * FROM playlist''')
+    listSongs = cursor.fetchall()
+    for item in listSongs:
+        id = str(item[0])
+        title = str(item[1])
+        key = str(item[2])
 
-
+        print("ID: " + id + " >>  " + title + "  >> Key: " + key)
 
 
 
@@ -114,7 +121,13 @@ def clearplaylist():
 
 
 print(">>-------------------------------------<<")
-print("Welcome to the RXBot Backup Playlist Control Application. What would you like to do? \n1. Fill Playlist \n2. Shuffle Playlist \n3. Clear Playlist")
+print("Welcome to the RXBot Backup Playlist Control Application. What would you like to do? "
+      "\n1. Fill Playlist "
+      "\n2. Shuffle Playlist "
+      "\n3. View Playlist "
+      "\n4. Clear Playlist "
+
+      )
 print(">>-------------------------------------<<")
 inp = eval(input("Type the number of the option you would like here then press ENTER: \n"))
 if inp == 1:
@@ -123,6 +136,9 @@ if inp == 2:
     shuffleplaylist()
     print("Shuffled the playlist!")
 if inp == 3:
+    viewplaylist()
+
+if inp == 4:
     clearplaylist()
     print("Cleared the whole backup playlist. Run this script again to fill it back up.")
 

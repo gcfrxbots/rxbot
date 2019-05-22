@@ -60,22 +60,35 @@ def initSetup():
         f.truncate()
 
     # Log into GPM
-    print("Logging into Google Play Music (Still required for Youtube Only Mode)...")
-    if api.oauth_login(device_id=Mobileclient.FROM_MAC_ADDRESS, oauth_credentials="Resources/oauth.txt"):
-        print("Logged into GPM successfully")
+    if GPM_ENABLE:
+        print("Logging into Google Play Music...")
+        if api.oauth_login(device_id=Mobileclient.FROM_MAC_ADDRESS, oauth_credentials="Resources/oauth.txt"):
+            print("Logged into GPM successfully")
+        else:
+            api.perform_oauth(storage_filepath="Resources/oauth.txt")
+            if not api.oauth_login(device_id=Mobileclient.FROM_MAC_ADDRESS, oauth_credentials="Resources/oauth.txt"):
+                raise ConnectionError("Unable to log into Google Play Music!")
     else:
-        api.perform_oauth(storage_filepath="Resources/oauth.txt")
-        if not api.oauth_login(device_id=Mobileclient.FROM_MAC_ADDRESS, oauth_credentials="Resources/oauth.txt"):
-            raise ConnectionError("Unable to log into Google Play Music!")
+        print("Youtube-Only mode enabled. No GPM login needed.")
 
     # Check Settings
     print("Verifying Settings.py is set up correctly...")
     if PORT not in (80, 6667, 443, 6697):
         raise ConnectionError("Wrong Port! The port must be 80 or 6667 for standard connections, or 443 or 6697 for SSL")
-    if not BOT_OAUTH or not ('oauth:' in BOT_OAUTH):
-        raise Exception("Missing or invalid BOT_OAUTH - Please follow directions in the settings or readme.")
+    if not BOT_OAUTH:
+        raise Exception("Missing BOT_OAUTH - Please follow directions in the settings or readme.")
+    if not ('oauth:' in BOT_OAUTH):
+        raise Exception("Invalid BOT_OAUTH - Your oauth should start with 'oauth:'")
     if not BOT_NAME or not CHANNEL:
         raise Exception("Missing BOT_NAME or CHANNEL - Please follow directions in the settings or readme")
+
+    if ENABLE_HOTKEYS:
+        for item in HOTKEYS:
+            assignedKey = HOTKEYS[item]
+            if type(assignedKey) != tuple:
+                raise Exception('''Hotkeys formatted incorrectly! If you have just one key (no modifiers), it should look like >> "!veto": ('key',),''')
+            if len(assignedKey) < 1:
+                raise Exception("Hotkeys are enabled, but one or more hotkeys are not set. The bot can still run like this but an error will be thrown on startup.")
 
     # Create Sqlite3 File
     print("Creating and updating botData.db...")
@@ -127,9 +140,9 @@ def initSetup():
             cursor.execute('''INSERT INTO playlist(song, key) VALUES("{song_name}", "{key}");'''.format(song_name=item[1], key=item[2]))
         db.commit()
         db.close()
-        print(">> Backup Playlist has been shuffled.")
+        print("Backup Playlist has been shuffled.")
 
-    print(">> Bot Startup Complete!")
+    print(">> Initial Checkup Complete! Connecting to Chat...")
     return api
 
 
@@ -167,7 +180,7 @@ def joinRoom(s):
 
 def loadingComplete(line):
     if("End of /NAMES list" in line):
-        print(">>Bot Startup complete!")
+        print(">> Bot Startup complete!")
         return False
     else:
         return True
