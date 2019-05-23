@@ -3,16 +3,12 @@ VERSION 3.1
 Primary Change: Youtube Search Changes
 Changes:
 
-PlaylistEditor now has an option to show you your playlist.
-PlaylistEditor is now functional without logging into GPM.
-Fixed the youtube-dl updater to use `py -3.7 -m pip` rather than just `pip`
-Added more checks on startup. It now detects if your oauth is incorrect and instructs you how to fix, as well as checking hotkey formatting.
-
+PlaylistEditor is now has an update feature, which will compare your playlist to a selected GPM playlist and add any new tracks not already in the bot's playlist.
+Added GPM_PLAYLIST in settings. Set this to the name of a playlist to save time when updating your playlist.
+Added OUTPUT_HOTKEYS in settings. Add the command bound to a hotkey to have that hotkey send the result to chat.
 
 SONGREQUEST:
-I found out that gmusicapi DOES requrie you to be a subscriber to search youtube. Rewrote youtube search to use youtube-dl so no login is required.
-Fixed a bug that'd cause the bot to occasionally crash when using sr or plsr
-If for any reason your song's ID is "err" please report it immediately
+No Changes
 
 COMMANDS:
-No changes to commands
+No Changes
