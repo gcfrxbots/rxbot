@@ -38,7 +38,11 @@ def veto(x, y):
 
 # Init Hotkeys
 def manageHotkeys(event, hotkey, args):
-    runcommand(args[0], None, "Hotkey", True)
+    if args[0] in OUTPUT_HOTKEYS:
+        runcommand(args[0], None, "Hotkey", False)
+    else:
+        runcommand(args[0], None, "Hotkey", True)
+
 if ENABLE_HOTKEYS:
     hk = SystemHotkey(consumer=manageHotkeys)
     for item in HOTKEYS:
@@ -78,7 +82,7 @@ def runcommand(command, cmdarguments, user, mute):
     for item in commands:
         if item == command:
             if commands[item][0] == "MOD": #MOD ONLY COMMANDS:
-                if user in getmoderators() or mute:
+                if (user in getmoderators()) or (user == "Hotkey") or mute:
                     cmd = commands[item][1]
                     arg1 = commands[item][2]
                     arg2 = commands[item][3]

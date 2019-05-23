@@ -137,7 +137,7 @@ def initSetup():
         sqlcommand = '''DELETE FROM playlist'''
         cursor.execute(sqlcommand)
         for item in listSongs:
-            cursor.execute('''INSERT INTO playlist(song, key) VALUES("{song_name}", "{key}");'''.format(song_name=item[1], key=item[2]))
+            cursor.execute('''INSERT INTO playlist(song, key) VALUES("{song_name}", "{key}");'''.format(song_name=item[1].replace('"', "'"), key=item[2]))
         db.commit()
         db.close()
         print("Backup Playlist has been shuffled.")

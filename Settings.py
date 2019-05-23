@@ -34,13 +34,13 @@ SHUFFLE_ON_START = True
 # This will automatically shuffle the contents of the backup playlist whenever you start the bot if set to True. Depending on the playlists size this will delay the bot's startup a bit.
 
 DELAY_BETWEEN_SONGS = 0.2
-# The amount of time in seconds between one song ending and another starting.
+# The amount of time in seconds between one song ending and another starting. There's a built-in buffer that this is added to.
 
 VOL_INCREMENT = 5
 # This is how much the volume will be changed by when you type !volumeup, !volumedown, or use a hotkey to adjust volume.
 
 MAXTIME = 10
-# The maximum song length in minutes. Songs longer than this duration won't be requested.
+# The maximum song length in minutes. Songs longer than this duration won't be added to the queue.
 
 YT_IF_NO_RESULT = True
 # If no results are found searching Google Play Music, the bot will plug the same query into youtube and play the top result from there.
@@ -51,13 +51,17 @@ MEDIA_FILE_ENABLE = True
 # This gives users more options for requests, but use with caution as people can request bad stuff.
 
 QUEUE_LINK = "The streamer has not set a queue link yet."
-# This is the link to your SongQueue.csv, hosted wherever you can online.
+# This is the link to your SongQueue.xlsx, hosted wherever you can online.
 # We recommend using Google Backup and Sync. Bonus points for embedding the file in your own site.
 # When a user types !queue this link will appear.
 
 DEFAULT_SR_MSG = "You need to type a song's name, or a link to a Youtube video or music file. You can type !wrongsong if the wrong one is selected."
 # This is the message that will show up if someone types "!sr" or "!songrequest" without any request.
 # Usually this is for when you have "!songrequest" in your stream title and someone wants to see what it is.
+
+GPM_PLAYLIST = ""
+# This is the exact title of the Google Play Music playlist that you want to use when updating your playlist in PlaylistEditor.py
+# If this is not set, you will be prompted to select a playlist each time.
 
 
 '''-------------------->>TITLE BLACKLIST FILTER<<--------------------'''
@@ -84,7 +88,7 @@ BLACKLISTED_SONG_TITLE_CONTENTS = [
 '''-------------------->>GENERAL<<--------------------'''
 
 MODERATORS = [
-    'rxbots',
+    'rxbots',  # This is for troubleshooting purposes. It doesn't mod me on your channel, only this bot.
     CHANNEL,
 
 ]
@@ -97,8 +101,10 @@ MODERATORS = [
 ENABLE_HOTKEYS = True # If this is set to true, you'll need to have something in all the hotkey options below.
 
 HOTKEYS = {
-    # Each hotkey should be formatted like the following: "!command": ('modifier', 'modifier', 'key') - You need one modifier and can use up to 3.
+    # Each hotkey should be formatted like the following: "!command": ('modifier', 'modifier', 'key')
+    # You can use one single key by using "!command": ('key',)
     # Supported modifiers are 'control', 'shift', 'super' (Win Key), and 'alt'. A list of all keys can be found here: http://bit.ly/2HfPiSZ
+
     "!togglepause": ('control', 'f1'),
     "!veto": ('control', 'f2'),
     "!clearsong": ('control', 'f3'),
@@ -106,3 +112,9 @@ HOTKEYS = {
     "!vd": ('control', 'f5'),
 }
 
+OUTPUT_HOTKEYS = [
+    # If you wish for a hotkey to send a message to chat rather than to the console, you can put the hotkey command here.
+    # Copy the command in the HOTKEYS section above, and separate each with a comma.
+
+    "!clearsong",
+]
