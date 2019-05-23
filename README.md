@@ -27,9 +27,11 @@ Once you download the bot, make sure you have all the requirements installed bef
 
 Before doing anything, you need to create a Twitch account for your bot to use. Don't use the account you'll actually be streaming from. It would probably be a good idea to make your bot a chat moderator. And if you use the BetterTTV extension, make sure to [add your new bot.](https://manage.betterttv.net/channel)
 
-Run the bot by opening **RUN.bat** in the bot's folder. The first time you run it, the bot will tell you to go to [this page](https://accounts.google.com/o/oauth2/v2/auth?scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fskyjam&redirect_uri=urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob&response_type=code&client_id=228293309116.apps.googleusercontent.com&access_type=offline) to generate an oauth link. You ***do not need*** a Google Play Music subscription, you only need the account. However, if you do not have a subscription, the bot's GPM integration will not work and you must disable it. Log in with your Google Play Account and follow all the prompts until it gives you a code. Copy that code, paste it in the bot window, and press Enter. If you entered it correctly, the bot will tell you that your backup playlist is empty. Close the bot so we can fix that.
+Next, if you *don't* want to use Google Play Music, open **Settings.py** in any text editor, such as Notepad++. Change `GPM_ENABLE` to False, this will disable GPM functionality. Now, run the bot by opening **RUN.bat** in the bot's folder. If you disabled GPM, skip the next paragraph.
 
-If there are no song requests in the queue, the bot will play songs from your backup playlist. Since this is your first time using the bot, your backup playlist is empty. Run **PlaylistEditor.py**, and it will present you with three options: `1. Fill Playlist || 2. Shuffle Playlist || 3. Clear Playlist` To add songs, type 1 and hit enter. The bot will then detect all playlists on your Google Play Music account (only playlists you've created, not ones you follow). Type the number of the playlist you wish to import and hit enter. Once the bot is finished importing (it should take less than a second), it will close itself, but you can re-open it and add import more playlists if you wish. Note that song files you've *uploaded* to your GPM account will not work, but you can add those songs to the bot via Youtube or uploaded files (more on that later). For now, it's time to adjust your settings.
+The first time you run it, the bot will tell you to go to [this page](https://accounts.google.com/o/oauth2/v2/auth?scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fskyjam&redirect_uri=urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob&response_type=code&client_id=228293309116.apps.googleusercontent.com&access_type=offline) to generate an oauth link. You need a Google Play Music subscription to use its functionality, obviously. Log in with your Google Play Account and follow all the prompts until it gives you a code. Copy that code, paste it in the bot window, and press Enter. If you entered it correctly, the bot will tell you that your backup playlist is empty. Close the bot so we can fix that.
+
+If there are no song requests in the queue, the bot will play songs from your backup playlist. Since this is your first time using the bot, your backup playlist is empty. Open **Run_PlaylistEditor.bat**, and it will present you with four options: `1. Fill Playlist || 2. Shuffle Playlist || 3. View Playlist || 4. Clear Playlist` To add songs, type 1 and hit enter. The bot will then detect all playlists on your Google Play Music account (only playlists you've created, not ones you follow). Type the number of the playlist you wish to import and hit enter. Once the bot is finished importing (it should take less than a second), it will close itself, but you can re-open it and add import more playlists if you wish. Note that song files you've *uploaded* to your GPM account will not work, but you can add those songs to the bot via Youtube or uploaded files (more on that later). For now, it's time to adjust your settings.
 
 ## Settings
 
@@ -65,7 +67,7 @@ The **Settings.py** file is where you can adjust your personal settings for the 
 
 `MEDIA_FILE_ENABLE = True` || Sets whether or not users are allowed to request uploaded music file links. Enabling this gives users more options, but can also be easily abused. Use with caution.
 
-`QUEUE_LINK = ""` || There is  a file called **SongQueue.csv** in the bot's folder, which contains the whole queue in a readable format. We recommend using something like [Google Drive]([https://www.google.com/drive/download/backup-and-sync/](https://www.google.com/drive/download/backup-and-sync/)) to upload the file every time it updates. Get the shareable link to the uploaded file, and paste it between the quotes to set your queue link, which users can view with `!queue`.
+`QUEUE_LINK = ""` || There is  a file called **SongQueue.xlsx** in the bot's Resources folder, which contains the whole queue in a readable format. We recommend using something like [Google Drive]([https://www.google.com/drive/download/backup-and-sync/](https://www.google.com/drive/download/backup-and-sync/)) to upload the file every time it updates. Get the shareable link to the uploaded file, and paste it between the quotes to set your queue link, which users can view with `!queue`.
 
 `DEFAULT_SR_MSG = ""` || The message that will show up if a user types `!sr` or `!songrequest` by itself. Put your message between the quotes.
 
@@ -164,9 +166,9 @@ If you wish, you can join the [Rxbots Discord](https://discord.gg/8FRQBJy) for h
 **A:** A while back, Spotify removed their public API, meaning that Spotify integration in any unauthorized program is impossible. Google Play Music, on the other hand, does *not* suck, and has a free-to-use public API.
 
 ## Credits and Stuff
-[**Rxbots**](https://www.twitch.tv/rxbots) - Sole creator of the bot.
+Grant Fowler, aka [**Rxbots**](https://www.twitch.tv/rxbots) - Sole creator of the bot.
 
-[**iCeCoCaCoLa64**](https://www.twitch.tv/icecocacola64) - Ideas, motivation, testing, and documentation (hi there 👋🏻).
+Michael Balas, aka [**iCeCoCaCoLa64**](https://www.twitch.tv/icecocacola64) - Ideas, motivation, testing, and documentation (hi there 👋🏻).
 
 [**kc0zhq**](https://www.twitch.tv/kc0zhq) - Coding help and motivation.
 
