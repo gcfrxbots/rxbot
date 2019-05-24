@@ -7,7 +7,7 @@ RXBot is a song request bot for Twitch streamers: viewers can request songs in c
 
 ⚠️ This project is still in early development, so despite pre-release testing, it may not function as expected. Please report bugs using Github's *Issues* tab, or in the [Rxbots Discord](https://discord.gg/8FRQBJy). ⚠️
 
-*(Readme last updated for v3.1)*
+*(Readme last updated for v3.1.1)*
 
 -----
 
@@ -31,7 +31,7 @@ Next, if you *don't* want to use Google Play Music, open **Settings.py** in any 
 
 The first time you run it, the bot will tell you to go to [this page](https://accounts.google.com/o/oauth2/v2/auth?scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fskyjam&redirect_uri=urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob&response_type=code&client_id=228293309116.apps.googleusercontent.com&access_type=offline) to generate an oauth link. You need a Google Play Music subscription to use its functionality, obviously. Log in with your Google Play Account and follow all the prompts until it gives you a code. Copy that code, paste it in the bot window, and press Enter. If you entered it correctly, the bot will tell you that your backup playlist is empty. Close the bot so we can fix that.
 
-If there are no song requests in the queue, the bot will play songs from your backup playlist. Since this is your first time using the bot, your backup playlist is empty. Open **Run_PlaylistEditor.bat**, and it will present you with four options: `1. Fill Playlist || 2. Shuffle Playlist || 3. View Playlist || 4. Clear Playlist` To add songs, type 1 and hit enter. The bot will then detect all playlists on your Google Play Music account (only playlists you've created, not ones you follow). Type the number of the playlist you wish to import and hit enter. Once the bot is finished importing (it should take less than a second), it will close itself, but you can re-open it and add import more playlists if you wish. Note that song files you've *uploaded* to your GPM account will not work, but you can add those songs to the bot via Youtube or uploaded files (more on that later). For now, it's time to adjust your settings.
+If there are no song requests in the queue, the bot will play songs from your backup playlist. Since this is your first time using the bot, your backup playlist is empty. Open **Run_PlaylistEditor.bat**, and it will present you with four options: `1. Fill Playlist || 2. Update Playlist || 3. Shuffle Playlist || 4. View Playlist || 5. Clear Playlist` To add songs, type 1 and hit enter. The bot will then detect all playlists on your Google Play Music account (only playlists you've created, not ones you follow). Type the number of the playlist you wish to import and hit enter. Once the bot is finished importing (it should take less than a second), it will close itself, but you can re-open it and add import more playlists if you wish. Note that song files you've *uploaded* to your GPM account will not work, but you can add those songs to the bot via Youtube or uploaded files (more on that later). For now, it's time to adjust your settings.
 
 ## Settings
 
@@ -71,6 +71,8 @@ The **Settings.py** file is where you can adjust your personal settings for the 
 
 `DEFAULT_SR_MSG = ""` || The message that will show up if a user types `!sr` or `!songrequest` by itself. Put your message between the quotes.
 
+`GPM_PLAYLIST = ""` || This is the name of your main Google Play Music playlist. When you choose `2. Update Playlist` in the playlist editor, the bot will check this playlist for any new songs, and add them to your bot's backup playlist. Put your playlist name between the quotes.
+
 ##### TITLE BLACKLIST FILTER
 
 `SONGBLSIZE = 8` || When a user requests a song (aside from Youtube links, obviously), the song they typed is searched on Google Play Music, and the bot picks the top result. However, the top result is sometimes a cover, remix, live performance, etc. which the user will probably not want. If this setting is above 1, the bot will take that many results, and sort through them using your blacklisted terms. So for example, if you have the word "remix" set as a blacklisted term, the bot will prioritize search results *without* the word "remix" in them. The higher this number is set, the more accurate your search results will be, but the slower the bot will respond to them. We recommend a setting between 3 and 8.
@@ -86,6 +88,7 @@ Note that the terms are in order from most-hated to least-hated. For example: If
 
 `ENABLE_HOTKEYS = False` || Enable or disable hotkeys for pausing, adjusting the volume, skipping songs, or removing the last song added to the queue.  If this is set to `True` and you do not have a key binding for *all* of the hotkey functions, the bot will throw an error on startup, but the hotkeys you *have* bound will still function.  
 Formatting for a keybinding is `('modifier', 'key')`, where the modifier can be `control`, `shift`, or `alt`. If you don't want a modifier, format it like `('key',),`. [List of all key IDs here.](http://bit.ly/2HfPiSZ)
+Note that you can make a hotkey for *any* command, not just the ones listed here by default. Just make sure to format custom hotkeys correctly, one hotkey on each line. And if you don't want any of the default hotkeys listed, you can simply delete the ones you don't want.
 
 `"!togglepause":` || Pause/play the music.
 
@@ -96,6 +99,8 @@ Formatting for a keybinding is `('modifier', 'key')`, where the modifier can be 
 `"!vu":` || Turns the volume up.
 
 `"!vd":` || Turns the volume down.
+
+`OUTPUT_HOTKEYS` || Normally when a command is executed via hotkey, it will not output anything to chat. If you make a hotkey of a command that you *want* to output to chat (for example, `!queue`), add that command to this list, one per line.
 
 ## Updating to a Newer Version
 
@@ -138,6 +143,12 @@ The bot will also output the current song's album art to **albumart.jpg** in the
 `!volumeup` or `!vu`/`!volumedown` or `!vd` **(Mod Only))** || Turn the music volume up or down. Doing the command by itself will adjust the volume based on your `VOL_INCREMENT` setting, but adding a number after the command will adjust the volume by that increment. For example: if your volume is at 50, `!volumeup 20` will change the volume to 70.
 
 `!veto` **(Mod Only)** || Skip the current song.
+
+`!pause` **(Mod Only)** || Pause the music.
+
+`!play` **Mod Only)** || Play the music.
+
+`!togglepause` **(Mod Only)** || Plays the music if it's paused, or pauses the music if it's playing. Mainly used for a hotkey.
 
 `!clearqueue` **(Mod Only)** || Removes all songs from the queue (this will not skip the current song).
 
