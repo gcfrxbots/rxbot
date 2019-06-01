@@ -9,6 +9,7 @@ import sqlite3
 from sqlite3 import Error
 import logging
 import sys
+import codecs
 from contextlib import redirect_stderr
 logging.disable(sys.maxsize)
 
@@ -45,9 +46,9 @@ commands_SongRequest = {
 }
 
 def writenowplaying(isPlaying, song_name):
-    with open("Output/nowplaying.txt", "w") as f:
+    with codecs.open("Output/nowplaying.txt", "w", "utf-8") as f:
         if isPlaying == True:
-            f.write(song_name)
+            f.write(('{song_name}').format(song_name=song_name))
         else:
             f.truncate()
 
@@ -585,7 +586,7 @@ class SRcommands:
     '''--------------------MISC--------------------'''
 
     def getnowplaying(self, x, user):
-        with open("Output/nowplaying.txt", "r") as f:
+        with open("Output/nowplaying.txt", "r", encoding="utf-8") as f:
             returnnp = f.readlines()
         if not returnnp:
             sendMessage(user + " >> The music is currently paused.")
