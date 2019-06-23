@@ -310,7 +310,10 @@ class SRcommands:
 
 # YouTube
         try:
-            yt = pafy.new(requestArgs[0], basic=True, size=False)
+            try:
+                yt = pafy.new(requestArgs[0], basic=True, size=False)
+            except:
+                return user + " >> That video is unavailable, or the bot cannot access it."
     # Duplicate
             self.db = sqliteread('''SELECT id, count(*) FROM queue WHERE key="{0}"'''.format(yt.videoid))
             if self.db[1] > (MAX_DUPLICATE_SONGS - 1):
@@ -496,7 +499,10 @@ class SRcommands:
 
         # YouTube
         try:
-            yt = pafy.new(requestArgs[0], basic=True, size=False)
+            try:
+                yt = pafy.new(requestArgs[0], basic=True, size=False)
+            except:
+                return user + " >> That video is unavailable, or the bot cannot access it."
             # Duplicate
             self.db = sqliteread('''SELECT id, count(*) FROM playlist WHERE key="{0}"'''.format(yt.videoid))
             if self.db[1] > (MAX_DUPLICATE_SONGS - 1):
