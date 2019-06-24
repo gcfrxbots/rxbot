@@ -146,7 +146,7 @@ def playfromplaylist():
 
 class SRcontrol:
     def __init__(self):
-        self.msg = None
+        self.msg = ""
         self.songtitle = ""
         self.songkey = ""
         self.playurl = ""
@@ -312,7 +312,7 @@ class SRcommands:
         try:
             try:
                 yt = pafy.new(requestArgs[0], basic=True, size=False)
-            except:
+            except OSError:
                 return user + " >> That video is unavailable, or the bot cannot access it."
     # Duplicate
             self.db = sqliteread('''SELECT id, count(*) FROM queue WHERE key="{0}"'''.format(yt.videoid))
@@ -501,7 +501,7 @@ class SRcommands:
         try:
             try:
                 yt = pafy.new(requestArgs[0], basic=True, size=False)
-            except:
+            except OSError:
                 return user + " >> That video is unavailable, or the bot cannot access it."
             # Duplicate
             self.db = sqliteread('''SELECT id, count(*) FROM playlist WHERE key="{0}"'''.format(yt.videoid))
