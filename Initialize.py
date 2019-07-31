@@ -14,12 +14,10 @@ try:
     import vlc
     import youtube_dl
     import pafy
-    from system_hotkey import SystemHotkey
+    from system_hotkey import SystemHotkey, SystemRegisterError
 except ImportError as e:
     print(e)
     raise ImportError(">>> One or more required packages are not properly installed! Run INSTALL_REQUIREMENTS.bat to fix!")
-
-
 
 
 def initSetup():
@@ -246,7 +244,7 @@ def createsongqueue():
 
 
 def getmoderators():
-    json_url = urllib.request.urlopen('http://tmi.twitch.tv/group/user/' + CHANNEL + '/chatters')
+    json_url = urllib.request.urlopen('http://tmi.twitch.tv/group/user/' + CHANNEL.lower() + '/chatters')
 
     data = json.loads(json_url.read())
     mods = data['chatters']['moderators']
