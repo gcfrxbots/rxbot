@@ -312,7 +312,8 @@ class SRcommands:
         try:
             try:
                 yt = pafy.new(requestArgs[0], basic=True, size=False)
-            except OSError:
+            except OSError as e:
+                print(e)
                 return user + " >> That video is unavailable, or the bot cannot access it."
     # Duplicate
             self.db = sqliteread('''SELECT id, count(*) FROM queue WHERE key="{0}"'''.format(yt.videoid))
