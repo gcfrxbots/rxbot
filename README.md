@@ -182,7 +182,7 @@ If you wish, you can join the [Rxbots Discord](https://discord.gg/8FRQBJy) for h
 **A:** This is caused by another program using the same hotkeys you have set in RXBot. Either close the program(s) with the shared hotkeys, or rebind them.
 
 **Q:** Is this bot purely for song requests?  
-**A:** At the moment, yes. We do plan to add normal commands later on though, so stay tuned!
+**A:** At the moment, song requests are the main priority for RXBot. We do plan to add normal commands later on though, so stay tuned!
 
 **Q:** Why use Google Play Music instead of the more popular Spotify?  
 **A:** A while back, Spotify removed their public API, meaning that Spotify integration in any unauthorized program is impossible. Google Play Music, on the other hand, does *not* suck, and has a free-to-use public API.
