@@ -49,6 +49,7 @@ commands_SongRequest = {
     "!cs": ("MOD", 'sr.clearsong', 'getint(cmdarguments)', 'user'),  # Alias
     "!plsr": ("MOD", 'sr.plsongrequest', 'cmdarguments', 'user'),
     "!plclearsong": ("MOD", 'sr.plclearsong', 'cmdarguments', 'user'),
+    "!plcs": ("MOD", 'sr.plclearsong', 'cmdarguments', 'user'),  # Alias
     "!clearqueue": ("MOD", 'sr.clearqueue', 'None', 'None'),
 }
 
