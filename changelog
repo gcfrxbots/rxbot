@@ -1,14 +1,17 @@
-VERSION 3.1
+VERSION 3.1.3
 
-Primary Change: Youtube Search Changes
+Primary Change: QOL Fixes + Basic Bot Commands
 Changes:
 
-PlaylistEditor is now has an update feature, which will compare your playlist to a selected GPM playlist and add any new tracks not already in the bot's playlist.
-Added GPM_PLAYLIST in settings. Set this to the name of a playlist to save time when updating your playlist.
-Added OUTPUT_HOTKEYS in settings. Add the command bound to a hotkey to have that hotkey send the result to chat.
+Fixed an error that'd cause crashing if the CHANNEL setting wasn't all lowercase.
 
 SONGREQUEST:
-No Changes
+Fixed a rare crash with youtube videos
+Added a few error catchers and a few more error message logging options to prevent crashing
+Improved general stability
+
 
 COMMANDS:
-No Changes
+Added "!ping" which will respond with "Pong" and probably trigger other bots in your chat
+Added "!uptime" which does exactly what you think it would do.
+Added "!roll" with a good bit of functionality. Supports any amount of dice, any sided dice, and any modifiers. Will display your rolls. Ex "!roll 4d30+6"
