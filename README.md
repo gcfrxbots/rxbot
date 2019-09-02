@@ -43,9 +43,9 @@ The **Settings.py** file is where you can adjust your personal settings for the 
 
 `BOT_OAUTH = ""` || This is your bot's Twitch OAuth token. To put it simply, it's a password that only *this bot* can use to sign into your bot's Twitch account. [Click here to generate your oauth token](https://twitchapps.com/tmi/) (make sure you sign in with ***your bot's account,*** not your own). Once it's generated, copy it and paste it between the quotes.
 
-`BOT_NAME = ""` || Your bot's Twitch username. Put it between the quotes, in all lowercase.
+`BOT_NAME = ""` || Your bot's Twitch username. Put it between the quotes.
 
-`CHANNEL = ""` || Your Twitch username. Put it between the quotes, in all lowercase.
+`CHANNEL = ""` || Your Twitch username. Put it between the quotes.
 
 `GPM_ENABLE = True` || Turn Google Play Music integration on or off. This *must* be set to `False` if you do not have a Google Play Music subscription.
 
@@ -154,6 +154,14 @@ The bot will also output the current song's album art to **albumart.jpg** in the
 
 `!clearplaylist` **(Mod Only)** || Removes all songs from the backup playlist.
 
+##### MISC
+
+`!ping` || Makes the bot respond with "Pong." Use to test if your bot is still connected.
+
+`!uptime` || Display in chat how long the current stream has been live.
+
+`!roll` || Have the bot roll some dice— any amount of dice, any number of sides, and any modifier(s). For example, `!roll 3d20+9` will roll three 20-sided dice, and add nine to the result. Supported modifiers are add (+), subtract (-), multiply (*), and divide (/). Can only use one modifier per command.
+
 ## FAQ/Troubleshooting
 
 If you wish, you can join the [Rxbots Discord](https://discord.gg/8FRQBJy) for help with the bot. Use the **#dev-chat** channel to ask questions, report bugs, or suggest new features.
@@ -169,6 +177,9 @@ If you wish, you can join the [Rxbots Discord](https://discord.gg/8FRQBJy) for h
 
 **Q:** Hotkeys don't work while I'm in certain programs!  
 **A:** This is usually because the program is being run as admin, not much we can do there. If you want to try running the bot as admin, you must first edit **RUN.bat** and replace `Run.py` with the full file directory, [like this.](https://i.imgur.com/kcu4Grv.png) Then, right click **Run.bat** and select "Run as Administrator".
+
+**Q:** I'm receiving an error that begins with `Unhandled exception in thread started by <bound method SystemHotkey._nt_wait`  
+**A:** This is caused by another program using the same hotkeys you have set in RXBot. Either close the program(s) with the shared hotkeys, or rebind them.
 
 **Q:** Is this bot purely for song requests?  
 **A:** At the moment, yes. We do plan to add normal commands later on though, so stay tuned!
