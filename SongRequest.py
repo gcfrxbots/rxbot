@@ -18,7 +18,9 @@ commands_SongRequest = {
     "!sr": ('sr.songrequest', 'cmdarguments', 'user'),
     "!songrequest": ('sr.songrequest', 'cmdarguments', 'user'),  # Alias
     "!wrongsong": ('sr.wrongsong', 'getint(cmdarguments)', 'user'),
+    "!ws": ('sr.wrongsong', 'getint(cmdarguments)', 'user'),  # Alias
     "!nowplaying": ('sr.getnowplaying', 'None', 'user'),
+    "!np": ('sr.getnowplaying', 'None', 'user'),  # Alias
     "!timeleft": ('sr.queuetime', 'getint(cmdarguments)', 'user'),
     "!queue": ('sr.queuelink', 'user', 'None'),
     "!songlist": ('sr.queuelink', 'user', 'None'),  # Alias
@@ -26,6 +28,7 @@ commands_SongRequest = {
     # NowPlaying Control
     "!play": ("MOD", 'play', 'None', 'None'),
     "!togglepause": ("MOD", 'togglepause', 'None', 'None'),
+    "!p": ("MOD", 'togglepause', 'None', 'None'),
     "!pause": ("MOD", 'pause', 'None', 'None'),
     "!veto": ("MOD", 'veto', 'None', 'None'),
 
@@ -99,7 +102,7 @@ def sr_geturl(songkey):
 
 
 def saveAlbumArt(songkey):
-    if songkey[0] == "T": #If the key is from GPM - all GPM keys start with T.
+    if (songkey[0] == "T") and len(songkey) > 20:  # If the key is from GPM - all GPM keys start with T.
         songinfo = Mobileclient.get_track_info(api, songkey)
         imgLink = songinfo['albumArtRef'][0]['url']
         f = open('Output/albumart.jpg', 'wb')
@@ -186,7 +189,7 @@ class SRcontrol:
                 if url.startswith("https://manifest.googlevideo.com"):
                     url = info['formats'][0]['fragment_base_url']
             except KeyError as e:
-                sendMessage("Error getting Youtube song to play.")
+                sendMessage("Error getting Youtube song to play.[189]")
                 print(e)
                 return
 
@@ -199,12 +202,17 @@ class SRcontrol:
                 self.playurl = self.songkey
                 writenowplaying(True, self.songtitle)
 
+
 # GPM
             else:
                 self.playurl = sr_geturl(self.songkey)
                 writenowplaying(True, self.songtitle)
 
-
+        except Error as e:  # Catch pafy errors
+            sendMessage("Error getting Youtube song to play. [209]")
+            print("Error likely with Pafy / YtDL. Error below.")
+            print(e)
+            return
 
         self.instance = vlc.Instance()
         self.p = self.instance.media_player_new(self.playurl)  # Play the music
