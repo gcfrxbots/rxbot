@@ -33,6 +33,7 @@ class BotCommands:
             return "The stream has been live for: " + file
 
     def roll(self, arg, user):
+        
         arg = arg.replace("\r", "")
         splitCmd = arg.split("d")
         operators = ["+", "-", "/", "*"]

@@ -14,6 +14,7 @@ from contextlib import redirect_stderr
 logging.disable(sys.maxsize)
 
 commands_SongRequest = {
+
     # Public SR Commands
     "!sr": ('sr.songrequest', 'cmdarguments', 'user'),
     "!songrequest": ('sr.songrequest', 'cmdarguments', 'user'),  # Alias
