@@ -90,15 +90,15 @@ Note that the terms are in order from most-hated to least-hated. For example: If
 Formatting for a keybinding is `('modifier', 'key')`, where the modifier can be `control`, `shift`, or `alt`. If you don't want a modifier, format it like `('key',),`. [List of all key IDs here.](http://bit.ly/2HfPiSZ)
 Note that you can make a hotkey for *any* command, not just the ones listed here by default. Just make sure to format custom hotkeys correctly, one hotkey on each line. And if you don't want any of the default hotkeys listed, you can simply delete the ones you don't want.
 
-`"!togglepause":` || Pause/play the music.
+`!togglepause` || Pause/play the music.
 
-`"!veto":` || Skips the current song.
+`!veto` || Skips the current song.
 
-`"!clearsong":` || Removes the last song added to the queue.
+`!clearsong` || Removes the last song added to the queue.
 
-`"!vu":` || Turns the volume up.
+`!vu` || Turns the volume up.
 
-`"!vd":` || Turns the volume down.
+`!vd` || Turns the volume down.
 
 `OUTPUT_HOTKEYS` || Normally when a command is executed via hotkey, it will not output anything to chat. If you make a hotkey of a command that you *want* to output to chat (for example, `!queue`), add that command to this list, one per line.
 
@@ -123,16 +123,16 @@ This is a list of commands for the bot, which users will type into Twitch chat:
 
 Note that every song in the queue has an ID, which can be used in other commands. This ID is *not* based on the song's current position in the queue, and does not change. The ID is shown when the song is requested.
 
-`!nowplaying` || Displays the currently-playing song in chat. Note: the current song is saved to the **nowplaying.txt** file in the bot's Output folder, so you can add this as a text source in OBS (or your streaming program of choice) to display the current song on screen.  
+`!np` or `!nowplaying` || Displays the currently-playing song in chat. Note: the current song is saved to the **nowplaying.txt** file in the bot's Output folder, so you can add this as a text source in OBS (or your streaming program of choice) to display the current song on screen.  
 The bot will also output the current song's album art to **albumart.jpg** in the bot's Output folder. If a song does not have album art (ex. if it's a Youtube request), the file will be generic album art. You can set your generic album art by editing **generic_art.jpg** in the bot's Resources folder, just make sure to keep the resolution 512x512.
 
-`!queue` || Displays the link to your uploaded song queue in chat. Set this link in the **Settings.py** file with the `QUEUE_LINK` setting.
+`!q` or `!queue` || Displays the link to your uploaded song queue in chat. Set this link in the **Settings.py** file with the `QUEUE_LINK` setting.
 
-`!timeleft` || Displays how much time is left on the current song. Putting a song ID after the command will display the combined length of all songs leading up to that one, i.e. how long until that song begins playing (assuming no pausing or skipping, of course).
+`!tl` or `!timeleft` || Displays how much time is left on the current song. Putting a song ID after the command will display the combined length of all songs leading up to that one, i.e. how long until that song begins playing (assuming no pausing or skipping, of course).
 
-`!wrongsong` || If a user requests a song, but the search does not yield the correct song, the user can type this command to remove the last song they requested from the queue. They can also add a song ID after the command, if they wish to remove one of their requests that isn't the most recent one. For example, `!wrongsong 7` will remove song 7 from the queue, assuming the same user requested it.
+`!ws` or `!wrongsong` || If a user requests a song, but the search does not yield the correct song, the user can type this command to remove the last song they requested from the queue. They can also add a song ID after the command, if they wish to remove one of their requests that isn't the most recent one. For example, `!wrongsong 7` will remove song 7 from the queue, assuming the same user requested it.
 
-`!clearsong` **(Mod Only)** || Removes the last song added to the queue, regardless of who requested it. Can also add a song ID after the command, if they wish to remove a song besides the most recent one. For example: `!clearsong 7` will remove song 7 from the queue.
+`!cs` or `!clearsong` **(Mod Only)** || Removes the last song added to the queue, regardless of who requested it. Can also add a song ID after the command, if they wish to remove a song besides the most recent one. For example: `!clearsong 7` will remove song 7 from the queue.
 
 `!plsr` **(Mod Only)** || Functions like `!sr`, but adds the song to the backup playlist rather than the song request queue.
 
@@ -148,7 +148,7 @@ The bot will also output the current song's album art to **albumart.jpg** in the
 
 `!play` **Mod Only)** || Play the music.
 
-`!togglepause` **(Mod Only)** || Plays the music if it's paused, or pauses the music if it's playing. Mainly used for a hotkey.
+`!p` or `!togglepause` **(Mod Only)** || Plays the music if it's paused, or pauses the music if it's playing. Mainly used for a hotkey.
 
 `!clearqueue` **(Mod Only)** || Removes all songs from the queue (this will not skip the current song).
 
