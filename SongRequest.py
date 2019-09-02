@@ -23,7 +23,9 @@ commands_SongRequest = {
     "!nowplaying": ('sr.getnowplaying', 'None', 'user'),
     "!np": ('sr.getnowplaying', 'None', 'user'),  # Alias
     "!timeleft": ('sr.queuetime', 'getint(cmdarguments)', 'user'),
+    "!tl": ('sr.queuetime', 'getint(cmdarguments)', 'user'),  # Alias
     "!queue": ('sr.queuelink', 'user', 'None'),
+    "!q": ('sr.queuelink', 'user', 'None'),  # Alias
     "!songlist": ('sr.queuelink', 'user', 'None'),  # Alias
 
     # NowPlaying Control
@@ -44,6 +46,7 @@ commands_SongRequest = {
 
     # Playlist Control
     "!clearsong": ("MOD", 'sr.clearsong', 'getint(cmdarguments)', 'user'),
+    "!cs": ("MOD", 'sr.clearsong', 'getint(cmdarguments)', 'user'),  # Alias
     "!plsr": ("MOD", 'sr.plsongrequest', 'cmdarguments', 'user'),
     "!plclearsong": ("MOD", 'sr.plclearsong', 'cmdarguments', 'user'),
     "!clearqueue": ("MOD", 'sr.clearqueue', 'None', 'None'),
