@@ -130,8 +130,7 @@ def main():
                     # Run the commands function
                     if command[0] == "!":
                         runcommand(command, cmdarguments, user, False)
-        except socket.error as e:
-            print(e)
+        except socket.error:
             print("Socket died")
 
 
@@ -167,13 +166,22 @@ def tick():
             time.sleep(1)
 
 
+def console():
+    while True:
+        consoleIn = input("")
 
+        command = ((consoleIn.split(' ', 1)[0]).lower()).replace("\r", "")
+        cmdarguments = consoleIn.replace(command or "\r" or "\n", "")
+        # Run the commands function
+        if command[0] == "!":
+            runcommand(command, cmdarguments, "CONSOLE", True)
 
 
 
 t1 = Thread(target = main)
 t2 = Thread(target = tick)
-
+t3 = Thread(target = console)
 
 t1.start()
 t2.start()
+t3.start()

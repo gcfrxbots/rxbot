@@ -10,7 +10,6 @@ from sqlite3 import Error
 import logging
 import sys
 import codecs
-from contextlib import redirect_stderr
 logging.disable(sys.maxsize)
 
 commands_SongRequest = {
@@ -329,7 +328,7 @@ class SRcommands:
                 print(e)
                 return user + " >> That video is unavailable, or the bot cannot access it."
     # Duplicate
-            self.db = sqliteread('''SELECT id, count(*) FROM queue WHERE key="{0}"'''.format(yt.videoid))
+            self.db = sqliteread('''SELECT id, count(*) FROM queue WHERE key="%s" AND name!="BotPlaylist"''' % yt.videoid)
             if self.db[1] > (MAX_DUPLICATE_SONGS - 1):
                 return user + " >> That song is already in the queue."
     # Songtime
@@ -348,7 +347,7 @@ class SRcommands:
                 if not MEDIA_FILE_ENABLE:
                     return user + " >> Online Media Links are disabled by the streamer, you'll need to request something else."
     # Duplicate
-                self.db = sqliteread('''SELECT id, count(*) FROM queue WHERE key="{0}"'''.format(requestArgs[0]))
+                self.db = sqliteread('''SELECT id, count(*) FROM queue WHERE key="%s" AND WHERE name!="BotPlaylist"''' % requestArgs[0])
                 if self.db[1] > (MAX_DUPLICATE_SONGS - 1):
                     return user + " >> That song is already in the queue."
     # Songtime
@@ -379,7 +378,7 @@ class SRcommands:
                         return user + " >> No results found for that song. Please try a different one."
                 else:
     # Test if the song is already in the queue
-                    self.db = sqliteread('''SELECT id, count(*) FROM queue WHERE key="{0}"'''.format(key))
+                    self.db = sqliteread('''SELECT id, count(*) FROM queue WHERE key="%s" AND name!="BotPlaylist"''' % key)
                     if self.db[1] > (MAX_DUPLICATE_SONGS - 1):
                         return user + " >> That song is already in the queue."
     # Songtime
@@ -406,7 +405,7 @@ class SRcommands:
             return("No results for that request, try a different one.")
 
     # Check the queue to see if the song is already in there.
-        self.db = sqliteread('''SELECT id, count(*) FROM queue WHERE key="{0}"'''.format(key))
+        self.db = sqliteread('''SELECT id, count(*) FROM queue WHERE key="%s" AND WHERE name!="BotPlaylist"''' % key)
         if self.db[1] > (MAX_DUPLICATE_SONGS - 1):
             return user + " >> That song is already in the queue."
         if songtime > (MAXTIME * 60000):
@@ -463,7 +462,6 @@ class SRcommands:
 
 
     def queuetime(self, id, user):
-        data = []
         db = sqlite3.connect('Resources/botData.db')
         try:
             cursor = db.cursor()
@@ -493,7 +491,6 @@ class SRcommands:
 
     def skip(self, user, x):
         global skiprequests, skipusers
-        from Run import veto
 
         if user in skipusers:
             return user + " >> You've already requested to skip this song."
@@ -609,9 +606,9 @@ class SRcommands:
         with open("Output/nowplaying.txt", "r", encoding="utf-8") as f:
             returnnp = f.readlines()
         if not returnnp:
-            sendMessage(user + " >> The music is currently paused.")
+            return user + " >> The music is currently paused."
         else:
-            sendMessage(user + " >> " + returnnp[0])
+            return user + " >> " + returnnp[0]
 
     def clearqueue(self, x, y):
         try:
