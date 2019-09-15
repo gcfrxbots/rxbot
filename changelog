@@ -1,17 +1,12 @@
-VERSION 3.1.3
+VERSION 3.2
 
-Primary Change: QOL Fixes + Basic Bot Commands
+Primary Change: Console
 Changes:
 
-Fixed an error that'd cause crashing if the CHANNEL setting wasn't all lowercase.
+Commands can now be typed into the bot's console and be executed just as if they were typed into twitch chat.
 
 SONGREQUEST:
-Fixed a rare crash with youtube videos
-Added a few error catchers and a few more error message logging options to prevent crashing
-Improved general stability
-
+Fixed a very rare error that kept the bot from adding a song to the queue when that song was the next-up from the playlist.
 
 COMMANDS:
-Added "!ping" which will respond with "Pong" and probably trigger other bots in your chat
-Added "!uptime" which does exactly what you think it would do.
-Added "!roll" with a good bit of functionality. Supports any amount of dice, any sided dice, and any modifiers. Will display your rolls. Ex "!roll 4d30+6"
+No Changes
