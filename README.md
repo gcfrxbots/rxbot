@@ -7,7 +7,7 @@ RXBot is a song request bot for Twitch streamers: viewers can request songs in c
 
 ⚠️ This project is still in early development, so despite pre-release testing, it may not function as expected. Please report bugs using Github's *Issues* tab, or in the [Rxbots Discord](https://discord.gg/8FRQBJy). ⚠️
 
-*(Readme last updated for v3.1.3)*
+*(Readme last updated for v3.2)*
 
 -----
 
@@ -112,7 +112,7 @@ If a new update releases for RXBot, that likely means bugs have been fixed and/o
 
 ## Commands
 
-This is a list of commands for the bot, which users will type into Twitch chat:
+This is a list of commands for the bot, which users will type into Twitch chat (alternatively, you can type them directly into the bot console):
 
 ##### SONGREQUEST
 
@@ -174,6 +174,9 @@ If you wish, you can join the [Rxbots Discord](https://discord.gg/8FRQBJy) for h
 
 **Q:** The bot outputs a *bunch* of `main libvlc error`s when a song is requested, but still seems to work.  
 **A:** Try re-installing VLC, that seems to fix it. These errors *also* seem to be completely harmless, as we've yet to encounter any actual problems with them, but better safe than sorry. 
+
+**Q:** The bot gives an error when attempting to play age-restriced Youtube videos! 
+**A:** This is most likely a problem with pafy, one of the bot's dependencies. Run **FixAgeRestrict.bat**. If that doesn't fix it, contact us.
 
 **Q:** Hotkeys don't work while I'm in certain programs!  
 **A:** This is usually because the program is being run as admin, not much we can do there. If you want to try running the bot as admin, you must first edit **RUN.bat** and replace `Run.py` with the full file directory, [like this.](https://i.imgur.com/kcu4Grv.png) Then, right click **Run.bat** and select "Run as Administrator".
