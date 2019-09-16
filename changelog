@@ -1,9 +1,10 @@
-VERSION 3.2
+VERSION 3.2.1
 
 Primary Change: Console
 Changes:
 
 Commands can now be typed into the bot's console and be executed just as if they were typed into twitch chat.
+The error catcher for any command-related errors used to just always output "Socket Error" - revised it to print the error.
 
 SONGREQUEST:
 Fixed a very rare error that kept the bot from adding a song to the queue when that song was the next-up from the playlist.
