@@ -130,9 +130,9 @@ def main():
                     # Run the commands function
                     if command[0] == "!":
                         runcommand(command, cmdarguments, user, False)
-        except socket.error as e:
+        except Exception as e:
+            print("Error while running command:")
             print(e)
-            print("Socket died")
 
 
 # If the queue is completely empty at start, add a song so it's not pulling nonexistent values in the loop below
