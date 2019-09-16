@@ -130,7 +130,8 @@ def main():
                     # Run the commands function
                     if command[0] == "!":
                         runcommand(command, cmdarguments, user, False)
-        except socket.error:
+        except socket.error as e:
+            print(e)
             print("Socket died")
 
 
