@@ -112,7 +112,7 @@ If a new update releases for RXBot, that likely means bugs have been fixed and/o
 
 ## Commands
 
-This is a list of commands for the bot, which users will type into Twitch chat (alternatively, you can type them directly into the bot console):
+This is a list of commands for the bot, which users will type into Twitch chat. Alternatively, you can type them directly into the bot console. Whenever you wish to close the bot, enter `quit` into the console window.
 
 ##### SONGREQUEST
 
