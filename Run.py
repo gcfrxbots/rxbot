@@ -63,7 +63,6 @@ def getMessage(line):
 
 def formatted_time():
     return datetime.datetime.today().now().strftime("%I:%M")
-    # Thanks to Zerg3rr for this code and some other help
 
 
 def getint(cmdarguments):
@@ -176,6 +175,11 @@ def console():
         # Run the commands function
         if command[0] == "!":
             runcommand(command, cmdarguments, "CONSOLE", True)
+
+        if command.lower() == "quit":
+            pause(None, None)
+            print("Shutting down")
+            quit()
 
 
 

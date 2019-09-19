@@ -405,7 +405,7 @@ class SRcommands:
             return("No results for that request, try a different one.")
 
     # Check the queue to see if the song is already in there.
-        self.db = sqliteread('''SELECT id, count(*) FROM queue WHERE key="%s" AND WHERE name!="BotPlaylist"''' % key)
+        self.db = sqliteread('''SELECT id, count(*) FROM queue WHERE key="%s" AND name!="BotPlaylist"''' % key)
         if self.db[1] > (MAX_DUPLICATE_SONGS - 1):
             return user + " >> That song is already in the queue."
         if songtime > (MAXTIME * 60000):
