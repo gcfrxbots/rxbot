@@ -1,4 +1,4 @@
-VERSION 3.2.1
+VERSION 3.2.2
 
 Primary Change: Console
 Changes:
@@ -8,6 +8,7 @@ The error catcher for any command-related errors used to just always output "Soc
 
 SONGREQUEST:
 Fixed a very rare error that kept the bot from adding a song to the queue when that song was the next-up from the playlist.
+3.2.2 - Hotfixed an error where any 'search' youtube command would crash the bot. I typo'd a SQL command, whoops.
 
 COMMANDS:
-No Changes
+Added a `quit` command into the CONSOLE (Does nothing in twitch chat). quit will pause the music, clear the nowplaying file, swap the album art to the generic image, and kill the bot.
