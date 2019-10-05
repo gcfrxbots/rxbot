@@ -25,7 +25,7 @@ def initSetup():
 
     # Update Youtube_DL
     print("Attempting to update Youtube resources...")
-    call("py -3.7 -m pip install --upgrade youtube_dl")
+    call("py -3.7 -m pip install --upgrade youtube_dl --user --no-warn-script-location")
 
     # Create Folders
     if not os.path.exists('Output'):
