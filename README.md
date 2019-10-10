@@ -31,7 +31,7 @@ Before doing anything, you need to create a Twitch account for your bot to use. 
 
 Next, if you *don't* want to use Google Play Music, open **Settings.py** in any text editor, such as Notepad++. Change `GPM_ENABLE` to False, this will disable GPM functionality. Now, run the bot by opening **RUN.bat** in the bot's folder. If you disabled GPM, skip the next paragraph.
 
-The first time you run it, the bot will tell you to go to [this page](https://accounts.google.com/o/oauth2/v2/auth?scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fskyjam&redirect_uri=urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob&response_type=code&client_id=228293309116.apps.googleusercontent.com&access_type=offline) to generate an oauth link. You need a Google Play Music subscription to use its functionality, obviously. Log in with your Google Play Account and follow all the prompts until it gives you a code. Copy that code, paste it in the bot window, and press Enter. If you entered it correctly, the bot will tell you that your backup playlist is empty. Close the bot so we can fix that.
+The first time you run it, the bot will tell you to go to [this page](https://accounts.google.com/o/oauth2/v2/auth?scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fskyjam&redirect_uri=urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob&response_type=code&client_id=228293309116.apps.googleusercontent.com&access_type=offline) to generate an oauth link. You need a Google Play Music subscription to use its functionality— if you don't have one, please read the previous paragraph and skip this one. Log in with your Google Play Account and follow all the prompts until it gives you a code. Copy that code, paste it in the bot window, and press Enter. If you entered it correctly, the bot will tell you that your backup playlist is empty. Close the bot so we can fix that.
 
 If there are no song requests in the queue, the bot will play songs from your backup playlist. Since this is your first time using the bot, your backup playlist is empty. Open **Run_PlaylistEditor.bat**, and it will present you with four options: `1. Fill Playlist || 2. Update Playlist || 3. Shuffle Playlist || 4. View Playlist || 5. Clear Playlist` To add songs, type 1 and hit enter. The bot will then detect all playlists on your Google Play Music account (only playlists you've created, not ones you follow). Type the number of the playlist you wish to import and hit enter. Once the bot is finished importing (it should take less than a second), it will close itself, but you can re-open it and add import more playlists if you wish. Note that song files you've *uploaded* to your GPM account will not work, but you can add those songs to the bot via Youtube or uploaded files (more on that later). For now, it's time to adjust your settings.
 
@@ -77,7 +77,7 @@ The **Settings.py** file is where you can adjust your personal settings for the 
 
 ##### TITLE BLACKLIST FILTER
 
-`SONGBLSIZE = 8` || When a user requests a song (aside from Youtube links, obviously), the song they typed is searched on Google Play Music, and the bot picks the top result. However, the top result is sometimes a cover, remix, live performance, etc. which the user will probably not want. If this setting is above 1, the bot will take that many results, and sort through them using your blacklisted terms. So for example, if you have the word "remix" set as a blacklisted term, the bot will prioritize search results *without* the word "remix" in them. The higher this number is set, the more accurate your search results will be, but the slower the bot will respond to them. We recommend a setting between 3 and 8.
+`SONGBLSIZE = 8` || When a user requests a song via searching, the song they typed is searched on Google Play Music, and the bot picks the top result. However, the top result is sometimes a cover, remix, live performance, etc. which the user will probably not want. If this setting is above 1, the bot will take that many results, and sort through them using your blacklisted terms. So for example, if you have the word "remix" set as a blacklisted term, the bot will prioritize search results *without* the word "remix" in them. The higher this number is set, the more accurate your search results will be, but the slower the bot will respond to them. We recommend a setting between 3 and 8.
 
 `BLACKLISTED_SONG_TITLE_CONTENTS` || These are terms blacklisted from GPM search results. There are a few terms already blacklisted by default, but you can remove them if you wish, and of course add new ones. Each blacklisted term should be on its own line— just make sure the formatting matches that of the terms that are there by default.  
 Note that the terms are in order from most-hated to least-hated. For example: If "remix" is at the top of the list, and "live" is at the bottom, the bot would prioritize adding a song with "live" in the title over one with  "remix".
@@ -120,7 +120,7 @@ This is a list of commands for the bot, which users will type into Twitch chat. 
 
 `!sr` or `!songrequest` || This is the command users will type to request songs. They type the command, then the song they want to request.  
 **Google Play Music:** Following the command with a search term will add the song from Google Play Music. For example:`!sr Ginuwine Pony` will search "Ginuwine Pony" on Google Play Music, and add the best result. Users can also add their own blacklisted terms to their search by putting a hyphen before the word they wish to exclude. For example: `!sr Ginuwine Pony -remix` will look up "Ginuwine Pony" on Google Play Music, but will exclude all search results containing the word "Remix" in the title.   
-**Youtube:** Instead of looking up a song, users can instead paste a Youtube link. For example: `!sr https://www.youtube.com/watch?v=lbnoG2dsUk0`
+**Youtube:** Instead of looking up a song, users can instead paste a Youtube link. For example: `!sr https://www.youtube.com/watch?v=lbnoG2dsUk0` 
 **Uploaded Music File:** If you upload a music file (.mp3, .wav, etc.) to the internet and can get a direct streaming link to it, you can request that as well. For example: You can upload your song file to a website like [Instaudio](https://instaud.io/), then request the song with the direct streaming link, like so: `!sr https://instaud.io/_/3nOe.mp3`  
 
 Note that every song in the queue has an ID, which can be used in other commands. This ID is *not* based on the song's current position in the queue, and does not change. The ID is shown when the song is requested.
@@ -180,11 +180,14 @@ If you wish, you can join the [Rxbots Discord](https://discord.gg/8FRQBJy) for h
 **Q:** The bot gives an error when attempting to play age-restriced Youtube videos! 
 **A:** This is most likely a problem with pafy, one of the bot's dependencies. Run **FixAgeRestrict.bat**. If that doesn't fix it, contact us.
 
-**Q:** Hotkeys don't work while I'm in certain programs!  
-**A:** This is usually because the program is being run as admin, not much we can do there. If you want to try running the bot as admin, you must first edit **RUN.bat** and replace `Run.py` with the full file directory, [like this.](https://i.imgur.com/kcu4Grv.png) Then, right click **Run.bat** and select "Run as Administrator".
-
 **Q:** I'm receiving an error that begins with `Unhandled exception in thread started by <bound method SystemHotkey._nt_wait`  
 **A:** This is caused by another program using the same hotkeys you have set in RXBot. Either close the program(s) with the shared hotkeys, or rebind them.
+
+**Q:** I get an error that has a bunch of URLs, and says "Error saving album art. Try removing and re-adding your backup playlist." 
+**A:** Google Play Music will occasionally delete and re-add songs to give albums different names, album art, etc. When it does this, it changes the ID of the song (which is what's stored in your backup playlist). If you're seeing a few of these errors popping up, just clear your backup playlist and re-import it using **PlaylistEditor.py**.
+
+**Q:** Hotkeys don't work while I'm in certain programs!  
+**A:** This is usually because the program is being run as admin, not much we can do there. If you want to try running the bot as admin, you must first edit **RUN.bat** and replace `Run.py` with the full file directory, [like this.](https://i.imgur.com/kcu4Grv.png) Then, right click **Run.bat** and select "Run as Administrator".
 
 **Q:** Is this bot purely for song requests?  
 **A:** At the moment, song requests are the main priority for RXBot. We do plan to add normal commands later on though, so stay tuned!
