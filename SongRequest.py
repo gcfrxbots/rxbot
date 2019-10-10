@@ -120,6 +120,8 @@ def saveAlbumArt(songkey):
             copyfile('Resources/generic_art.jpg', 'Output/albumart.jpg')
     except TypeError:
         pass
+    except:
+        print("Error saving album art. Try removing and re-adding your backup playlist. SONGKEY = " + songkey)
 
 
 def removetopqueue():
