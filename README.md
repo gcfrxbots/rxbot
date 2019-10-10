@@ -27,7 +27,7 @@ Once you download the bot, make sure you have all the requirements installed bef
 
 *(Make sure you read this section and the* ***Settings*** *section before attempting to use your bot.)*
 
-Before doing anything, you need to create a Twitch account for your bot to use. Don't use the account you'll actually be streaming from. It would probably be a good idea to make your bot a chat moderator. And if you use the BetterTTV extension, make sure to [add your new bot.](https://manage.betterttv.net/channel)
+Before doing anything, you need to create a Twitch account for your bot to use. Don't use the account you'll actually be streaming from. It would probably be a good idea to make your bot a chat moderator. And if you use the BetterTTV extension, make sure to [add your new bot.](https://betterttv.com/dashboard/bots)
 
 Next, if you *don't* want to use Google Play Music, open **Settings.py** in any text editor, such as Notepad++. Change `GPM_ENABLE` to False, this will disable GPM functionality. Now, run the bot by opening **RUN.bat** in the bot's folder. If you disabled GPM, skip the next paragraph.
 
