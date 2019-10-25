@@ -177,22 +177,22 @@ If you wish, you can join the [Rxbots Discord](https://discord.gg/8FRQBJy) for h
 **Q:** The bot outputs a *bunch* of `main libvlc error`s when a song is requested, but still seems to work.  
 **A:** Try re-installing VLC, that seems to fix it. These errors *also* seem to be completely harmless, as we've yet to encounter any actual problems with them, but better safe than sorry.
 
-**Q:** The bot gives an error when attempting to play age-restriced Youtube videos! 
+**Q:** The bot gives an error when attempting to play age-restriced Youtube videos!  
 **A:** This is most likely a problem with pafy, one of the bot's dependencies. Run **FixAgeRestrict.bat**. If that doesn't fix it, contact us.
 
-**Q:** I'm receiving an error that begins with `Unhandled exception in thread started by <bound method SystemHotkey._nt_wait` 
+**Q:** I'm receiving an error that begins with `Unhandled exception in thread started by <bound method SystemHotkey._nt_wait`  
 **A:** This is caused by another program using the same hotkeys you have set in RXBot. Either close the program(s) with the shared hotkeys, or rebind them.
 
-**Q:** I get an error that has a bunch of URLs, and says "Error saving album art. Try removing and re-adding your backup playlist." 
+**Q:** I get an error that has a bunch of URLs, and says "Error saving album art. Try removing and re-adding your backup playlist."  
 **A:** Google Play Music will occasionally delete and re-add songs to give albums different names, album art, etc. When it does this, it changes the ID of the song (which is what's stored in your backup playlist). If you're seeing a few of these errors popping up, just clear your backup playlist and re-import it using **PlaylistEditor.py**.
 
-**Q:** Hotkeys don't work while I'm in certain programs! 
+**Q:** Hotkeys don't work while I'm in certain programs!  
 **A:** This is usually because the program is being run as admin, not much we can do there. If you want to try running the bot as admin, you must first edit **RUN.bat** and replace `Run.py` with the full file directory, [like this.](https://i.imgur.com/kcu4Grv.png) Then, right click **Run.bat** and select "Run as Administrator".
 
-**Q:** Is this bot purely for song requests? 
+**Q:** Is this bot purely for song requests?  
 **A:** At the moment, song requests are the main priority for RXBot. We do plan to add normal commands later on though, so stay tuned!
 
-**Q:** Why use Google Play Music instead of the more popular Spotify? 
+**Q:** Why use Google Play Music instead of the more popular Spotify?  
 **A:** A while back, Spotify removed their public API, meaning that Spotify integration in any unauthorized program is impossible. Google Play Music, on the other hand, does *not* suck, and has a free-to-use public API.
 
 ## Credits and Stuff
