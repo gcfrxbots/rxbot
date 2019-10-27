@@ -1,0 +1,17 @@
+VERSION 3.2.3
+
+Primary Change: Console
+Changes:
+
+Commands can now be typed into the bot's console and be executed just as if they were typed into twitch chat.
+The error catcher for any command-related errors used to just always output "Socket Error" - revised it to print the error.
+3.2.3 - Fixed a few typos and cleaned up the code a bit, as well as improving stability when no backup playlist is used.
+
+SONGREQUEST:
+Fixed a very rare error that kept the bot from adding a song to the queue when that song was the next-up from the playlist.
+3.2.2 - Hotfixed an error where any 'search' youtube command would crash the bot. I typo'd a SQL command, whoops.
+
+
+COMMANDS:
+Added a `quit` command into the CONSOLE (Does nothing in twitch chat). quit will pause the music, clear the nowplaying file, swap the album art to the generic image, and kill the bot.
+3.2.3 - Lots of stuff would break if there was no music playing or paused, including the quit command. Fixed that.
