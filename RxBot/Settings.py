@@ -25,13 +25,13 @@ defaultSettings = [
     ("BOT OAUTH", "", "To get this Oauth, head to https://twitchapps.com/tmi/ and log in with YOUR BOT'S ACCOUNT!"),
     ("BOT NAME", "", "The twitch username of your bot (Lowercase)"),
     ("CHANNEL", "", "The twitch username of the channel you are connecting to (Lowercase)"),
-    ("GPM ENABLE", "Yes", "Set to false if you don't have a Google Play Music subscription, or if you don't want to use it."),
+    ("GPM ENABLE", "Yes", "Change to No if you don't have a Google Play Music subscription, or if you don't want to use it."),
     ("", "", ""),
     ("", "", "-------SONG REQUEST-------"),
     ("", "", ""),
     ("MAX DUPLICATE SONGS", 1, "This is the max amount of duplicate songs that can be in the queue. Leave 1 to only have one of each song in the queue at once."),
     ("MAX USER REQUESTS", 10, "This is the maximum amount of songs that a user may request. Ranks coming soon."),
-    ("SHUFFLE ON START", "Yes", "This will automatically shuffle the contents of the backup playlist whenever you start the bot if set to True. Might delay startup a bit."),
+    ("SHUFFLE ON START", "Yes", "This will automatically shuffle the contents of the backup playlist whenever you start the bot if set to Yes. Might delay startup a bit."),
     ("DELAY BETWEEN SONGS", 0.2, "Delay in seconds between a song ending and another starting."),
     ("VOL INCREMENT", 5, "This is how much the volume will be changed by when you type !volumeup, !volumedown, or use a hotkey to adjust volume."),
     ("MAX SONG LENGTH", 10, "The maximum song length in minutes. Songs longer than this duration won't be added to the queue."),
@@ -49,7 +49,7 @@ defaultSettings = [
     ("", "", "-------GENERAL-------"),
     ("", "", ""),
     ("MODERATORS", "rxbots", "Separate entries with commas. - Moderators of the BOT. Twitch channel mods are imported automatically."),
-    ("ENABLE HOTKEYS", "No", "Turn on or off hotkeys. If this is true, you'll need to swap to the HOTKEYS worksheet at the bottom to configure them."),
+    ("ENABLE HOTKEYS", "No", "Turn on or off hotkeys. If this is Yes, you'll need to swap to the HOTKEYS worksheet at the bottom to configure them."),
 ]
 
 listSettings = ["BLACKLISTED TITLE CONTENTS", "MODERATORS"]
