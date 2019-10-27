@@ -2,8 +2,6 @@ gmusicapi
 
 validators
 
-pafy
-
 youtube-dl
 
 python-vlc

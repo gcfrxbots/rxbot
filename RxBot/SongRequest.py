@@ -1,8 +1,6 @@
 from __future__ import unicode_literals
 from Initialize import *
-
 api = initSetup()  # Run init setup to make sure everything is working before importing stuff
-from Settings import *
 import time
 import urllib.request, urllib.parse, urllib.error
 from shutil import copyfile
@@ -11,6 +9,8 @@ from sqlite3 import Error
 import logging
 import sys
 import codecs
+from Initialize import settings
+
 
 logging.disable(sys.maxsize)
 
@@ -55,7 +55,7 @@ commands_SongRequest = {
 
 
 def writenowplaying(isPlaying, song_name):
-    with codecs.open("Output/nowplaying.txt", "w", "utf-8") as f:
+    with codecs.open("../Output/nowplaying.txt", "w", "utf-8") as f:
         if isPlaying == True:
             f.write(('{song_name}').format(song_name=song_name))
         else:
@@ -72,8 +72,8 @@ def getytkey(url):
 
 
 def songtitlefilter(song_name, redo):
-    blacklist = BLACKLISTED_SONG_TITLE_CONTENTS[:]
-    results = api.search(song_name, SONGBLSIZE)['song_hits']
+    blacklist = settings['BLACKLISTED TITLE CONTENTS'][:]
+    results = api.search(song_name, settings['SONG BL SIZE'])['song_hits']
     songs = []
     for item in results:
         songs.append(item['track'])
@@ -102,7 +102,7 @@ def songtitlefilter(song_name, redo):
 
 def sr_geturl(songkey):
     try:
-        stream_url = Mobileclient.get_stream_url(api, songkey)
+        stream_url = api.get_stream_url(songkey)
         return (stream_url)
     except Exception as e:
         print(e)
@@ -111,13 +111,13 @@ def sr_geturl(songkey):
 def saveAlbumArt(songkey):
     try:
         if (songkey[0] == "T") and len(songkey) > 20:  # If the key is from GPM - all GPM keys start with T.
-            songinfo = Mobileclient.get_track_info(api, songkey)
+            songinfo = api.get_track_info(songkey)
             imgLink = songinfo['albumArtRef'][0]['url']
-            f = open('Output/albumart.jpg', 'wb')
+            f = open('../Output/albumart.jpg', 'wb')
             f.write(urllib.request.urlopen(imgLink).read())
             f.close()
         else:  # Otherwise just use the generic image.
-            copyfile('Resources/generic_art.jpg', 'Output/albumart.jpg')
+            copyfile('Resources/generic_art.jpg', '../Output/albumart.jpg')
     except TypeError:
         pass
     except:
@@ -161,28 +161,16 @@ def playfromplaylist():
         song_name=songtitle, key=songkey))
 
 
-class SRcontrol:
+class SRcontrol:  # Class for controlling currently playing audio
     def __init__(self):
         self.msg = ""
         self.songtitle = ""
         self.songkey = ""
         self.playurl = ""
 
-    def playsong(self):
-        global skiprequests, skipusers
-        row = sqliteread('''SELECT id, name, song, key FROM queue ORDER BY id ASC''')  # Pick the top song
-        try:
-            self.songtitle = row[2]
-            self.songkey = row[3]
-        except Exception as e:
-            time.sleep(0.4)
-            return
-        sqlitewrite(('''DELETE FROM queue WHERE id={0}''').format(row[0]))  # Delete the top song
 
-        # YouTube
-
+    def ps_youtube(self, yt):
         try:
-            yt = pafy.new(self.songkey, basic=True, size=False)
             yturl = "http://youtube.com/watch?v=" + yt.videoid
 
             ydl_opts = {  # Set options for youtube-dl, these can be edited later.
@@ -208,39 +196,47 @@ class SRcontrol:
                 return
 
             self.playurl = url
-            writenowplaying(True, self.songtitle)
-
-        # Online
-        except ValueError:
-            if validators.url(self.songkey):
-                self.playurl = self.songkey
-                writenowplaying(True, self.songtitle)
-
-
-            # GPM
-            else:
-                self.playurl = sr_geturl(self.songkey)
-                writenowplaying(True, self.songtitle)
-
         except Error as e:  # Catch pafy errors
             sendMessage("Error getting Youtube song to play. [209]")
             print("Error likely with Pafy / YtDL. Error below.")
             print(e)
             return
 
+    def playsong(self):
+        row = sqliteread('''SELECT id, name, song, key FROM queue ORDER BY id ASC''')  # Pick the top song
+        if row and len(row) > 2:
+            self.songtitle = row[2]
+            self.songkey = row[3]
+        else:
+            time.sleep(0.4)
+            return
+        sqlitewrite(('''DELETE FROM queue WHERE id={0}''').format(row[0]))  # Delete the top song
+
+        try:  # Try Youtube
+            self.ps_youtube(pafy.new(self.songkey, basic=True, size=False))
+
+        except ValueError:  # Not Yt, try online and GPM
+
+            # ONLINE
+            if validators.url(self.songkey):
+                self.playurl = self.songkey
+
+            # GPM
+            else:
+                self.playurl = sr_geturl(self.songkey)
+
+
         self.instance = vlc.Instance()
-        self.p = self.instance.media_player_new(self.playurl)  # Play the music
+        self.p = self.instance.media_player_new(self.playurl)
         self.p.play()
         saveAlbumArt(self.songkey)
         writenowplaying(True, self.songtitle)
         createsongqueue()
-        skiprequests = 0
-        skipusers = []
         return True
 
     def songover(self):
         print("Song is over!")
-        time.sleep(DELAY_BETWEEN_SONGS)
+        time.sleep(settings['DELAY BETWEEN SONGS'])
         try:
             self.p.stop()
         except AttributeError:
@@ -269,7 +265,7 @@ class SRcontrol:
     def volumeup(self, vol, user):
         try:
             if not vol:
-                vol = VOL_INCREMENT
+                vol = settings['VOL INCREMENT']
             currentvolume = self.p.audio_get_volume()
             if (currentvolume + vol) > 100:
                 self.p.audio_set_volume(100)
@@ -284,7 +280,7 @@ class SRcontrol:
     def volumedown(self, vol, user):
         try:
             if not vol:
-                vol = VOL_INCREMENT
+                vol = settings['VOL INCREMENT']
             currentvolume = self.p.audio_get_volume()
             if (currentvolume - vol) < 0:
                 self.p.audio_set_volume(0)
@@ -321,16 +317,23 @@ class SRcommands:
         skiprequests = 0
         skipusers = []
 
+    def requestChecks(self, user, songtime, key):
+        self.db = sqliteread('''SELECT id, count(*) FROM queue WHERE key="%s" AND name!="BotPlaylist"''' % key)
+        if self.db[1] > (settings['MAX DUPLICATE SONGS'] - 1):
+            return user + " >> That song is already in the queue."
+        if songtime > (settings['MAX SONG LENGTH'] * 60000):
+            return user + " >> That song exceeds the maximum length of " + str(settings['MAX SONG LENGTH']) + " minutes."
+
     '''--------------------SONG REQUEST--------------------'''
 
     def songrequest(self, request, user):
         if request == "\r":  # Send a message if they request nothing
-            return user + " >> " + DEFAULT_SR_MSG
+            return user + " >> " + settings['DEFAULT SR MSG']
         # Get the first argument for links
         requestArgs = (request.split())
         # Check for songs already in the queue
-        if sqliteread('''SELECT count(*) FROM queue WHERE name="{0}"'''.format(user))[0] > (MAX_REQUESTS_USER - 1):
-            return user + " >> You already have " + str(MAX_REQUESTS_USER) + " songs in the queue."
+        if sqliteread('''SELECT count(*) FROM queue WHERE name="{0}"'''.format(user))[0] > (settings['MAX USER REQUESTS'] - 1):
+            return user + " >> You already have " + str(settings['MAX USER REQUESTS']) + " songs in the queue."
 
         request = request.replace("\r", "")[1:]
 
@@ -341,15 +344,12 @@ class SRcommands:
             except OSError as e:
                 print(e)
                 return user + " >> That video is unavailable, or the bot cannot access it."
-            # Duplicate
-            self.db = sqliteread(
-                '''SELECT id, count(*) FROM queue WHERE key="%s" AND name!="BotPlaylist"''' % yt.videoid)
-            if self.db[1] > (MAX_DUPLICATE_SONGS - 1):
-                return user + " >> That song is already in the queue."
-            # Songtime
             songtime = int(yt.length) * 1000
-            if songtime > (MAXTIME * 60000):
-                return user + " >> That song exceeds the maximum length of " + str(MAXTIME) + " minutes."
+
+            returnMsg = self.requestChecks(user, songtime, yt.videoid)
+            if returnMsg:
+                return returnMsg
+
             # Add to queue
             removetopqueue()
             sqlitewrite(
@@ -357,21 +357,17 @@ class SRcommands:
                     user=user, request=(yt.title.replace('"', "'")), key=(yt.videoid.replace('"', "'")), time=songtime))
             return user + " >> Added: " + yt.title + " to the queue (YT). ID: " + getnewentry()
         except ValueError:
-            # Request is not a YT request, check for other URL
 
             # Online
             if validators.url(requestArgs[0]):
-                if not MEDIA_FILE_ENABLE:
+                if not settings['MEDIA FILES ENABLE']:
                     return user + " >> Online Media Links are disabled by the streamer, you'll need to request something else."
-                # Duplicate
-                self.db = sqliteread(
-                    '''SELECT id, count(*) FROM queue WHERE key="%s" AND WHERE name!="BotPlaylist"''' % requestArgs[0])
-                if self.db[1] > (MAX_DUPLICATE_SONGS - 1):
-                    return user + " >> That song is already in the queue."
-                # Songtime
+
                 songtime = self.getsongtime("Online", requestArgs[0])
-                if songtime > (MAXTIME * 60000):
-                    return user + " >> That song exceeds the maximum length of " + str(MAXTIME) + " minutes."
+                returnMsg = self.requestChecks(user, songtime, requestArgs[0])
+                if returnMsg:
+                    return returnMsg
+
                 # Get Title
                 if len(requestArgs) > 1:
                     title = request.replace(requestArgs[0], '')[1:]
@@ -385,27 +381,24 @@ class SRcommands:
                 return user + " >> Added " + title + " to the queue. ID: " + getnewentry()
 
             # GPM
-            if GPM_ENABLE:
+            if settings['GPM ENABLE']:
                 try:
                     top_song_result = songtitlefilter(request, 0)
                     key = top_song_result['storeId']
                     songtitle = str(top_song_result['artist'] + " - " + top_song_result['title'])
                 # Unable to find song
                 except IndexError:
-                    if YT_IF_NO_RESULT:
+                    if settings['YT IF NO RESULT']:
                         return self.youtubesr(request, user)
                     else:
                         return user + " >> No results found for that song. Please try a different one."
                 else:
                     # Test if the song is already in the queue
-                    self.db = sqliteread(
-                        '''SELECT id, count(*) FROM queue WHERE key="%s" AND name!="BotPlaylist"''' % key)
-                    if self.db[1] > (MAX_DUPLICATE_SONGS - 1):
-                        return user + " >> That song is already in the queue."
-                    # Songtime
                     songtime = int(api.get_track_info(key)['durationMillis'])
-                    if songtime > (MAXTIME * 60000):
-                        return user + " >> That song exceeds the maximum length of " + str(MAXTIME) + " minutes."
+                    returnMsg = self.requestChecks(user, songtime, key)
+                    if returnMsg:
+                        return returnMsg
+
 
                     # Add song to the queue
                     removetopqueue()
@@ -428,12 +421,10 @@ class SRcommands:
         except youtube_dl.utils.DownloadError:
             return ("No results for that request, try a different one.")
 
-        # Check the queue to see if the song is already in there.
-        self.db = sqliteread('''SELECT id, count(*) FROM queue WHERE key="%s" AND name!="BotPlaylist"''' % key)
-        if self.db[1] > (MAX_DUPLICATE_SONGS - 1):
-            return user + " >> That song is already in the queue."
-        if songtime > (MAXTIME * 60000):
-            return user + " >> That song exceeds the maximum length of " + str(MAXTIME) + " minutes."
+        returnMsg = self.requestChecks(user, songtime, key)
+        if returnMsg:
+            return returnMsg
+
         removetopqueue()
         sqlitewrite(
             '''INSERT INTO queue(name, song, key, time) VALUES("{user}", "{request}", "{key}", "{time}");'''.format(
@@ -516,15 +507,6 @@ class SRcommands:
             print("QUEUETIME ERROR:")
             print(e)
 
-    def skip(self, user, x):
-        global skiprequests, skipusers
-
-        if user in skipusers:
-            return user + " >> You've already requested to skip this song."
-        # Do the stuff to process the skip
-        skipusers.append(user)
-        skiprequests += 1
-
     '''--------------------BACKUP PL CONTROL--------------------'''
 
     def plsongrequest(self, request, user):
@@ -541,7 +523,7 @@ class SRcommands:
                 return user + " >> That video is unavailable, or the bot cannot access it."
             # Duplicate
             self.db = sqliteread('''SELECT id, count(*) FROM playlist WHERE key="{0}"'''.format(yt.videoid))
-            if self.db[1] > (MAX_DUPLICATE_SONGS - 1):
+            if self.db[1] > (settings['MAX DUPLICATE SONGS'] - 1):
                 return user + " >> That song is already in the playlist. ID: " + str(self.db[0])
             # Add to queue
             sqlitewrite('''INSERT INTO playlist(song, key) VALUES("{request}", "{key}");'''.format(
@@ -555,7 +537,7 @@ class SRcommands:
             if validators.url(requestArgs[0]):
                 # Duplicate
                 self.db = sqliteread('''SELECT id, count(*) FROM playlist WHERE key="{0}"'''.format(requestArgs[0]))
-                if self.db[1] > (MAX_DUPLICATE_SONGS - 1):
+                if self.db[1] > (settings['MAX DUPLICATE SONGS'] - 1):
                     return user + " >> That song is already in the playlist. ID: " + str(self.db[0])
                 # Get Title
                 if len(requestArgs) > 1:
@@ -564,29 +546,25 @@ class SRcommands:
                     title = "Online Music File"
                 # Add to queue
                 sqlitewrite('''INSERT INTO playlist(song, key) VALUES("{title}", "{request}");'''.format(title=title,
-                                                                                                         request=(
-                                                                                                             requestArgs[
-                                                                                                                 0].replace(
-                                                                                                                 '"',
-                                                                                                                 "'"))))
+                                                                                                         request=(requestArgs[0].replace('"',"'"))))
                 return user + " >> Added " + title + " to the queue. ID: " + str(
                     sqliteread('SELECT id FROM playlist ORDER BY id DESC LIMIT 1')[0])
 
             # GPM
-            if GPM_ENABLE:
+            if settings['GPM ENABLE']:
                 try:
                     top_song_result = songtitlefilter(request, 0)
                     key = top_song_result['storeId']
                     songtitle = str(top_song_result['artist'] + " - " + top_song_result['title'])
                 # Unable to find song
                 except IndexError:
-                    if YT_IF_NO_RESULT:
+                    if settings['YT IF NO RESULT']:
                         return self.plyoutubesr(request, user)
                     else:
                         return user + " >> No results found for that song. Please try a different one."
                     # Test if the song is already in the queue
                 self.db = sqliteread('''SELECT id, count(*) FROM playlist WHERE key="{0}"'''.format(key))
-                if self.db[1] > (MAX_DUPLICATE_SONGS - 1):
+                if self.db[1] > (settings['MAX DUPLICATE SONGS'] - 1):
                     return user + " >> That song is already in the playlist. ID: " + str(self.db[0])
 
                 # Add song to the queue
@@ -608,7 +586,7 @@ class SRcommands:
 
         # Check the queue to see if the song is already in there.
         self.db = sqliteread('''SELECT id, count(*) FROM playlist WHERE key="{0}"'''.format(key))
-        if self.db[1] > (MAX_DUPLICATE_SONGS - 1):
+        if self.db[1] > (settings['MAX DUPLICATE SONGS'] - 1):
             return user + " >> That song is already in the playlist. ID: " + str(self.db[0])
 
         sqlitewrite('''INSERT INTO playlist(song, key) VALUES("{request}", "{key}");'''.format(
@@ -638,7 +616,7 @@ class SRcommands:
     '''--------------------MISC--------------------'''
 
     def getnowplaying(self, x, user):
-        with open("Output/nowplaying.txt", "r", encoding="utf-8") as f:
+        with open("../Output/nowplaying.txt", "r", encoding="utf-8") as f:
             returnnp = f.readlines()
         if not returnnp:
             return user + " >> The music is currently paused."
@@ -653,7 +631,7 @@ class SRcommands:
             return "There was some sort of issue clearing the queue."
 
     def queuelink(self, user, x):
-        return user + " >> " + QUEUE_LINK
+        return user + " >> " + settings['QUEUE LINK']
 
     def getsongtime(self, title, key):
         songtime = -1

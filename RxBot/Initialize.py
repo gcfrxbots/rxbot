@@ -5,6 +5,7 @@ import json
 import socket
 import sqlite3
 from sqlite3 import Error
+from shutil import copyfile
 import os
 from random import shuffle
 try:
@@ -18,18 +19,19 @@ try:
 except ImportError as e:
     print(e)
     raise ImportError(">>> One or more required packages are not properly installed! Run INSTALL_REQUIREMENTS.bat to fix!")
-
+global settings, hotkeys
 
 def initSetup():
     api = Mobileclient()
+    global settings, hotkeys
 
     # Update Youtube_DL
     print("Attempting to update Youtube resources...")
     call("py -3.7 -m pip install --upgrade youtube_dl --user --no-warn-script-location")
 
     # Create Folders
-    if not os.path.exists('Output'):
-        os.makedirs('Output')
+    if not os.path.exists('../Output'):
+        os.makedirs('../Output')
     if not os.path.exists('Resources'):
         os.makedirs('Resources')
         print("Creating necessary folders...")
@@ -41,9 +43,14 @@ def initSetup():
         f.write(urllib.request.urlopen('https://rxbots.weebly.com/uploads/6/1/2/6/61261317/generic-art_orig.jpg').read())
         f.close()
 
+    # Create Settings.xlsx
+    loadedsettings = settingsSetup()
+    settings = loadedsettings[0]
+    hotkeys = loadedsettings[1]
+
     # Check SongQueue.xlsx
     print("Creating & Cleaning Up SongQueue and NowPlaying")
-    with xlsxwriter.Workbook('Output/SongQueue.xlsx') as workbook:
+    with xlsxwriter.Workbook('../Output/SongQueue.xlsx') as workbook:
         worksheet = workbook.add_worksheet('Queue')
         format = workbook.add_format({'bold': True, 'center_across': True, 'font_color': 'white', 'bg_color': 'gray'})
         worksheet.set_column(0, 0, 8)
@@ -54,12 +61,11 @@ def initSetup():
         worksheet.write(0, 2, "Title / Link", format)
 
     # Check NowPlaying.txt
-    with open("Output/NowPlaying.txt", "w") as f:
+    with open("../Output/NowPlaying.txt", "w") as f:
         f.truncate()
 
     # Log into GPM
-    if GPM_ENABLE:
-        print("Logging into Google Play Music...")
+    if settings['GPM ENABLE']:
         if api.oauth_login(device_id=Mobileclient.FROM_MAC_ADDRESS, oauth_credentials="Resources/oauth.txt"):
             print("Logged into GPM successfully")
         else:
@@ -68,25 +74,6 @@ def initSetup():
                 raise ConnectionError("Unable to log into Google Play Music!")
     else:
         print("Youtube-Only mode enabled. No GPM login needed.")
-
-    # Check Settings
-    print("Verifying Settings.py is set up correctly...")
-    if PORT not in (80, 6667, 443, 6697):
-        raise ConnectionError("Wrong Port! The port must be 80 or 6667 for standard connections, or 443 or 6697 for SSL")
-    if not BOT_OAUTH:
-        raise Exception("Missing BOT_OAUTH - Please follow directions in the settings or readme.")
-    if not ('oauth:' in BOT_OAUTH):
-        raise Exception("Invalid BOT_OAUTH - Your oauth should start with 'oauth:'")
-    if not BOT_NAME or not CHANNEL:
-        raise Exception("Missing BOT_NAME or CHANNEL - Please follow directions in the settings or readme")
-
-    if ENABLE_HOTKEYS:
-        for item in HOTKEYS:
-            assignedKey = HOTKEYS[item]
-            if type(assignedKey) != tuple:
-                raise Exception('''Hotkeys formatted incorrectly! If you have just one key (no modifiers), it should look like >> "!veto": ('key',),''')
-            if len(assignedKey) < 1:
-                raise Exception("Hotkeys are enabled, but one or more hotkeys are not set. The bot can still run like this but an error will be thrown on startup.")
 
     # Create Sqlite3 File
     print("Creating and updating botData.db...")
@@ -124,9 +111,11 @@ def initSetup():
     except Error as e:
         print(e)
 
+    if not os.path.exists('../Config/Run PlaylistEditor.bat'):
+        copyfile('Run PlaylistEditor.bat', '../Config/Run PlaylistEditor.bat')
+
     # Shuffle Playlist
-    if SHUFFLE_ON_START:
-        print("Shuffling Playlist...")
+    if settings['SHUFFLE ON START']:
         db = sqlite3.connect('Resources/botData.db')
         cursor = db.cursor()
         cursor.execute('''SELECT * FROM playlist ORDER BY RANDOM()''')
@@ -147,16 +136,16 @@ def initSetup():
 def openSocket():
     global s
     s = socket.socket()
-    s.connect(("irc.chat.twitch.tv", PORT))
-    s.send(("PASS " + BOT_OAUTH + "\r\n").encode("utf-8"))
-    s.send(("NICK " + BOT_NAME + "\r\n").encode("utf-8"))
-    s.send(("JOIN #" + CHANNEL + "\r\n").encode("utf-8"))
+    s.connect(("irc.chat.twitch.tv", int(settings['PORT'])))
+    s.send(("PASS " + settings['BOT OAUTH'] + "\r\n").encode("utf-8"))
+    s.send(("NICK " + settings['BOT NAME'] + "\r\n").encode("utf-8"))
+    s.send(("JOIN #" + settings['CHANNEL'] + "\r\n").encode("utf-8"))
     return s
 
 
 def sendMessage(message):
     print(message)
-    messageTemp = "PRIVMSG #" + CHANNEL + " : " + message
+    messageTemp = "PRIVMSG #" + settings['CHANNEL'] + " : " + message
     s.send((messageTemp + "\r\n").encode("utf-8"))
     print("Sent: " + messageTemp)
 
@@ -223,7 +212,7 @@ def createsongqueue():
     row = 1
     col = 0
     try:
-        with xlsxwriter.Workbook('Output/SongQueue.xlsx') as workbook:
+        with xlsxwriter.Workbook('../Output/SongQueue.xlsx') as workbook:
             worksheet = workbook.add_worksheet('Queue')
             format = workbook.add_format({'bold': True, 'center_across': True, 'font_color': 'white', 'bg_color': 'gray'})
             center = workbook.add_format({'center_across': True})
@@ -244,15 +233,15 @@ def createsongqueue():
 
 
 def getmoderators():
-    json_url = urllib.request.urlopen('http://tmi.twitch.tv/group/user/' + CHANNEL.lower() + '/chatters')
+    json_url = urllib.request.urlopen('http://tmi.twitch.tv/group/user/' + settings['CHANNEL'].lower() + '/chatters')
 
     data = json.loads(json_url.read())
     mods = data['chatters']['moderators']
 
     for item in mods:
-        if mods not in MODERATORS:
-            MODERATORS.append(item)
+        if mods not in list(settings['MODERATORS']):
+            list(settings['MODERATORS']).append(item)
 
-    return MODERATORS
+    return settings['MODERATORS']
 
 
