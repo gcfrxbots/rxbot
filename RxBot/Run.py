@@ -1,9 +1,10 @@
 import datetime
 import re
 from threading import Thread
-from Bot import *
 from CustomCommands import CustomCommands, commands_CustomCommands
 from SongRequest import *
+from Bot import *
+from Initialize import settings, hotkeys
 
 sr = SRcommands()
 srcontrol = SRcontrol()
@@ -12,17 +13,21 @@ customcmds = CustomCommands()
 nowplaying = False
 paused = False
 
+
 def togglepause(x, y):
     if paused:
         play(None, None)
     elif not paused:
         pause(None, None)
-#These functions require two variables to call to avoid having way more code in the top loop.
+
+
+# These functions require two variables to call to avoid having way more code in the top loop.
 def play(x, y):
     global nowplaying, paused
     nowplaying = True
     paused = False
     print(srcontrol.play())
+
 
 def pause(x, y):
     global nowplaying, paused
@@ -30,23 +35,25 @@ def pause(x, y):
     paused = True
     print(srcontrol.pause())
 
+
 def veto(x, y):
     global nowplaying, paused
     srcontrol.songover()
     paused = False
     nowplaying = False
 
+
 # Init Hotkeys
 def manageHotkeys(event, hotkey, args):
-    if args[0] in OUTPUT_HOTKEYS:
+    if hotkeys[args[0]][1]:
         runcommand(args[0], None, "Hotkey", False)
     else:
         runcommand(args[0], None, "Hotkey", True)
 
-if ENABLE_HOTKEYS:
+if settings['ENABLE HOTKEYS']:
     hk = SystemHotkey(consumer=manageHotkeys)
-    for item in HOTKEYS:
-        hk.register(HOTKEYS[item], callback=item)
+    for item in hotkeys:
+        hk.register(hotkeys[item][0], callback=item)
 
 
 def getUser(line):
@@ -69,7 +76,8 @@ def getint(cmdarguments):
     try:
         out = int(re.search(r'\d+', cmdarguments).group())
         return out
-    except: return None
+    except:
+        return None
 
 
 def runcommand(command, cmdarguments, user, mute):
@@ -80,7 +88,7 @@ def runcommand(command, cmdarguments, user, mute):
 
     for item in commands:
         if item == command:
-            if commands[item][0] == "MOD": #MOD ONLY COMMANDS:
+            if commands[item][0] == "MOD":  # MOD ONLY COMMANDS:
                 if (user in getmoderators()) or (user == "Hotkey") or mute:
                     cmd = commands[item][1]
                     arg1 = commands[item][2]
@@ -102,8 +110,6 @@ def runcommand(command, cmdarguments, user, mute):
         print(output)
     else:
         sendMessage(output)
-
-
 
 def main():
     global nowplaying, paused
@@ -146,7 +152,7 @@ def tick():
         time.sleep(0.2)
         # Check if there's nothing in the playlist.
         if not sqliteread('''SELECT id, name, song, key FROM queue ORDER BY id ASC'''):
-            playfromplaylist() # Move a song from the playlist into the queue.
+            playfromplaylist()  # Move a song from the playlist into the queue.
 
         if paused or not nowplaying:  # If for any reason the music isnt playing, change the nowplaying to nothing
             writenowplaying(False, "")
@@ -160,7 +166,7 @@ def tick():
                 nowplaying = srcontrol.songover()
             timecache = nptime
 
-        elif not paused and not nowplaying: # When a song is over, start a new song
+        elif not paused and not nowplaying:  # When a song is over, start a new song
             nowplaying = srcontrol.playsong()
             timecache = 1
             time.sleep(1)
@@ -177,15 +183,15 @@ def console():
             runcommand(command, cmdarguments, "CONSOLE", True)
 
         if command.lower() == "quit":
-            pause(None, None)
             print("Shutting down")
+            pause(None, None)
+            saveAlbumArt(None)
             quit()
 
 
-
-t1 = Thread(target = main)
-t2 = Thread(target = tick)
-t3 = Thread(target = console)
+t1 = Thread(target=main)
+t2 = Thread(target=tick)
+t3 = Thread(target=console)
 
 t1.start()
 t2.start()

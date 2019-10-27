@@ -1,9 +1,37 @@
 #This script is meant to populate the playlist table with a user's playlist from google play music.
 from gmusicapi import Mobileclient
 import sqlite3
-from Settings import GPM_ENABLE, GPM_PLAYLIST
-import sys
-if GPM_ENABLE:
+import xlrd
+from Settings import listSettings, listFloats
+
+def readSettings():
+    wb = xlrd.open_workbook('../Config/Settings.xlsx')
+    settings = {}
+    worksheet = wb.sheet_by_name("Settings")
+
+    for item in range(worksheet.nrows):
+        if item == 0:
+            pass
+        else:
+            option = worksheet.cell_value(item, 0)
+            try:
+                setting = int(worksheet.cell_value(item, 1))
+            except ValueError:
+                setting = str(worksheet.cell_value(item, 1))
+            # Test if setting is a list
+            if option in listSettings:
+                setting = list(map(str.strip, setting.split(',')))
+            if option in listFloats:
+                setting = float(worksheet.cell_value(item, 1))
+
+            settings[option] = setting
+    return settings
+
+
+settings = readSettings()
+
+
+if settings["GPM ENABLE"]:
     api = Mobileclient()
     print("Logging into Google Play Music...")
     if api.oauth_login(device_id=Mobileclient.FROM_MAC_ADDRESS, oauth_credentials="Resources/oauth.txt"):
@@ -86,7 +114,7 @@ def updateplaylist():
     print("Loading playlists, please wait...")
     dplaylists = api.get_all_user_playlist_contents()
 
-    if len(GPM_PLAYLIST) == 0:
+    if len(settings["GPM PLAYLIST"]) == 0:
         print("These playlists were detected on your Google Play Music account:")
         print(">>-------------------------------------<<")
         index = 1
@@ -107,7 +135,7 @@ def updateplaylist():
     else:
         playlist = None
         for item in dplaylists:
-            if (item['name'].lower()) == (GPM_PLAYLIST.lower()):
+            if (item['name'].lower()) == (settings["GPM PLAYLIST"].lower()):
                 playlist = item
         if not playlist:
             raise Exception("Invalid playlist set in Settings.py")
@@ -180,32 +208,36 @@ def clearplaylist():
     db.close()
 
 
-print(">>-------------------------------------<<")
-print("Welcome to the RXBot Backup Playlist Control Application. What would you like to do? "
-      "\n1. Fill Playlist "
-      "\n2. Update Playlist "
-      "\n3. Shuffle Playlist "
-      "\n4. View Playlist "
-      "\n5. Clear Playlist "
+while True:
+    print(">>-------------------------------------<<")
+    print("Welcome to the RXBot Backup Playlist Control Application. What would you like to do? "
+          "\n1. Fill Playlist "
+          "\n2. Update Playlist "
+          "\n3. Shuffle Playlist "
+          "\n4. View Playlist "
+          "\n5. Clear Playlist "
+          "\n0. Exit "
 
-      )
-print(">>-------------------------------------<<")
-inp = eval(input("Type the number of the option you would like here then press ENTER: \n"))
-if inp == 1:
-    fillPlaylist()
-    wait = input("Finished, press ENTER to close")
-if inp == 2:
-    updateplaylist()
-    wait = input("Finished, press ENTER to close")
-if inp == 3:
-    shuffleplaylist()
-    wait = input("Shuffled the playlist, press ENTER to close")
-if inp == 4:
-    viewplaylist()
-    wait = input("Press ENTER to close")
-if inp == 5:
-    clearplaylist()
-    wait = input("Cleared the whole backup playlist. Press ENTER to close")
+          )
+    print(">>-------------------------------------<<")
+    inp = eval(input("Type the number of the option you would like here then press ENTER: \n"))
+    if inp == 1:
+        fillPlaylist()
+        wait = input("Finished, press ENTER to return to Main Menu")
+    if inp == 2:
+        updateplaylist()
+        wait = input("Finished, press ENTER to return to Main Menu")
+    if inp == 3:
+        shuffleplaylist()
+        wait = input("Shuffled the playlist, press ENTER to return to Main Menu")
+    if inp == 4:
+        viewplaylist()
+        wait = input("Press ENTER to close")
+    if inp == 5:
+        clearplaylist()
+        wait = input("Cleared the whole backup playlist. Press ENTER to return to Main Menu")
+    if inp == 0:
+        quit()
 
 
 
