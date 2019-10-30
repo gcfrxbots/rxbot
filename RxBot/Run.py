@@ -186,7 +186,7 @@ def console():
             print("Shutting down")
             pause(None, None)
             saveAlbumArt(None)
-            quit()
+            os._exit(1)
 
 
 t1 = Thread(target=main)

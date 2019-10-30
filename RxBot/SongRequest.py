@@ -51,6 +51,7 @@ commands_SongRequest = {
     "!plclearsong": ("MOD", 'sr.plclearsong', 'cmdarguments', 'user'),
     "!plcs": ("MOD", 'sr.plclearsong', 'cmdarguments', 'user'),  # Alias
     "!clearqueue": ("MOD", 'sr.clearqueue', 'None', 'None'),
+    "!cq": ("MOD", 'sr.clearqueue', 'None', 'None'),  # Alias
 }
 
 
@@ -117,7 +118,7 @@ def saveAlbumArt(songkey):
             f.write(urllib.request.urlopen(imgLink).read())
             f.close()
         else:  # Otherwise just use the generic image.
-            copyfile('Resources/generic_art.jpg', '../Output/albumart.jpg')
+            copyfile('../Config/generic_art.jpg', '../Output/albumart.jpg')
     except TypeError:
         pass
     except:

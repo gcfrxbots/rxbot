@@ -130,7 +130,7 @@ def updateplaylist():
         playlist = dplaylists[selection]
 
         print("Using the songs from playlist: " + playlist['name'])
-        print("You can set GPM_PLAYLIST in Settings.py to avoid doing this next time.")
+        print("You can set GPM PLAYLIST in the settings file to avoid doing this next time.")
 
     else:
         playlist = None
@@ -138,7 +138,7 @@ def updateplaylist():
             if (item['name'].lower()) == (settings["GPM PLAYLIST"].lower()):
                 playlist = item
         if not playlist:
-            raise Exception("Invalid playlist set in Settings.py")
+            raise Exception("Invalid setting for GPM PLAYLIST setting - That playlist doesn't exist on your account")
     gpmSongTitles = []
     for item in playlist['tracks']:
         if item['trackId'][0][0] == "T":

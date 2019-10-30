@@ -28,7 +28,6 @@ def initSetup():
     # Update Youtube_DL
     print("Attempting to update Youtube resources...")
     call("py -3.7 -m pip install --upgrade youtube_dl --user --no-warn-script-location")
-
     # Create Folders
     if not os.path.exists('../Output'):
         os.makedirs('../Output')
@@ -37,14 +36,14 @@ def initSetup():
         print("Creating necessary folders...")
 
     # Download necessary files
-    if not os.path.exists('Resources/generic_art.jpg'):
+    if not os.path.exists('../Config/generic_art.jpg'):
         print("Downloading necessary files...")
-        f = open('Resources/generic_art.jpg', 'wb')
+        f = open('../Config/generic_art.jpg', 'wb')
         f.write(urllib.request.urlopen('https://rxbots.weebly.com/uploads/6/1/2/6/61261317/generic-art_orig.jpg').read())
         f.close()
 
     # Create Settings.xlsx
-    loadedsettings = settingsSetup()
+    loadedsettings = settingsConfig.settingsSetup(settingsConfig())
     settings = loadedsettings[0]
     hotkeys = loadedsettings[1]
 
@@ -111,8 +110,8 @@ def initSetup():
     except Error as e:
         print(e)
 
-    if not os.path.exists('../Config/Run PlaylistEditor.bat'):
-        copyfile('Run PlaylistEditor.bat', '../Config/Run PlaylistEditor.bat')
+    if not os.path.exists('../Config/Playlist Editor.exe'):
+        copyfile('Playlist Editor.exe', '../Config/Playlist Editor.exe')
 
     # Shuffle Playlist
     if settings['SHUFFLE ON START']:
@@ -128,6 +127,47 @@ def initSetup():
         db.commit()
         db.close()
         print("Backup Playlist has been shuffled.")
+
+    # Update Playlist
+    if settings['UPDATE PL ON START']:
+        db = sqlite3.connect('Resources/botData.db')
+        cursor = db.cursor()
+        cursor.execute('''SELECT * FROM playlist''')
+        listSongs = cursor.fetchall()
+        dbSongTitles = []
+        for item in listSongs:
+            dbSongTitles.append(item[2])
+        print("Updating your playlist, please wait...")
+        dplaylists = api.get_all_user_playlist_contents()
+        playlist = None
+        for item in dplaylists:
+            if (item['name'].lower()) == (settings["GPM PLAYLIST"].lower()):
+                playlist = item
+        if not playlist:
+            stopBot("Invalid setting for GPM PLAYLIST setting - That playlist doesn't exist on your account")
+        gpmSongTitles = []
+        for item in playlist['tracks']:
+            if item['trackId'][0][0] == "T":
+                gpmSongTitles.append(item['track']['storeId'])
+        toAdd = list(set(gpmSongTitles) - set(dbSongTitles))
+
+        if len(toAdd) > 0:
+            for item in toAdd:
+                for gpmitem in playlist['tracks']:
+                    if gpmitem['trackId'] == item:
+                        songtitle = (gpmitem['track']['artist'] + " - " + gpmitem['track']['title'])
+                        key = gpmitem['track']['storeId']
+                        cursor.execute('''
+                                    INSERT INTO playlist(song, key)
+                                    VALUES("{song_name}", "{key}");'''.format(song_name=songtitle.replace('"', "'"),
+                                                                              key=key))
+            print(str(len(toAdd)) + " new songs added to the backup playlist!")
+        else:
+            print("No new songs to add to your playlist.")
+        db.commit()
+        db.close()
+
+
 
     print(">> Initial Checkup Complete! Connecting to Chat...")
     return api
