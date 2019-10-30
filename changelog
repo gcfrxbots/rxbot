@@ -1,24 +1,21 @@
-VERSION 3.3
+VERSION 3.3.1
 
-Primary Change: Appearance and Settings Overhaul
+Primary Change: EXE Files and Settings Fix
 Changes:
 
-This version had a LOT of changes to enhance the user experience and generally make everything easier to use.
-First and foremost, all settings and configuration has been fully overhauled! Everything now uses a nicely formatted spreadsheet.
-When updating the bot, if there are any new settings, it will automatically insert those into your settings file while keeping your existing settings.
-Hotkeys are in a different worksheet at the bottom. Everything can be configured from that one sheet.
+Bot and PlaylistEditor are now run with compiled .exe files, so they have icons, look nicer, and can be easily run as Admin.
+The batch scripts to run the bot are still located in the RxBot folder, in case you don't feel comfortable running the .exe
+Okay, so I swear I'm good at coding, but literally everything related to updates in the new settings was broken. I uh, I fixed that. Probably.
+Redid some things that would cause the bot to crash that would just send a simple chat message that got lost. They now all have their own events.
 
-All the files of the bot have been reorganized to look nice as hell. All the code and files that users won't usually need are stashed away in the RxBot folder.
-The Setup folder now has the newest version of Pafy so users don't run into the age restriction error, and don't need Git to fix it.
-Install_Requirements.bat now is much more streamlined, and also automatically generates the Config folder and the Settings file.
-After the bot is first run and all the settings are correct, it'll connect to chat like normal. Once it's connected it will generate a "Run PlaylistEditor.bat" in the Config folder.
-
-The output folder is also moved to the root directory so it's nice and easy to access.
 
 SONGREQUEST:
-Made some changes to how songrequest functions work. Probably won't be much faster, but it's easier to edit the code. So good for me i guess.
-Streamlined parts of PlaylistEditor, and added an Exit option.
+Fxed the FUCKING VLC error! WHOO! That error that constantly spammed the console from VLC? Finally found a way to shut it up!
+Moved generic_art.jpg into the config folder, so users know they can replace it with anything else.
+Added setting UPDATE PL ON START, and the functionality to, well, update the playlist on start. You NEED a GPM PLAYLIST set, and it'll automatically get any new songs from it when you start the bot.
+Added !cq as an alias for !clearqueue
+
 
 
 COMMANDS:
-Added a !r alias for !roll
+Probably didn't break anything
