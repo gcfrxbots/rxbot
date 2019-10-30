@@ -1,17 +1,24 @@
-VERSION 3.2.3
+VERSION 3.3
 
-Primary Change: Console
+Primary Change: Appearance and Settings Overhaul
 Changes:
 
-Commands can now be typed into the bot's console and be executed just as if they were typed into twitch chat.
-The error catcher for any command-related errors used to just always output "Socket Error" - revised it to print the error.
-3.2.3 - Fixed a few typos and cleaned up the code a bit, as well as improving stability when no backup playlist is used.
+This version had a LOT of changes to enhance the user experience and generally make everything easier to use.
+First and foremost, all settings and configuration has been fully overhauled! Everything now uses a nicely formatted spreadsheet.
+When updating the bot, if there are any new settings, it will automatically insert those into your settings file while keeping your existing settings.
+Hotkeys are in a different worksheet at the bottom. Everything can be configured from that one sheet.
+
+All the files of the bot have been reorganized to look nice as hell. All the code and files that users won't usually need are stashed away in the RxBot folder.
+The Setup folder now has the newest version of Pafy so users don't run into the age restriction error, and don't need Git to fix it.
+Install_Requirements.bat now is much more streamlined, and also automatically generates the Config folder and the Settings file.
+After the bot is first run and all the settings are correct, it'll connect to chat like normal. Once it's connected it will generate a "Run PlaylistEditor.bat" in the Config folder.
+
+The output folder is also moved to the root directory so it's nice and easy to access.
 
 SONGREQUEST:
-Fixed a very rare error that kept the bot from adding a song to the queue when that song was the next-up from the playlist.
-3.2.2 - Hotfixed an error where any 'search' youtube command would crash the bot. I typo'd a SQL command, whoops.
+Made some changes to how songrequest functions work. Probably won't be much faster, but it's easier to edit the code. So good for me i guess.
+Streamlined parts of PlaylistEditor, and added an Exit option.
 
 
 COMMANDS:
-Added a `quit` command into the CONSOLE (Does nothing in twitch chat). quit will pause the music, clear the nowplaying file, swap the album art to the generic image, and kill the bot.
-3.2.3 - Lots of stuff would break if there was no music playing or paused, including the quit command. Fixed that.
+Added a !r alias for !roll
