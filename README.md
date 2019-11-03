@@ -19,8 +19,6 @@ Once you download the bot, make sure you have all the requirements installed bef
 
 • [**VLC Media Player**](https://www.videolan.org/vlc/index.html) needs to be *installed*, but it does not need to actually be *running* alongside the bot for it to work.
 
-• [**Git**](https://git-scm.com/downloads) is required to install and update some requirements.
-
 • Finally, run **Install_Requirements.bat** in the bot's folder. If you wish, you can delete this file and **requirements.txt** afterwards, as they are no longer needed.
 
 ## First-Time Setup
