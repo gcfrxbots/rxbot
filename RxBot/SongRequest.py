@@ -340,11 +340,7 @@ class SRcommands:
 
         # YouTube
         try:
-            try:
-                yt = pafy.new(requestArgs[0], basic=True, size=False)
-            except OSError as e:
-                print(e)
-                return user + " >> That video is unavailable, or the bot cannot access it."
+            yt = pafy.new(requestArgs[0], basic=True, size=False)
             songtime = int(yt.length) * 1000
 
             returnMsg = self.requestChecks(user, songtime, yt.videoid)
@@ -357,7 +353,7 @@ class SRcommands:
                 '''INSERT INTO queue(name, song, key, time) VALUES("{user}", "{request}", "{key}", "{time}");'''.format(
                     user=user, request=(yt.title.replace('"', "'")), key=(yt.videoid.replace('"', "'")), time=songtime))
             return user + " >> Added: " + yt.title + " to the queue (YT). ID: " + getnewentry()
-        except ValueError:
+        except:
 
             # Online
             if validators.url(requestArgs[0]):

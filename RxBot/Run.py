@@ -179,14 +179,15 @@ def console():
         command = ((consoleIn.split(' ', 1)[0]).lower()).replace("\r", "")
         cmdarguments = consoleIn.replace(command or "\r" or "\n", "")
         # Run the commands function
-        if command[0] == "!":
-            runcommand(command, cmdarguments, "CONSOLE", True)
+        if command:
+            if command[0] == "!":
+                runcommand(command, cmdarguments, "CONSOLE", True)
 
-        if command.lower() == "quit":
-            print("Shutting down")
-            pause(None, None)
-            saveAlbumArt(None)
-            os._exit(1)
+            if command.lower() == "quit":
+                print("Shutting down")
+                pause(None, None)
+                saveAlbumArt(None)
+                os._exit(1)
 
 
 t1 = Thread(target=main)
