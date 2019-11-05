@@ -1,19 +1,12 @@
-VERSION 3.3.1
+VERSION 3.3.2
 
-Primary Change: EXE Files and Settings Fix
+Primary Change: Bugfixes
 Changes:
-
-Bot and PlaylistEditor are now run with compiled .exe files, so they have icons, look nicer, and can be easily run as Admin.
-The batch scripts to run the bot are still located in the RxBot folder, in case you don't feel comfortable running the .exe
-Okay, so I swear I'm good at coding, but literally everything related to updates in the new settings was broken. I uh, I fixed that. Probably.
-Redid some things that would cause the bot to crash that would just send a simple chat message that got lost. They now all have their own events.
-
+Apparently pressing ENTER in the console without anything else typed would crash the bot. Fixed that.
 
 SONGREQUEST:
-Fxed the FUCKING VLC error! WHOO! That error that constantly spammed the console from VLC? Finally found a way to shut it up!
-Moved generic_art.jpg into the config folder, so users know they can replace it with anything else.
-Added setting UPDATE PL ON START, and the functionality to, well, update the playlist on start. You NEED a GPM PLAYLIST set, and it'll automatically get any new songs from it when you start the bot.
-Added !cq as an alias for !clearqueue
+Fixed a very rare bug where sometimes songs would somehow be requested as youtube when they weren't, causing errors. 
+Now anytime a youtube request doesn't work for any reason, it will automatically pass the request to GPM. Should fix any future issues with that.
 
 
 
