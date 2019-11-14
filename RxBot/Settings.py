@@ -69,7 +69,7 @@ defaultHotkeys = [
 def stopBot(err):
     print(">>>>>---------------------------------------------------------------------------<<<<<")
     print(err)
-    print("A full explanation can be found in the readme.")
+    print("More info can be found here: https://rxbots.net/rxbot-settings.html")
     print(">>>>>----------------------------------------------------------------------------<<<<<")
     time.sleep(3)
     quit()
