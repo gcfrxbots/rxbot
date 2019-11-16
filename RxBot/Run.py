@@ -169,6 +169,7 @@ def tick():
         elif not paused and not nowplaying:  # When a song is over, start a new song
             nowplaying = srcontrol.playsong()
             timecache = 1
+            getmoderators()  # Refresh the mod list so there's a "timer" for the refresh
             time.sleep(1)
 
 

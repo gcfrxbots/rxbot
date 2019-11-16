@@ -274,13 +274,12 @@ def createsongqueue():
 
 def getmoderators():
     json_url = urllib.request.urlopen('http://tmi.twitch.tv/group/user/' + settings['CHANNEL'].lower() + '/chatters')
-
-    data = json.loads(json_url.read())
-    mods = data['chatters']['moderators']
+    data = json.loads(json_url.read())['chatters']
+    mods = data['moderators'] + data['broadcaster']
 
     for item in mods:
-        if mods not in list(settings['MODERATORS']):
-            list(settings['MODERATORS']).append(item)
+        if item not in list(settings['MODERATORS']):
+            settings['MODERATORS'].append(item)
 
     return settings['MODERATORS']
 
