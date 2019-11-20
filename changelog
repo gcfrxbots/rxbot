@@ -1,13 +1,12 @@
-VERSION 3.3.2
+VERSION 3.4
 
-Primary Change: Bugfixes
+Primary Change: Volume Caching
 Changes:
-Apparently pressing ENTER in the console without anything else typed would crash the bot. Fixed that.
+Cleaned up a few print statements to make the console just a bit cleaner
 
 SONGREQUEST:
-Fixed a very rare bug where sometimes songs would somehow be requested as youtube when they weren't, causing errors. 
-Now anytime a youtube request doesn't work for any reason, it will automatically pass the request to GPM. Should fix any future issues with that.
-
+When playing Youtube or Online Media songs, you now have the a setting to enable volume caching.
+This will save the volume of the last track played on GPM, since all songs are consistent. If the volume is adjusted for the Non-GPM song, the volume will be automatically changed back once it's over.
 
 
 COMMANDS:
