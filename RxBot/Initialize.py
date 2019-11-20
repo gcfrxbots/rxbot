@@ -25,6 +25,7 @@ def initSetup():
     api = Mobileclient()
     global settings, hotkeys
 
+
     # Update Youtube_DL
     print("Attempting to update Youtube resources...")
     call("py -3.7 -m pip install --upgrade youtube_dl --user --no-warn-script-location")
@@ -130,6 +131,8 @@ def initSetup():
 
     # Update Playlist
     if settings['UPDATE PL ON START']:
+        if not settings["GPM PLAYLIST"]:
+            stopBot("You have UPDATE PL ON START enabled, but no playlist specified in GPM PLAYLIST.")
         db = sqlite3.connect('Resources/botData.db')
         cursor = db.cursor()
         cursor.execute('''SELECT * FROM playlist''')
@@ -143,7 +146,7 @@ def initSetup():
         for item in dplaylists:
             if (item['name'].lower()) == (settings["GPM PLAYLIST"].lower()):
                 playlist = item
-        if not playlist:
+        if settings["GPM PLAYLIST"] and not playlist:
             stopBot("Invalid setting for GPM PLAYLIST setting - That playlist doesn't exist on your account")
         gpmSongTitles = []
         for item in playlist['tracks']:
@@ -167,9 +170,6 @@ def initSetup():
         db.commit()
         db.close()
 
-
-
-    print(">> Initial Checkup Complete! Connecting to Chat...")
     return api
 
 

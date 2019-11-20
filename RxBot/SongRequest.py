@@ -96,8 +96,8 @@ def songtitlefilter(song_name, redo):
                 songs.remove(song)
 
     for item in songs:
-        print((">>>Allowed: " + item['title']))
-    print((">>>>>>Playing: " + songs[0]['title']))
+        print((">Allowed: " + item['title']))
+    print((">>>Playing: " + songs[0]['title']))
     return songs[redo]
 
 
@@ -168,6 +168,8 @@ class SRcontrol:  # Class for controlling currently playing audio
         self.songtitle = ""
         self.songkey = ""
         self.playurl = ""
+        self.cachedVol = 0
+        self.isNotGPM = False
 
 
     def ps_youtube(self, yt):
@@ -197,6 +199,7 @@ class SRcontrol:  # Class for controlling currently playing audio
                 return
 
             self.playurl = url
+            self.isNotGPM = True
         except Error as e:  # Catch pafy errors
             sendMessage("Error getting Youtube song to play. [209]")
             print("Error likely with Pafy / YtDL. Error below.")
@@ -215,12 +218,14 @@ class SRcontrol:  # Class for controlling currently playing audio
 
         try:  # Try Youtube
             self.ps_youtube(pafy.new(self.songkey, basic=True, size=False))
+            self.isNotGPM = True
 
         except ValueError:  # Not Yt, try online and GPM
 
             # ONLINE
             if validators.url(self.songkey):
                 self.playurl = self.songkey
+                self.isNotGPM = True
 
             # GPM
             else:
@@ -233,13 +238,20 @@ class SRcontrol:  # Class for controlling currently playing audio
         saveAlbumArt(self.songkey)
         writenowplaying(True, self.songtitle)
         createsongqueue()
+        self.cachedVol = self.p.audio_get_volume()
         return True
 
     def songover(self):
         print("Song is over!")
         time.sleep(settings['DELAY BETWEEN SONGS'])
         try:
+            # Check if it should reset the volume to the cached volume
+            if settings["YT VOL RESET"] and self.isNotGPM and (self.cachedVol != self.p.audio_get_volume()):
+                print("Reset audio to cached volume of %s." % self.cachedVol)
+                self.p.audio_set_volume(self.cachedVol)
+
             self.p.stop()
+            self.isNotGPM = False
         except AttributeError:
             print("Nothing is playing")
         return False

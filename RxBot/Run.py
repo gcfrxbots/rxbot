@@ -112,7 +112,7 @@ def runcommand(command, cmdarguments, user, mute):
         sendMessage(output)
 
 def main():
-    global nowplaying, paused
+    global nowplaying, paused, s
     s = openSocket()
     joinRoom(s)
     readbuffer = ""
@@ -184,11 +184,17 @@ def console():
             if command[0] == "!":
                 runcommand(command, cmdarguments, "CONSOLE", True)
 
-            if command.lower() == "quit":
+            if command.lower() in ["quit", "exit", "leave", "stop", "close"]:
                 print("Shutting down")
                 pause(None, None)
                 saveAlbumArt(None)
                 os._exit(1)
+
+            #if command.lower() in ['reload']:   # Reload is on pause for now since I don't wanna mess with it
+            #    print("Reloading the bot, this might take a few seconds. \n")
+            #    time.sleep(1)
+            #    initSetup()
+             #   print("Reload complete!")
 
 
 t1 = Thread(target=main)
