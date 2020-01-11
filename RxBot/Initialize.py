@@ -130,29 +130,37 @@ def initSetup():
         print("Backup Playlist has been shuffled.")
 
     # Update Playlist
+
     if settings['UPDATE PL ON START']:
-        if not settings["GPM PLAYLIST"]:
+        if not settings["GPM PLAYLISTS"]:
             stopBot("You have UPDATE PL ON START enabled, but no playlist specified in GPM PLAYLIST.")
+
         db = sqlite3.connect('Resources/botData.db')
         cursor = db.cursor()
         cursor.execute('''SELECT * FROM playlist''')
         listSongs = cursor.fetchall()
         dbSongTitles = []
+        toAdd = []
+
         for item in listSongs:
             dbSongTitles.append(item[2])
         print("Updating your playlist, please wait...")
         dplaylists = api.get_all_user_playlist_contents()
-        playlist = None
-        for item in dplaylists:
-            if (item['name'].lower()) == (settings["GPM PLAYLIST"].lower()):
-                playlist = item
-        if settings["GPM PLAYLIST"] and not playlist:
-            stopBot("Invalid setting for GPM PLAYLIST setting - That playlist doesn't exist on your account")
-        gpmSongTitles = []
-        for item in playlist['tracks']:
-            if item['trackId'][0][0] == "T":
-                gpmSongTitles.append(item['track']['storeId'])
-        toAdd = list(set(gpmSongTitles) - set(dbSongTitles))
+
+        for settingPlaylist in settings["GPM PLAYLISTS"]:
+            playlist = None
+            for item in dplaylists:
+                if item['name'].lower() in settingPlaylist.lower():
+                    playlist = item
+
+            if not playlist:
+                stopBot("Invalid playlist in GPM PLAYLISTS setting - %s doesn't exist on your account" % settingPlaylist)
+
+            gpmSongTitles = []
+            for item in playlist['tracks']:
+                if item['trackId'][0][0] == "T":
+                    gpmSongTitles.append(item['track']['storeId'])
+            toAdd = list(set(gpmSongTitles) - set(dbSongTitles))
 
         if len(toAdd) > 0:
             for item in toAdd:

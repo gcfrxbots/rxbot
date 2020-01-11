@@ -40,7 +40,7 @@ defaultSettings = [
     ("MEDIA FILES ENABLE", "Yes", "Allows users to request songs using direct file links. Enabling this gives users more options, but can also be abused."),
     ("QUEUE LINK", "The streamer has not set a queue link yet.", "If you've uploaded your SongQueue.xlsx file for viewers to see with !queue, this is where you put the link to it. More info in the setup guide."),
     ("DEFAULT SR MSG", "You need to type a song's name, or a link to a Youtube video or music file. You can type !wrongsong if the wrong one is selected.", "This message will show up in the chat if someone types '!sr' or '!songrequest' without any request."),
-    ("GPM PLAYLIST", "", "The EXACT title of the Google Play Music playlist that you want to update, either with the playlist editor or the auto-update setting below."),
+    ("GPM PLAYLISTS", "", "Separate with commas. The EXACT title of the Google Play Music playlist(s) that you want to import, either with the playlist editor or the auto-update setting below."),
     ("UPDATE PL ON START", "No", "The playlist you entered into the setting above will automatically update every time you start the bot. Noticeably slows bot startup time."),
     ("YT VOL RESET", "No", "If the volume is changed while a Youtube song is playing, this will change the volume back to what it was before once the song is over."),
     ("", "", ""),
@@ -55,7 +55,7 @@ defaultSettings = [
     ("ENABLE HOTKEYS", "No", "Turn hotkeys on or off. If this is set to 'Yes', you'll need to swap to the HOTKEYS worksheet at the bottom to configure them."),
 ]
 
-listSettings = ["BLACKLISTED TITLE CONTENTS", "MODERATORS"]
+listSettings = ["BLACKLISTED TITLE CONTENTS", "MODERATORS", "GPM PLAYLISTS"]
 listFloats = ["DELAY BETWEEN SONGS", "MAX SONG LENGTH"]
 '''----------------------END SETTINGS----------------------'''
 
