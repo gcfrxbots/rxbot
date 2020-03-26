@@ -1,8 +1,7 @@
 from urllib.request import urlopen
 import random
-import xlsxwriter
 import datetime
-from Initialize import sendMessage, sqlitewrite, sqliteread, settings, sqliteFetchAll
+from Initialize import sqlitewrite, sqliteread, settings, sqliteFetchAll, getmoderators
 
 commands_BotCommands = {
     "!ping": ('bot.ping', 'cmdarguments', 'user'),
@@ -12,8 +11,8 @@ commands_BotCommands = {
     "!reloaddb": ("STREAMER", 'dbCloner.manualCloneDb', 'None', 'None'),
     "!quote": ('quotes', 'cmdarguments', 'user'),
     "!addquote": ('quotes.addQuote', 'cmdarguments', 'user'),
-    "!removequote": ('quotes.rmQuote', 'cmdarguments', 'user'),
-    "!deletequote": ('quotes.rmQuote', 'cmdarguments', 'user'),  # Alias
+    "!removequote": ("MOD", 'quotes.rmQuote', 'cmdarguments', 'user'),
+    "!deletequote": ("MOD", 'quotes.rmQuote', 'cmdarguments', 'user'),  # Alias
     "!test": ('getCurrentGame', 'cmdarguments', 'user'),
 
 }
@@ -89,6 +88,7 @@ class QuoteControl:
         self.usedQuotes = []
 
     def __call__(self, arg, user):
+
         if not arg.strip():
             return self.displayQuote()
         firstArg = arg.split()[0].lower()
@@ -99,8 +99,12 @@ class QuoteControl:
         elif firstArg == "add":
             return self.addQuote(arg, user)
         elif firstArg == "remove":
+            if not (user in getmoderators()) or (user == "Hotkey"):
+                return user + " >> You need to be a moderator to delete a quote."
             return self.rmQuote(arg, user)
         elif firstArg == "delete":
+            if not (user in getmoderators()) or (user == "Hotkey"):
+                return user + " >> You need to be a moderator to delete a quote."
             return self.rmQuote(arg, user)
 
 
