@@ -1,13 +1,34 @@
-VERSION 3.4
+VERSION 3.5
 
-Primary Change: Volume Caching
-Changes:
-Cleaned up a few print statements to make the console just a bit cleaner
+Primary Change: Quotes
 
 SONGREQUEST:
-When playing Youtube or Online Media songs, you now have the a setting to enable volume caching.
-This will save the volume of the last track played on GPM, since all songs are consistent. If the volume is adjusted for the Non-GPM song, the volume will be automatically changed back once it's over.
+Backup playlist is now visible and editable in BotData.xlsx
+Before anyone asks, the "Key" in playlist corresponds to the key that google play uses to identify the song. This can be replaced with either a youtube key or a URL to a music file, and the bot will accept it.
+Fixed a bug that caused a crash when typing "!sr" into the console.
+
+PLAYLISTEDITOR:
+Cleaned up code and looks, now 'resets' the view each time
+Remove option to view the playlist, use BotData.xlsx for this
+Script now properly syncs the xlsx and the db when changes are made.
+
+BOT:
+Re-added !uptime (or added it for the first time? Cant remember if it's existed before)
+The "Game" column in the quotes table is currently unused but will be used in a future update.
+Added quotes! !quote add or !addquote to insert a quote, !quote remove/delete # or !removequote # or !deletequote # to remove one. !quote # calls a specific one, !quote calls a random one.
+When showing a random quote, the bot will specifically not show any one quote twice until every other quote has been displayed.
+Created BotData.xlsx, which will always show the content inside of the bot's database.
+More Info:
+    WHEN THE BOT BOOTS it will clone this file to the database, so you can make changes and the bot will understand them.
+    WHEN THE BOT MAKES CHANGES it will clone the contents of the database to this file.
+    Edits should ONLY be made to BotData.xlsx when the bot is shut down, as the bot will sync all changes on startup and no other times.
 
 
-COMMANDS:
-Probably didn't break anything
+OTHER CHANGES:
+Changed the changelog to make more sense.
+Added a new command permission, "STREAMER". This works the same was as putting "MOD" when defining commands, except it limits it to ONLY the user set as "Channel" in settings.
+Continually refactored code to make old me's code suck less
+Continually hated myself over old code too sloppy to be worth refactoring
+The bot used to REQUIRE Install_Requirements to generate the Config folder and Settings.xlsx. It can now start without running Install_Requirements if all other libraries are installed.
+Removed Herobrine
+

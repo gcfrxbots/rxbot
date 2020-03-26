@@ -11,7 +11,6 @@ import sys
 import codecs
 from Initialize import settings
 
-
 logging.disable(sys.maxsize)
 
 commands_SongRequest = {
@@ -340,7 +339,7 @@ class SRcommands:
     '''--------------------SONG REQUEST--------------------'''
 
     def songrequest(self, request, user):
-        if request == "\r":  # Send a message if they request nothing
+        if request == "\r" or not request:  # Send a message if they request nothing
             return user + " >> " + settings['DEFAULT SR MSG']
         # Get the first argument for links
         requestArgs = (request.split())
@@ -489,32 +488,24 @@ class SRcommands:
                 return user + " >> Couldn't find that request."
 
     def queuetime(self, id, user):
-        db = sqlite3.connect('Resources/botData.db')
-        try:
-            cursor = db.cursor()
-            if not id:  # If there's no ID, get the total song
-                cursor.execute('''SELECT time FROM queue''')
-            else:  # Get up to that song
-                cursor.execute('''SELECT time FROM queue WHERE id < {0}'''.format(id))
-            data = cursor.fetchall()
-            if (not data) or (data[0][0] == None):
-                if id:
-                    return user + " >> That ID is not in the queue."
-                else:
-                    return user + " >> There are currently no songs in the queue."
-            totaltime = 0
-            for item in data:
-                totaltime += int(item[0])
-            seconds = round((totaltime / 1000) % 60)
-            minutes = round((totaltime / (1000 * 60)) % 60)
-            hours = round((totaltime / (1000 * 60 * 60)) % 24)
-            db.close()
-            return user + " >> There is about " + str(hours) + "h " + str(minutes) + "m " + str(
-                seconds) + "s of songs in the queue."
-        except Error as e:
-            db.rollback()
-            print("QUEUETIME ERROR:")
-            print(e)
+        if not id:  # If there's no ID, get the total song
+            data = sqliteFetchAll('''SELECT time FROM queue''')
+        else:  # Get up to that song
+            data = sqliteFetchAll('''SELECT time FROM queue WHERE id < {0}'''.format(id))
+
+        if not data or not data[0][0]:
+            if id:
+                return user + " >> That ID is not in the queue."
+            else:
+                return user + " >> There are currently no songs in the queue."
+        totaltime = 0
+        for item in data:
+            totaltime += int(item[0])
+        seconds = round((totaltime / 1000) % 60)
+        minutes = round((totaltime / (1000 * 60)) % 60)
+        hours = round((totaltime / (1000 * 60 * 60)) % 24)
+        return user + " >> There is about " + str(hours) + "h " + str(minutes) + "m " + str(
+            seconds) + "s of songs in the queue."
 
     '''--------------------BACKUP PL CONTROL--------------------'''
 

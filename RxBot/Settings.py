@@ -55,7 +55,7 @@ defaultSettings = [
     ("ENABLE HOTKEYS", "No", "Turn hotkeys on or off. If this is set to 'Yes', you'll need to swap to the HOTKEYS worksheet at the bottom to configure them."),
 ]
 
-listSettings = ["BLACKLISTED TITLE CONTENTS", "MODERATORS", "GPM PLAYLISTS"]
+listSettings = ["BLACKLISTED TITLE CONTENTS", "MODERATORS", "GPM PLAYLISTS", "GPM PLAYLIST"]
 listFloats = ["DELAY BETWEEN SONGS", "MAX SONG LENGTH"]
 '''----------------------END SETTINGS----------------------'''
 
@@ -75,6 +75,7 @@ def stopBot(err):
     time.sleep(3)
     quit()
 
+
 def deformatEntry(inp):
     if isinstance(inp, list):
         toRemove = ["'", '"', "[", "]", "\\", "/"]
@@ -89,6 +90,7 @@ def deformatEntry(inp):
     else:
         return inp
 
+
 def writeSettings(sheet, toWrite):
 
     row = 1  # WRITE SETTINGS
@@ -98,6 +100,7 @@ def writeSettings(sheet, toWrite):
         sheet.write(row, col + 1, col1)
         sheet.write(row, col + 2, col2)
         row += 1
+
 
 class settingsConfig:
     def __init__(self):
@@ -208,6 +211,19 @@ class settingsConfig:
 
         return hotkeys
 
+    def fixOldSettings(self, wb, settings):
+        oldSettings = {
+            #OLD : NEW
+            "GPM PLAYLIST": "GPM PLAYLISTS"
+
+        }
+        for item in self.readSettings(wb):
+            if item in oldSettings.keys():
+                settings[oldSettings[item]] = settings.pop(item)
+                self.reloadSettings(settings)
+        return settings
+
+
     def settingsSetup(self):
         global settings, hotkeys
 
@@ -222,10 +238,10 @@ class settingsConfig:
 
         wb = xlrd.open_workbook('../Config/Settings.xlsx')
         # Read the settings file
+
         hotkeys = self.readHotkeys(wb)
         settings = self.readSettings(wb)
-
-
+        settings = self.fixOldSettings(wb, settings)  # Update any possibly old settings
 
         # Check Settings
         if str(int(settings["PORT"])) not in ('80', '6667', '443', '6697'):  # Convert into non-float string
@@ -241,7 +257,7 @@ class settingsConfig:
         return settings, hotkeys
 
 
-if GenSettings:
+def buildConfig():
     if not os.path.exists('../Config'):
         os.mkdir("../Config")
 
@@ -249,8 +265,12 @@ if GenSettings:
         print("Creating Settings.xlsx")
         settingsConfig.formatSettingsXlsx(settingsConfig())
         print("\nPlease open Config / Settings.xlsx and configure the bot, then run it again.")
-        print("Please read the readme to get everything set up!")
+        print("Please follow the setup guide to everything set up! https://rxbots.net/rxbot-setup.html")
         time.sleep(3)
         quit()
     else:
         print("Everything is already set up!")
+
+
+if GenSettings:
+    buildConfig()

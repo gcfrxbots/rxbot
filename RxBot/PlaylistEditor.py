@@ -3,6 +3,7 @@ from gmusicapi import Mobileclient
 import sqlite3
 import xlrd
 from Settings import listSettings, listFloats
+from Initialize import dbCloner
 
 def readSettings():
     wb = xlrd.open_workbook('../Config/Settings.xlsx')
@@ -42,12 +43,6 @@ if settings["GPM ENABLE"]:
             raise ConnectionError("Unable to log into Google Play Music!")
 else:
     print("Youtube-Only mode enabled. As of now, filling the playlist is not supported here and you'll need to add songs with !plsr.")
-
-
-
-
-
-
 
 
 def fillPlaylist():
@@ -100,6 +95,7 @@ def fillPlaylist():
 
     db.commit()
     db.close()
+    dbCloner.cloneDbToXlsx()
 
 
 def updateplaylist():
@@ -160,7 +156,7 @@ def updateplaylist():
                             VALUES("{song_name}", "{key}");'''.format(song_name=songtitle.replace('"', "'"), key=key))
     db.commit()
     db.close()
-
+    dbCloner.cloneDbToXlsx()
 
 
 def shuffleplaylist():
@@ -179,6 +175,8 @@ def shuffleplaylist():
         cursor.execute(sqlcommand)
     db.commit()
     db.close()
+    dbCloner.cloneDbToXlsx()
+
 
 def viewplaylist():
     db = sqlite3.connect('Resources/botData.db')
@@ -193,12 +191,6 @@ def viewplaylist():
         print("ID: " + id + " >>  " + title + "  >> Key: " + key)
 
 
-
-
-
-
-
-
 def clearplaylist():
     db = sqlite3.connect('Resources/botData.db')
     cursor = db.cursor()
@@ -206,16 +198,17 @@ def clearplaylist():
     cursor.execute(sqlcommand)
     db.commit()
     db.close()
+    dbCloner.cloneDbToXlsx()
 
 
 while True:
+    print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
     print(">>-------------------------------------<<")
-    print("Welcome to the RXBot Backup Playlist Control Application. What would you like to do? "
+    print("Welcome to the RXBot's Playlist Editor! \nThis is the place to make changes to the playlist the bot plays when there are no requests. \nWhat would you like to do? "
           "\n1. Fill Playlist "
           "\n2. Update Playlist "
           "\n3. Shuffle Playlist "
-          "\n4. View Playlist "
-          "\n5. Clear Playlist "
+          "\n4. Clear Playlist "
           "\n0. Exit "
 
           )
@@ -231,14 +224,10 @@ while True:
         shuffleplaylist()
         wait = input("Shuffled the playlist, press ENTER to return to Main Menu")
     if inp == 4:
-        viewplaylist()
-        wait = input("Press ENTER to close")
-    if inp == 5:
         clearplaylist()
         wait = input("Cleared the whole backup playlist. Press ENTER to return to Main Menu")
     if inp == 0:
         quit()
-
 
 
 

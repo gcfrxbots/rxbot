@@ -8,7 +8,7 @@ from Initialize import settings, hotkeys
 
 sr = SRcommands()
 srcontrol = SRcontrol()
-bot = BotCommands()
+
 customcmds = CustomCommands()
 nowplaying = False
 paused = False
@@ -49,6 +49,7 @@ def manageHotkeys(event, hotkey, args):
         runcommand(args[0], None, "Hotkey", False)
     else:
         runcommand(args[0], None, "Hotkey", True)
+
 
 if settings['ENABLE HOTKEYS']:
     hk = SystemHotkey(consumer=manageHotkeys)
@@ -96,6 +97,14 @@ def runcommand(command, cmdarguments, user, mute):
                 else:
                     sendMessage("You don't have permission to do this.")
                     return
+            elif commands[item][0] == "STREAMER":  # STREAMER ONLY COMMANDS:
+                if (user == settings['CHANNEL']) or (user == "Hotkey") or mute:
+                    cmd = commands[item][1]
+                    arg1 = commands[item][2]
+                    arg2 = commands[item][3]
+                else:
+                    sendMessage("You don't have permission to do this.")
+                    return
             else:
                 cmd = commands[item][0]
                 arg1 = commands[item][1]
@@ -111,33 +120,30 @@ def runcommand(command, cmdarguments, user, mute):
     else:
         sendMessage(output)
 
+
 def main():
     global nowplaying, paused, s
     s = openSocket()
     joinRoom(s)
     readbuffer = ""
     while True:
-        try:
-            readbuffer = readbuffer + s.recv(1024).decode("utf-8")
-            temp = readbuffer.split("\n")
-            readbuffer = temp.pop()
-            for line in temp:
-                if "PING" in line:
-                    s.send(bytes("PONG :tmi.twitch.tv\r\n".encode("utf-8")))
-                else:
-                    # All these things break apart the given chat message to make things easier to work with.
-                    user = getUser(line)
-                    message = str(getMessage(line))
-                    command = ((message.split(' ', 1)[0]).lower()).replace("\r", "")
-                    cmdarguments = message.replace(command or "\r" or "\n", "")
-                    getint(cmdarguments)
-                    print(("(" + formatted_time() + ")>> " + user + ": " + message))
-                    # Run the commands function
-                    if command[0] == "!":
-                        runcommand(command, cmdarguments, user, False)
-        except Exception as e:
-            print("Error while running command:")
-            print(e)
+        readbuffer = readbuffer + s.recv(1024).decode("utf-8")
+        temp = readbuffer.split("\n")
+        readbuffer = temp.pop()
+        for line in temp:
+            if "PING" in line:
+                s.send(bytes("PONG :tmi.twitch.tv\r\n".encode("utf-8")))
+            else:
+                # All these things break apart the given chat message to make things easier to work with.
+                user = getUser(line)
+                message = str(getMessage(line))
+                command = ((message.split(' ', 1)[0]).lower()).replace("\r", "")
+                cmdarguments = message.replace(command or "\r" or "\n", "")
+                getint(cmdarguments)
+                print(("(" + formatted_time() + ")>> " + user + ": " + message))
+                # Run the commands function
+                if command[0] == "!":
+                    runcommand(command, cmdarguments, user, False)
 
 
 # If the queue is completely empty at start, add a song so it's not pulling nonexistent values in the loop below

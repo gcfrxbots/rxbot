@@ -8,8 +8,11 @@ from sqlite3 import Error
 from shutil import copyfile
 import os
 from random import shuffle
+import requests
+from bs4 import BeautifulSoup
 try:
     import xlsxwriter
+    import xlrd
     from gmusicapi import Mobileclient
     import validators
     import vlc
@@ -20,6 +23,7 @@ except ImportError as e:
     print(e)
     raise ImportError(">>> One or more required packages are not properly installed! Run INSTALL_REQUIREMENTS.bat to fix!")
 global settings, hotkeys
+
 
 def initSetup():
     api = Mobileclient()
@@ -32,6 +36,8 @@ def initSetup():
     # Create Folders
     if not os.path.exists('../Output'):
         os.makedirs('../Output')
+    if not os.path.exists('../Config'):
+        buildConfig()
     if not os.path.exists('Resources'):
         os.makedirs('Resources')
         print("Creating necessary folders...")
@@ -95,12 +101,20 @@ def initSetup():
                             key text
                         ); """,
 
-            # Create Userdata Playlist
+            # Create Userdata
             """ CREATE TABLE IF NOT EXISTS userdata (
                             id integer PRIMARY KEY,
                             user text NOT NULL,
                             currency text
                             hours text
+                        ); """,
+
+            # Create Quotes Table
+            """ CREATE TABLE IF NOT EXISTS quotes (
+                            id integer PRIMARY KEY,
+                            quote text NOT NULL,
+                            date text,
+                            game text
                         ); """,
     )
         c = db.cursor()
@@ -111,8 +125,19 @@ def initSetup():
     except Error as e:
         print(e)
 
+    if os.path.exists("../Output/BotData.xlsx"):
+        dbCloner.cloneXlsxToDb()
+        print("Cloned everything in BotData.xlsx to the database")
+    else:
+        dbCloner.cloneDbToXlsx()
+        print("Created BotData.xlsx in /Output")
+
     if not os.path.exists('../Config/Playlist Editor.exe'):
         copyfile('Playlist Editor.exe', '../Config/Playlist Editor.exe')
+
+    # Update Playlist
+    if settings['UPDATE PL ON START']:
+        updatePlaylists(api)
 
     # Shuffle Playlist
     if settings['SHUFFLE ON START']:
@@ -129,56 +154,70 @@ def initSetup():
         db.close()
         print("Backup Playlist has been shuffled.")
 
-    # Update Playlist
 
-    if settings['UPDATE PL ON START']:
-        if not settings["GPM PLAYLISTS"]:
-            stopBot("You have UPDATE PL ON START enabled, but no playlist specified in GPM PLAYLIST.")
-
-        db = sqlite3.connect('Resources/botData.db')
-        cursor = db.cursor()
-        cursor.execute('''SELECT * FROM playlist''')
-        listSongs = cursor.fetchall()
-        dbSongTitles = []
-        toAdd = []
-
-        for item in listSongs:
-            dbSongTitles.append(item[2])
-        print("Updating your playlist, please wait...")
-        dplaylists = api.get_all_user_playlist_contents()
-
-        for settingPlaylist in settings["GPM PLAYLISTS"]:
-            playlist = None
-            for item in dplaylists:
-                if item['name'].lower() in settingPlaylist.lower():
-                    playlist = item
-
-            if not playlist:
-                stopBot("Invalid playlist in GPM PLAYLISTS setting - %s doesn't exist on your account" % settingPlaylist)
-
-            gpmSongTitles = []
-            for item in playlist['tracks']:
-                if item['trackId'][0][0] == "T":
-                    gpmSongTitles.append(item['track']['storeId'])
-            toAdd = list(set(gpmSongTitles) - set(dbSongTitles))
-
-        if len(toAdd) > 0:
-            for item in toAdd:
-                for gpmitem in playlist['tracks']:
-                    if gpmitem['trackId'] == item:
-                        songtitle = (gpmitem['track']['artist'] + " - " + gpmitem['track']['title'])
-                        key = gpmitem['track']['storeId']
-                        cursor.execute('''
-                                    INSERT INTO playlist(song, key)
-                                    VALUES("{song_name}", "{key}");'''.format(song_name=songtitle.replace('"', "'"),
-                                                                              key=key))
-            print(str(len(toAdd)) + " new songs added to the backup playlist!")
-        else:
-            print("No new songs to add to your playlist.")
-        db.commit()
-        db.close()
 
     return api
+
+
+def updatePlaylists(api):
+    playlist = None
+    if not settings["GPM PLAYLISTS"]:
+        stopBot("You have UPDATE PL ON START enabled, but no playlist specified in GPM PLAYLISTS.")
+    print("Updating your playlist, please wait...")
+
+
+    db = sqlite3.connect('Resources/botData.db')
+    cursor = db.cursor()
+
+    botSongData = {}
+    songsAdded = 0
+
+
+    allGPMPlaylists = api.get_all_user_playlist_contents()
+
+# Select the correct playlist, specified in Settings
+    for settingPlaylist in settings["GPM PLAYLISTS"]:
+        gpmSongs = {}
+        for gpmPlaylist in allGPMPlaylists:
+            if gpmPlaylist['name'].lower() in settingPlaylist.lower():
+                playlist = gpmPlaylist  # Set playlist to the correct playlist specified in settings
+        if not playlist:
+            stopBot("Invalid playlist in GPM PLAYLISTS setting - %s doesn't exist on your account" % settingPlaylist)
+
+# Populate botSongData with stuff from database
+        songsAlreadyInPlaylist = sqliteFetchAll('''SELECT song, key FROM playlist''')
+        for item in songsAlreadyInPlaylist:
+            botSongData[item[1]] = item[0]
+
+# Populate validGPMTracks with only songs that are good and correct IDs
+        validGPMTracks = {}
+        for track in playlist['tracks']:  # Load in all songs
+            if track['trackId'][0][0] == "T":
+                validGPMTracks[track['track']['storeId']] = (track['track']['artist'] + " - " + track['track']['title'])  # All GPM'able songs in the playlist
+                # songID : songTitle
+
+# Fill gpmSongs with all songs not already in the database
+        for gpmSongId, gpmSong in validGPMTracks.items():
+            if gpmSongId not in botSongData.keys():
+                #print(gpmSongId)
+                gpmSongs[gpmSongId] = gpmSong
+
+
+# Add songs to database
+        if len(gpmSongs) > 0:  # If theres actually something to add
+            for songId, songTitle in gpmSongs.items():
+                cursor.execute('''INSERT INTO playlist(song, key) VALUES("{song_name}", "{key}");'''.format(
+                    song_name=songTitle.replace('"', "'"), key=songId))
+                songsAdded += 1
+
+    if songsAdded > 0:
+        print(str(songsAdded) + " new songs added to the backup playlist!")
+    else:
+        print("No new songs to add to your playlist.")
+
+    #cursor.execute('''DELETE FROM playlist WHERE song IN (SELECT song FROM playlist GROUP BY song HAVING COUNT(*) > 1);''')
+    db.commit()
+    db.close()
 
 
 def openSocket():
@@ -212,7 +251,6 @@ def joinRoom(s):
             Loading = loadingComplete(line)
 
 
-
 def loadingComplete(line):
     if("End of /NAMES list" in line):
         print(">> Bot Startup complete!")
@@ -233,22 +271,43 @@ def sqliteread(command):
         db.rollback()
         print("SQLITE READ ERROR:")
         print(e)
+        print(command)
+
+
+def sqliteFetchAll(command):
+    db = sqlite3.connect('Resources/botData.db')
+    try:
+        cursor = db.cursor()
+        cursor.execute(command)
+        data = cursor.fetchall()
+        db.close()
+        return data
+    except Error as e:
+        db.rollback()
+        print("SQLITE FETCHALL ERROR:")
+        print(e)
+        print(command)
+
 
 def sqlitewrite(command):
     db = sqlite3.connect('Resources/botData.db')
     try:
         cursor = db.cursor()
         cursor.execute(command)
-        data = cursor.fetchone()
         db.commit()
         db.close()
-        createsongqueue()
-        return data
+
+        if "queue" in command:
+            createsongqueue()
+        if ("playlist" in command) or ("quotes" in command):
+            dbCloner.cloneDbToXlsx()
+        return True
     except Error as e:
         db.rollback()
         print("SQLITE WRITE ERROR:")
         print(e)
-
+        print(command)
+        return False
 
 
 def createsongqueue():
@@ -279,7 +338,6 @@ def createsongqueue():
         print("ERROR - UNABLE TO READ XLSX DOC! You probably have it open, close it ya buffoon")
 
 
-
 def getmoderators():
     json_url = urllib.request.urlopen('http://tmi.twitch.tv/group/user/' + settings['CHANNEL'].lower() + '/chatters')
     data = json.loads(json_url.read())['chatters']
@@ -290,5 +348,114 @@ def getmoderators():
             settings['MODERATORS'].append(item)
 
     return settings['MODERATORS']
+
+
+def getCurrentGame():
+    return "Go fuck yourself"
+
+
+class dbClone:
+    def __init__(self):
+        self.listDbs = ['quotes', 'playlist']  # Remember to update triggers in sqlitewrite too, dipshit
+        self.cursor = None
+
+    def cloneDbToXlsx(self):
+        try:
+            with xlsxwriter.Workbook('../Output/BotData.xlsx') as workbook:
+                for db in self.listDbs:
+                    dbColumns = []
+                    dbData = sqliteFetchAll("SELECT * FROM %s" % db)
+
+                    for item in sqliteFetchAll("PRAGMA table_info(%s);" % db):
+                        dbColumns.append(item[1])
+
+                    worksheet = workbook.add_worksheet(db.capitalize())
+                    header = workbook.add_format(
+                        {'bold': True, 'center_across': True, 'font_color': 'black'})
+                    # Add the ID column, which will always remain constant
+                    worksheet.set_column(0, 0, 10)
+                    worksheet.set_column(1, (len(dbColumns)-1), 75)
+
+                    for column in enumerate(dbColumns):  # Write headers
+                        worksheet.write(0, column[0], column[1].capitalize(), header)
+
+                    row = 1  # Fill in data
+                    try:
+                        for entry in dbData:
+                            for item in enumerate(entry):
+                                col = item[0]
+                                worksheet.write(row, col, item[1])
+                            row += 1
+                    except TypeError:
+                        print("No data in database.")
+        except PermissionError:
+            print("\n\nCANT UPDATE BOTDATA.XLSX, PLEASE CLOSE THE FILE!\n\n")
+
+    def cloneXlsxToDb(self):
+        database = sqlite3.connect('Resources/botData.db')
+        self.cursor = database.cursor()
+        wb = xlrd.open_workbook('../Output/BotData.xlsx')
+        for db in self.listDbs:
+            db = db.capitalize()
+            worksheet = wb.sheet_by_name(db)
+            if not self.checkReset(db, worksheet.nrows):
+                print("\n\nWARNING- While syncing BotData.xlsx to the bot's database, it looks like 3 or more rows have been deleted from %s. Proceed?" % db.capitalize())
+                print("Type yes to proceed, and sync the new data in BotData.xlsx to the bot's database.")
+                print("Type skip to skip this, and sync the bot's existing database with your BotData.xlsx")
+                print("Type anything else to close the bot.")
+                inp = input(">> ").lower()
+                if inp == "skip":
+                    break
+                elif inp != "yes":
+                    stopBot("BotData.xlsx is either empty or missing a bunch of data. Type 'skip' next time you're prompted to load old bot data.")
+
+            self.cursor.execute("DELETE FROM %s" % db.lower())
+            database.commit()
+
+            header = ""
+            for row in range(worksheet.nrows):
+                if row == 0:
+                    for column in range(worksheet.ncols):
+                        option = worksheet.cell_value(row, column)
+                        header += option + ", "
+                    header = (header[:-2]).lower()
+                else:
+                    rowData = ""  # Data per row
+                    for column in range(worksheet.ncols):
+                        option = worksheet.cell_value(row, column)
+                        try:  # Convert the float IDs into Ints
+                            option = int(option)
+                            rowData += ('%s, ' % option)
+                        except ValueError:
+                            rowData += ('"%s", ' % option)
+
+                    # Add to database
+                    rowData = rowData[:-2]
+                    self.cursor.execute("INSERT INTO {database}({header}) VALUES({rowData});".format(database=db, header=header, rowData=rowData))
+
+        database.commit()
+        database.close()
+
+    def checkReset(self, db, rows):
+        self.cursor.execute("SELECT * FROM %s" % db)
+        dbData = self.cursor.fetchall()
+        dbSize = len(dbData)
+
+        if dbSize > 0:  # If the database was not empty
+            if rows < 2:  # If theres only one or no rows
+                return False
+
+        if (dbSize - 3) > rows:
+            return False
+
+        return True
+
+    def manualCloneDb(self, x, y):
+        self.cloneXlsxToDb()
+        return("Cloned the contents of BotData.xlsx to the bot's database.")
+
+
+dbCloner = dbClone()
+
 
 
