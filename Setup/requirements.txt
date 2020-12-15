@@ -12,4 +12,4 @@ system_hotkey
 
 pywin32
 
-xlrd
+xlrd==1.2.0
